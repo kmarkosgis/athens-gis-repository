@@ -1,6 +1,6 @@
 # Athens GIS 
 
-Welcome to the **Athens GIS ** — an open-access online repository and interactive map for exploring geospatial data related to Athens, Greece.
+Welcome to the **Athens GIS** — an open-access online repository and interactive map for exploring geospatial data related to Athens, Greece.
 
 ## 📍 About
 

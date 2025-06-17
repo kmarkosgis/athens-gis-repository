@@ -2,32 +2,82 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>My GIS Map Viewer</title>
+  <title>Athens GIS Viewer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
-    body { margin: 0; font-family: sans-serif; }
-    #map { height: 90vh; }
-    #downloads {
-      padding: 1em;
-      background: #f8f8f8;
-      border-bottom: 1px solid #ccc;
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      color: #333;
     }
-    #downloads ul { margin: 0; padding-left: 1.5em; }
+    header {
+      padding: 1em;
+      background: #004d99;
+      color: white;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.5em;
+    }
+    #controls {
+      padding: 1em;
+      background: #e9f2fb;
+      border-bottom: 2px solid #ccc;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1em;
+    }
+    #controls label {
+      margin-right: 0.5em;
+    }
+    #downloads ul {
+      margin: 0;
+      padding-left: 1.2em;
+    }
+    #map {
+      height: 80vh;
+    }
+    select, button {
+      padding: 0.5em;
+      font-size: 1em;
+    }
+    a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
 
-  <!-- ✅ Download links section -->
-  <div id="downloads">
-    <h2>Download GeoJSON Files</h2>
-    <ul>
-      <li><a href="data/AthensTrain.geojson" download>⬇️ AthensTrain.geojson</a></li>
-      <!-- Add more manual download links if needed -->
-    </ul>
-    <button onclick="showNextLayer()">▶️ Show Next Layer</button>
+  <header>
+    <h1>Athens GIS Viewer</h1>
+  </header>
+
+  <!-- Controls: dropdown + basemap switcher + downloads -->
+  <div id="controls">
+    <div>
+      <label for="layerSelect">Select Layer:</label>
+      <select id="layerSelect">
+        <option value="">-- Choose --</option>
+        <!-- Options will be filled by JS -->
+      </select>
+    </div>
+
+    <div id="downloads">
+      <strong>Download GeoJSON:</strong>
+      <ul>
+        <li><a href="data/AthensTrain.geojson" download>⬇️ AthensTrain.geojson</a></li>
+        <!-- Add more links manually if needed -->
+      </ul>
+    </div>
   </div>
 
   <!-- Map container -->
@@ -37,41 +87,50 @@
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
     // 1️⃣ Initialize map
-    var map = L.map('map').setView([37.98, 23.72], 11); // Athens default
+    var map = L.map('map').setView([37.98, 23.72], 12);
 
     // 2️⃣ Basemaps
     var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      attribution: 'Tiles © Esri'
-    });
+    var satellite = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      { attribution: 'Tiles © Esri' }
+    );
 
     var baseMaps = {
       "OpenStreetMap": osm,
       "Satellite": satellite
     };
 
-    // 3️⃣ Layer groups for GeoJSONs
-    var overlayMaps = {};
-    var geojsonLayers = []; // for cycling
+    L.control.layers(baseMaps).addTo(map);
 
-    // 4️⃣ List of your GeoJSON files (uploaded manually)
+    // 3️⃣ GeoJSON files (list them here!)
     var geojsonFiles = [
-      "data/AthensTrain.geojson"
-      // Add more here: "data/OtherFile.geojson"
+      { name: "AthensTrain", file: "data/AthensTrain.geojson" }
+      // Add more: { name: "OtherLayer", file: "data/OtherLayer.geojson" }
     ];
 
-    // 5️⃣ Load each GeoJSON and add to map + layer control
-    geojsonFiles.forEach(function(file) {
-      fetch(file)
+    // 4️⃣ Keep track of loaded layers
+    var geojsonLayers = {};
+
+    // 5️⃣ Populate dropdown
+    var select = document.getElementById('layerSelect');
+    geojsonFiles.forEach(function(layer) {
+      var option = document.createElement('option');
+      option.value = layer.name;
+      option.text = layer.name;
+      select.add(option);
+    });
+
+    // 6️⃣ Load all GeoJSONs (but do not show yet)
+    geojsonFiles.forEach(function(layer) {
+      fetch(layer.file)
         .then(res => res.json())
         .then(data => {
-          var layer = L.geoJSON(data, {
-            style: function() {
-              return { color: getRandomColor(), weight: 2 };
-            },
+          var gLayer = L.geoJSON(data, {
+            style: { color: getRandomColor(), weight: 2 },
             onEachFeature: function(feature, layer) {
               var props = feature.properties;
               var popup = '<b>Properties:</b><br>';
@@ -81,35 +140,26 @@
               layer.bindPopup(popup);
             }
           });
-          layer.addTo(map); // add by default
-          overlayMaps[file] = layer;
-          geojsonLayers.push(layer);
-          // Update layer control
-          layersControl.addOverlay(layer, file);
+          geojsonLayers[layer.name] = gLayer;
         });
     });
 
-    // 6️⃣ Add layer switcher control
-    var layersControl = L.control.layers(baseMaps, overlayMaps).addTo(map);
+    // 7️⃣ Show selected layer
+    select.addEventListener('change', function() {
+      var chosen = this.value;
 
-    // 7️⃣ Random color helper
+      // Remove all GeoJSON layers
+      Object.values(geojsonLayers).forEach(l => map.removeLayer(l));
+
+      if (chosen && geojsonLayers[chosen]) {
+        map.addLayer(geojsonLayers[chosen]);
+        map.fitBounds(geojsonLayers[chosen].getBounds());
+      }
+    });
+
+    // 8️⃣ Random color helper
     function getRandomColor() {
       return '#' + Math.floor(Math.random()*16777215).toString(16);
-    }
-
-    // 8️⃣ Cycle through GeoJSON layers
-    var currentLayerIndex = 0;
-
-    function showNextLayer() {
-      // Hide all layers
-      geojsonLayers.forEach(l => map.removeLayer(l));
-      // Show next
-      var layer = geojsonLayers[currentLayerIndex];
-      if (layer) {
-        map.addLayer(layer);
-        map.fitBounds(layer.getBounds());
-      }
-      currentLayerIndex = (currentLayerIndex + 1) % geojsonLayers.length;
     }
 
   </script>

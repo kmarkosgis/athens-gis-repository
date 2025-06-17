@@ -58,7 +58,7 @@ Feel free to use, modify, and share with proper credit.
 ## 👤 Author
 
 **Konstantinos Markos**  
-Athens GIS Projects
+Transportation Civil Engineer, Phd Candidate, SRSGE, NTUA
 
 [LinkedIn](https://www.linkedin.com/in/konstantinos-markos/)
 

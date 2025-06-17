@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>My Open GIS Map</title>
   <meta charset="utf-8" />
+  <title>My Open GIS Map</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
     body { margin: 0; }
     #map { height: 100vh; }
@@ -18,22 +19,52 @@
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
     // Initialize the map
-    var map = L.map('map').setView([37.98, 23.72], 10); // Athens coords
+    var map = L.map('map').setView([37.98, 23.72], 10); // Example: Athens
 
     // Add OpenStreetMap base
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // Load GeoJSON layer
-    fetch('data/export.geojson')
+    // Define style for roads
+    var roadsStyle = {
+      color: "#ff0000",
+      weight: 2
+    };
+
+    // Define style for rivers
+    var riversStyle = {
+      color: "#0000ff",
+      weight: 2
+    };
+
+    // Load roads GeoJSON
+    fetch('data/roads.geojson')
       .then(res => res.json())
       .then(data => {
-        L.geoJSON(data).addTo(map);
+        L.geoJSON(data, {
+          style: roadsStyle,
+          onEachFeature: function (feature, layer) {
+            if (feature.properties) {
+              layer.bindPopup('<b>Road:</b> ' + (feature.properties.name || 'Unnamed'));
+            }
+          }
+        }).addTo(map);
       });
 
+    // Load rivers GeoJSON
+    fetch('data/rivers.geojson')
+      .then(res => res.json())
+      .then(data => {
+        L.geoJSON(data, {
+          style: riversStyle,
+          onEachFeature: function (feature, layer) {
+            if (feature.properties) {
+              layer.bindPopup('<b>River:</b> ' + (feature.properties.name || 'Unnamed'));
+            }
+          }
+        }).addTo(map);
+      });
   </script>
 </body>
 </html>
-

@@ -32,12 +32,13 @@
       align-items: center;
       gap: 1em;
     }
-    #controls label {
-      margin-right: 0.5em;
+    #layerContainer {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
     }
-    #downloads ul {
-      margin: 0;
-      padding-left: 1.2em;
+    #downloads {
+      /* Removed old downloads list since replaced */
     }
     #map {
       height: 80vh;
@@ -45,6 +46,11 @@
     select, button {
       padding: 0.5em;
       font-size: 1em;
+      cursor: pointer;
+    }
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
     }
     a {
       color: #0066cc;
@@ -61,23 +67,19 @@
     <h1>Athens GIS Viewer</h1>
   </header>
 
-  <!-- Controls: dropdown + basemap switcher + downloads -->
+  <!-- Controls: dropdown + basemap switcher + dynamic download button -->
   <div id="controls">
-    <div>
+
+    <div id="layerContainer">
       <label for="layerSelect">Select Layer:</label>
       <select id="layerSelect">
         <option value="">-- Choose --</option>
-        <!-- Options will be filled by JS -->
       </select>
+      <a id="downloadLink" href="#" download style="padding:0.5em 1em; background:#007acc; color:white; text-decoration:none; border-radius:4px; user-select:none; pointer-events:none; opacity:0.5;">
+        ⬇️ Download
+      </a>
     </div>
 
-    <div id="downloads">
-      <strong>Download GeoJSON:</strong>
-      <ul>
-        <li><a href="data/AthensTrain.geojson" download>⬇️ AthensTrain.geojson</a></li>
-        <!-- Add more links manually if needed -->
-      </ul>
-    </div>
   </div>
 
   <!-- Map container -->
@@ -86,10 +88,10 @@
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    // 1️⃣ Initialize map
+    // Initialize map
     var map = L.map('map').setView([37.98, 23.72], 12);
 
-    // 2️⃣ Basemaps
+    // Basemaps
     var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap'
     }).addTo(map);
@@ -106,25 +108,28 @@
 
     L.control.layers(baseMaps).addTo(map);
 
-    // 3️⃣ GeoJSON files (list them here!)
+    // GeoJSON files with full paths
     var geojsonFiles = [
       { name: "AthensTrain", file: "data/AthensTrain.geojson" }
-      // Add more: { name: "OtherLayer", file: "data/OtherLayer.geojson" }
+      // Add more here: { name: "OtherLayer", file: "data/OtherLayer.geojson" }
     ];
 
-    // 4️⃣ Keep track of loaded layers
+    // Object to store loaded layers
     var geojsonLayers = {};
 
-    // 5️⃣ Populate dropdown
+    // Elements
     var select = document.getElementById('layerSelect');
+    var downloadLink = document.getElementById('downloadLink');
+
+    // Populate dropdown with clean names (no folder or extension)
     geojsonFiles.forEach(function(layer) {
       var option = document.createElement('option');
-      option.value = layer.name;
+      option.value = layer.name; // simple name without extension/folder
       option.text = layer.name;
       select.add(option);
     });
 
-    // 6️⃣ Load all GeoJSONs (but do not show yet)
+    // Load GeoJSON files (do not show initially)
     geojsonFiles.forEach(function(layer) {
       fetch(layer.file)
         .then(res => res.json())
@@ -144,24 +149,34 @@
         });
     });
 
-    // 7️⃣ Show selected layer
+    // Show selected layer and update download link
     select.addEventListener('change', function() {
       var chosen = this.value;
 
-      // Remove all GeoJSON layers
+      // Remove all layers
       Object.values(geojsonLayers).forEach(l => map.removeLayer(l));
 
       if (chosen && geojsonLayers[chosen]) {
         map.addLayer(geojsonLayers[chosen]);
         map.fitBounds(geojsonLayers[chosen].getBounds());
+
+        // Enable download button and set href dynamically
+        var layerObj = geojsonFiles.find(l => l.name === chosen);
+        downloadLink.href = layerObj.file;
+        downloadLink.style.pointerEvents = 'auto';
+        downloadLink.style.opacity = 1;
+      } else {
+        // Disable download button when no layer chosen
+        downloadLink.href = '#';
+        downloadLink.style.pointerEvents = 'none';
+        downloadLink.style.opacity = 0.5;
       }
     });
 
-    // 8️⃣ Random color helper
+    // Random color helper
     function getRandomColor() {
       return '#' + Math.floor(Math.random()*16777215).toString(16);
     }
-
   </script>
 </body>
 </html>

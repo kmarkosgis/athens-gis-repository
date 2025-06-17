@@ -2,45 +2,49 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Athens GIS Map</title>
+  <title>My GIS Map Viewer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
-    body { margin: 0; }
-    #map { height: 100vh; }
-        #download-links {
-      padding: 10px;
-      background: #f0f0f0;
+    body { margin: 0; font-family: sans-serif; }
+    #map { height: 90vh; }
+    #downloads {
+      padding: 1em;
+      background: #f8f8f8;
+      border-bottom: 1px solid #ccc;
     }
+    #downloads ul { margin: 0; padding-left: 1.5em; }
   </style>
 </head>
 <body>
-  
-    <!-- ✅ Download section -->
-  <div id="download-links">
-    <h2>Download Data</h2>
-    <a href="data/AthensTrain.geojson" download>⬇️ Download AthensTrain GeoJSON</a>
+
+  <!-- ✅ Download links section -->
+  <div id="downloads">
+    <h2>Download GeoJSON Files</h2>
+    <ul>
+      <li><a href="data/AthensTrain.geojson" download>⬇️ AthensTrain.geojson</a></li>
+      <!-- Add more manual download links if needed -->
+    </ul>
+    <button onclick="showNextLayer()">▶️ Show Next Layer</button>
   </div>
-  
+
+  <!-- Map container -->
   <div id="map"></div>
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-
     // 1️⃣ Initialize map
-    var map = L.map('map').setView([37.98, 23.72], 10); // Athens by default
+    var map = L.map('map').setView([37.98, 23.72], 11); // Athens default
 
-    // 2️⃣ Define basemaps
+    // 2️⃣ Basemaps
     var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap contributors'
+      attribution: '© OpenStreetMap'
     }).addTo(map);
 
     var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      maxZoom: 19,
       attribution: 'Tiles © Esri'
     });
 
@@ -49,50 +53,63 @@
       "Satellite": satellite
     };
 
-    // 3️⃣ Add layer control for basemaps
-    L.control.layers(baseMaps).addTo(map);
+    // 3️⃣ Layer groups for GeoJSONs
+    var overlayMaps = {};
+    var geojsonLayers = []; // for cycling
 
-    // 4️⃣ List of GeoJSON files to load
-    // 🔑 NOTE: Browsers can’t list directories!
-    // You must provide the list or generate it server-side.
+    // 4️⃣ List of your GeoJSON files (uploaded manually)
     var geojsonFiles = [
-      'data/AthensTrain.geojson',
-    
-      // Add more here or generate dynamically on server
+      "data/AthensTrain.geojson"
+      // Add more here: "data/OtherFile.geojson"
     ];
 
-    // 5️⃣ Load each GeoJSON with styling and popup
+    // 5️⃣ Load each GeoJSON and add to map + layer control
     geojsonFiles.forEach(function(file) {
       fetch(file)
         .then(res => res.json())
         .then(data => {
-          L.geoJSON(data, {
-            style: function(feature) {
-              return {
-                color: getRandomColor(),
-                weight: 2
-              };
+          var layer = L.geoJSON(data, {
+            style: function() {
+              return { color: getRandomColor(), weight: 2 };
             },
-            onEachFeature: function (feature, layer) {
+            onEachFeature: function(feature, layer) {
               var props = feature.properties;
-              var content = '<b>Properties:</b><br>';
+              var popup = '<b>Properties:</b><br>';
               for (var key in props) {
-                content += key + ': ' + props[key] + '<br>';
+                popup += key + ': ' + props[key] + '<br>';
               }
-              layer.bindPopup(content);
+              layer.bindPopup(popup);
             }
-          }).addTo(map);
+          });
+          layer.addTo(map); // add by default
+          overlayMaps[file] = layer;
+          geojsonLayers.push(layer);
+          // Update layer control
+          layersControl.addOverlay(layer, file);
         });
     });
 
-    // 6️⃣ Utility to get random color for layers
+    // 6️⃣ Add layer switcher control
+    var layersControl = L.control.layers(baseMaps, overlayMaps).addTo(map);
+
+    // 7️⃣ Random color helper
     function getRandomColor() {
-      var letters = '0123456789ABCDEF';
-      var color = '#';
-      for (var i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
+      return '#' + Math.floor(Math.random()*16777215).toString(16);
+    }
+
+    // 8️⃣ Cycle through GeoJSON layers
+    var currentLayerIndex = 0;
+
+    function showNextLayer() {
+      // Hide all layers
+      geojsonLayers.forEach(l => map.removeLayer(l));
+      // Show next
+      var layer = geojsonLayers[currentLayerIndex];
+      if (layer) {
+        map.addLayer(layer);
+        map.fitBounds(layer.getBounds());
       }
-      return color;
+      currentLayerIndex = (currentLayerIndex + 1) % geojsonLayers.length;
     }
 
   </script>

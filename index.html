@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>My Open GIS Map</title>
+  <title>Athens GIS Map</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Leaflet CSS -->
@@ -18,53 +18,72 @@
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    // Initialize the map
-    var map = L.map('map').setView([37.98, 23.72], 10); // Example: Athens
 
-    // Add OpenStreetMap base
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    // 1️⃣ Initialize map
+    var map = L.map('map').setView([37.98, 23.72], 10); // Athens by default
+
+    // 2️⃣ Define basemaps
+    var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // Define style for roads
-    var roadsStyle = {
-      color: "#ff0000",
-      weight: 2
+    var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19,
+      attribution: 'Tiles © Esri'
+    });
+
+    var baseMaps = {
+      "OpenStreetMap": osm,
+      "Satellite": satellite
     };
 
-    // Define style for rivers
-    var riversStyle = {
-      color: "#0000ff",
-      weight: 2
-    };
+    // 3️⃣ Add layer control for basemaps
+    L.control.layers(baseMaps).addTo(map);
 
-    // Load roads GeoJSON
-    fetch('data/roads.geojson')
-      .then(res => res.json())
-      .then(data => {
-        L.geoJSON(data, {
-          style: roadsStyle,
-          onEachFeature: function (feature, layer) {
-            if (feature.properties) {
-              layer.bindPopup('<b>Road:</b> ' + (feature.properties.name || 'Unnamed'));
-            }
-          }
-        }).addTo(map);
-      });
+    // 4️⃣ List of GeoJSON files to load
+    // 🔑 NOTE: Browsers can’t list directories!
+    // You must provide the list or generate it server-side.
+    var geojsonFiles = [
+      'data/AthensTrain.geojson',
+    
+      // Add more here or generate dynamically on server
+    ];
 
-    // Load rivers GeoJSON
-    fetch('data/rivers.geojson')
-      .then(res => res.json())
-      .then(data => {
-        L.geoJSON(data, {
-          style: riversStyle,
-          onEachFeature: function (feature, layer) {
-            if (feature.properties) {
-              layer.bindPopup('<b>River:</b> ' + (feature.properties.name || 'Unnamed'));
+    // 5️⃣ Load each GeoJSON with styling and popup
+    geojsonFiles.forEach(function(file) {
+      fetch(file)
+        .then(res => res.json())
+        .then(data => {
+          L.geoJSON(data, {
+            style: function(feature) {
+              return {
+                color: getRandomColor(),
+                weight: 2
+              };
+            },
+            onEachFeature: function (feature, layer) {
+              var props = feature.properties;
+              var content = '<b>Properties:</b><br>';
+              for (var key in props) {
+                content += key + ': ' + props[key] + '<br>';
+              }
+              layer.bindPopup(content);
             }
-          }
-        }).addTo(map);
-      });
+          }).addTo(map);
+        });
+    });
+
+    // 6️⃣ Utility to get random color for layers
+    function getRandomColor() {
+      var letters = '0123456789ABCDEF';
+      var color = '#';
+      for (var i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    }
+
   </script>
 </body>
 </html>

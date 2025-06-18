@@ -208,16 +208,16 @@ for (var category in layerCategories) {
             var layer = L.geoJSON(data, {
               style: function (feature) {
                 return {
-                  color: 'blue',
-                  weight: 2,
-                  fillColor: 'lightblue',
-                  fillOpacity: 0.3
+                  color: 'grey',
+                  weight: 1,
+                  fillColor: 'grey',
+                  fillOpacity: 0.5
                 };
               },
               pointToLayer: function (feature, latlng) {
                 return L.circleMarker(latlng, {
-                  radius: 6,
-                  fillColor: 'red',
+                  radius: 5,
+                  fillColor: 'grey',
                   color: '#000',
                   weight: 1,
                   opacity: 1,

@@ -126,14 +126,14 @@
 
     // Add zoom in top-right
   L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+      // Add basemap switcher in top-right (or elsewhere)
+  L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
   
   var baseMaps = {
     "OpenStreetMap": osm,
     "Esri Satellite": esriSat
   };
-
-    // Add basemap switcher in top-right (or elsewhere)
-  L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
 
   // === Define layers by category ===
   var layerCategories = {

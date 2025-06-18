@@ -24,20 +24,21 @@
       z-index: 1000;
     }
 
-#layerControl {
-  position: absolute;
-  top: 60px;      /* below header */
-  bottom: 40px;   /* above footer */
-  left: 10px;     /* left side */
-  width: 250px;   /* adjust width as needed */
-  background: white;
-  padding: 10px;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  overflow-y: auto;     /* makes it scrollable */
-  z-index: 999;
-  font-size: 12px;  /* sets base font size for all text inside the sidebar */
-}
+    #layerControl {
+      position: absolute;
+      top: 60px;      /* below header */
+      bottom: 40px;   /* above footer */
+      left: 10px;     /* left side */
+      width: 250px;   /* adjust width as needed */
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      overflow-y: auto;     /* makes it scrollable */
+      z-index: 999;
+      font-size: 12px;
+    }
+
     #layerControl h4 {
       margin: 8px 0 4px;
       font-size: 14px;
@@ -55,22 +56,35 @@
       z-index: 1000;
     }
 
+    .layer-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+
+    .layer-item label {
+      flex-grow: 1;
+      margin-left: 4px;
+    }
+
     .download-button {
       display: inline-block;
       background: #007BFF;
       color: white;
       border: none;
       padding: 2px 6px;
-      margin-left: 8px;
       border-radius: 4px;
       text-decoration: none;
       font-size: 12px;
       cursor: pointer;
       line-height: 1;
-  }
-  .download-button:hover {
-    background: #0056b3;
-  }
+      flex-shrink: 0;
+    }
+
+    .download-button:hover {
+      background: #0056b3;
+    }
   </style>
 </head>
 <body>
@@ -85,7 +99,7 @@
 </div>
 
 <div id="footer">
-  Created by Konstantinos Markos | Phd Candidate, SRSGE, NTUA
+  Created by Konstantinos Markos | PhD Candidate, SRSGE, NTUA
 </div>
 
 <!-- Leaflet JS -->
@@ -120,11 +134,11 @@
       { name: "Piraeus", file: "Piraeus.json" }
     ],
     "Transportation": [
-     { name: "Athens Train/OSE", file: "AthensTrain.geojson" },
+      { name: "Athens Train/OSE", file: "AthensTrain.geojson" },
       { name: "Athens Tram", file: "AthensTram.geojson" }
     ],
     "Green Spaces": [
-     { name: "Athens Center Green Spaces", file: "AthensCenterGreenSpaces.geojson" }
+      { name: "Athens Center Green Spaces", file: "AthensCenterGreenSpaces.geojson" }
     ]
   };
 
@@ -133,7 +147,7 @@
 
   var controlDiv = document.getElementById('layerControl');
 
-  // === Generate checkboxes and download links ===
+  // === Generate checkboxes and download links inside flex containers ===
   for (var category in layerCategories) {
     var catHeader = document.createElement('h4');
     catHeader.textContent = category;
@@ -142,6 +156,10 @@
     layerCategories[category].forEach(function(layerInfo) {
       var id = layerInfo.name.replace(/\s+/g, '_');
 
+      // Create flex container
+      var layerItem = document.createElement('div');
+      layerItem.className = 'layer-item';
+
       var checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
       checkbox.id = id;
@@ -149,9 +167,8 @@
 
       var label = document.createElement('label');
       label.htmlFor = id;
-      label.appendChild(document.createTextNode(' ' + layerInfo.name));
+      label.appendChild(document.createTextNode(layerInfo.name));
 
-      // Download button (hidden until checked)
       var download = document.createElement('a');
       download.href = 'data/' + layerInfo.file;
       download.download = layerInfo.file;
@@ -159,21 +176,22 @@
       download.className = 'download-button';
       download.style.display = 'none';
 
+      // Add elements to flex container
+      layerItem.appendChild(checkbox);
+      layerItem.appendChild(label);
+      layerItem.appendChild(download);
 
-      controlDiv.appendChild(checkbox);
-      controlDiv.appendChild(label);
-      controlDiv.appendChild(download);
-      controlDiv.appendChild(document.createElement('br'));
+      // Add container to sidebar
+      controlDiv.appendChild(layerItem);
 
+      // Checkbox logic
       checkbox.addEventListener('change', function() {
         var filename = this.dataset.filename;
-        var link = this.nextSibling.nextSibling; // the download link
+        var link = this.parentElement.querySelector('.download-button');
 
         if (this.checked) {
-          // Show download link
-          link.style.display = 'inline';
+          link.style.display = 'inline-block';
 
-          // Load and add layer
           fetch('data/' + filename)
             .then(res => res.json())
             .then(data => {
@@ -194,10 +212,7 @@
               map.fitBounds(layer.getBounds());
             });
         } else {
-          // Hide download link
           link.style.display = 'none';
-
-          // Remove layer
           if (geojsonLayers[filename]) {
             map.removeLayer(geojsonLayers[filename]);
             delete geojsonLayers[filename];
@@ -212,7 +227,6 @@
     var colors = ['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999'];
     return colors[Math.floor(Math.random() * colors.length)];
   }
-
 </script>
 
 </body>

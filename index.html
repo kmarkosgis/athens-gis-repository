@@ -2,18 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Athens GIS </title>
+  <title>Athens GIS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
   <style>
-    body, html { margin: 0; padding: 0; height: 100%; }
+    body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; }
     #map { width: 100%; height: 100%; }
+
+    header {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      background: #333;
+      color: white;
+      text-align: center;
+      padding: 10px;
+      font-size: 1.2em;
+      z-index: 1000;
+    }
+
     #layerControl {
       position: absolute;
-      top: 10px;
+      top: 60px;
       right: 10px;
       background: white;
       padding: 10px;
@@ -21,23 +34,35 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       max-height: 400px;
       overflow-y: auto;
-      font-family: sans-serif;
+      z-index: 999;
     }
+
+    #layerControl h4 {
+      margin: 8px 0 4px;
+      font-size: 1em;
+    }
+
     #footer {
       position: absolute;
       bottom: 0;
       width: 100%;
-      background: rgba(255, 255, 255, 0.8);
+      background: rgba(51, 51, 51, 0.9);
+      color: white;
       text-align: center;
       padding: 5px;
-      font-family: sans-serif;
+      font-size: 0.9em;
+      z-index: 1000;
     }
-    h4 {
-      margin: 8px 0 4px;
+
+    .download-link {
+      font-size: 0.8em;
+      margin-left: 20px;
     }
   </style>
 </head>
 <body>
+
+<header>Athens GIS Viewer</header>
 
 <div id="map"></div>
 
@@ -54,10 +79,9 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-  // Initialize map
+  // === Initialize map ===
   var map = L.map('map').setView([37.98, 23.72], 12);
 
-  // Basemaps
   var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap'
   }).addTo(map);
@@ -73,7 +97,7 @@
 
   L.control.layers(baseMaps).addTo(map);
 
-  // === Define layers grouped by categories ===
+  // === Define layers by category ===
   var layerCategories = {
     "Administrative Boundaries": [
       { name: "Athens Center Sector", file: "AthensCenterSector.json" },
@@ -91,12 +115,12 @@
     ]
   };
 
-  // Store active layers
+  // === Active layers ===
   var geojsonLayers = {};
 
   var controlDiv = document.getElementById('layerControl');
 
-  // === Generate categories and checkboxes ===
+  // === Generate checkboxes and download links ===
   for (var category in layerCategories) {
     var catHeader = document.createElement('h4');
     catHeader.textContent = category;
@@ -114,13 +138,27 @@
       label.htmlFor = id;
       label.appendChild(document.createTextNode(' ' + layerInfo.name));
 
+      // Download link (hidden until checked)
+      var download = document.createElement('a');
+      download.href = 'data/' + layerInfo.file;
+      download.download = layerInfo.file;
+      download.textContent = 'Download';
+      download.className = 'download-link';
+      download.style.display = 'none';
+
       controlDiv.appendChild(checkbox);
       controlDiv.appendChild(label);
+      controlDiv.appendChild(download);
       controlDiv.appendChild(document.createElement('br'));
 
       checkbox.addEventListener('change', function() {
         var filename = this.dataset.filename;
+        var link = this.nextSibling.nextSibling; // the download link
+
         if (this.checked) {
+          // Show download link
+          link.style.display = 'inline';
+
           // Load and add layer
           fetch('data/' + filename)
             .then(res => res.json())
@@ -142,6 +180,9 @@
               map.fitBounds(layer.getBounds());
             });
         } else {
+          // Hide download link
+          link.style.display = 'none';
+
           // Remove layer
           if (geojsonLayers[filename]) {
             map.removeLayer(geojsonLayers[filename]);

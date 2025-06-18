@@ -158,59 +158,62 @@
   var controlDiv = document.getElementById('layerControl');
 
   // === Generate checkboxes and download links inside flex containers ===
-  for (var category in layerCategories) {
-    var catHeader = document.createElement('h4');
-    catHeader.textContent = category;
-    controlDiv.appendChild(catHeader);
+for (var category in layerCategories) {
+  var catHeader = document.createElement('h4');
+  catHeader.textContent = category;
+  controlDiv.appendChild(catHeader);
 
-    layerCategories[category].forEach(function(layerInfo) {
-      var id = layerInfo.name.replace(/\s+/g, '_');
+  layerCategories[category].forEach(function(layerInfo) {
+    var id = layerInfo.name.replace(/\s+/g, '_');
 
-      // Create flex container
-      var layerItem = document.createElement('div');
-      layerItem.className = 'layer-item';
+    // Create flex row container
+    var layerItem = document.createElement('div');
+    layerItem.className = 'layer-item'; // Add a CSS class
 
-      var checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.id = id;
-      checkbox.dataset.filename = layerInfo.file;
+    var checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = id;
+    checkbox.dataset.filename = layerInfo.file;
 
-      var label = document.createElement('label');
-      label.htmlFor = id;
-      label.appendChild(document.createTextNode(layerInfo.name));
+    var label = document.createElement('label');
+    label.htmlFor = id;
+    label.textContent = layerInfo.name;
 
-      var download = document.createElement('a');
-      download.href = 'data/' + layerInfo.file;
-      download.download = layerInfo.file;
-      download.innerHTML = '⬇️';
-      download.className = 'download-button';
-      download.style.display = 'none';
+    var download = document.createElement('a');
+    download.href = 'data/' + layerInfo.file;
+    download.download = layerInfo.file;
+    download.innerHTML = '⬇️';
+    download.className = 'download-button';
+    download.style.display = 'none';
 
-      // Add elements to flex container
-      layerItem.appendChild(checkbox);
-      layerItem.appendChild(label);
-      layerItem.appendChild(download);
+    // Add to flex row container
+    layerItem.appendChild(checkbox);
+    layerItem.appendChild(label);
+    layerItem.appendChild(download);
 
-      // Add container to sidebar
-      controlDiv.appendChild(layerItem);
+    // Append the row to sidebar
+    controlDiv.appendChild(layerItem);
 
-      // Checkbox logic
-      checkbox.addEventListener('change', function() {
-        var filename = this.dataset.filename;
-        var link = this.parentElement.querySelector('.download-button');
+    // Checkbox logic
+    checkbox.addEventListener('change', function() {
+      var filename = this.dataset.filename;
+      var link = this.parentElement.querySelector('.download-button');
 
-        if (this.checked) {
-          link.style.display = 'inline-block';
+      if (this.checked) {
+        link.style.display = 'inline-block';
 
-          fetch('data/' + filename)
-            .then(res => res.json())
-            .then(data => {
-              var layer = L.geoJSON(data, {
-                  color: 'blue',          // border
+        fetch('data/' + filename)
+          .then(res => res.json())
+          .then(data => {
+            var layer = L.geoJSON(data, {
+              style: function (feature) {
+                return {
+                  color: 'blue',
                   weight: 2,
-                  fillColor: 'lightblue', // inside
+                  fillColor: 'lightblue',
                   fillOpacity: 0.3
-                },
+                };
+              },
               pointToLayer: function (feature, latlng) {
                 return L.circleMarker(latlng, {
                   radius: 6,
@@ -221,26 +224,27 @@
                   fillOpacity: 0.8
                 });
               },
-                onEachFeature: function (feature, layer) {
-                  if (feature.properties) {
-                    var popupContent = '<pre>' + JSON.stringify(feature.properties, null, 2) + '</pre>';
-                    layer.bindPopup(popupContent);
-                  }
+              onEachFeature: function (feature, layer) {
+                if (feature.properties) {
+                  var popupContent = '<pre>' + JSON.stringify(feature.properties, null, 2) + '</pre>';
+                  layer.bindPopup(popupContent);
                 }
-              }).addTo(map);
-              geojsonLayers[filename] = layer;
-              map.fitBounds(layer.getBounds());
-            });
-        } else {
-          link.style.display = 'none';
-          if (geojsonLayers[filename]) {
-            map.removeLayer(geojsonLayers[filename]);
-            delete geojsonLayers[filename];
-          }
+              }
+            }).addTo(map);
+            geojsonLayers[filename] = layer;
+            map.fitBounds(layer.getBounds());
+          });
+      } else {
+        link.style.display = 'none';
+        if (geojsonLayers[filename]) {
+          map.removeLayer(geojsonLayers[filename]);
+          delete geojsonLayers[filename];
         }
-      });
+      }
     });
-  }
+  });
+}
+
 
   // === Random color helper ===
   function getRandomColor() {

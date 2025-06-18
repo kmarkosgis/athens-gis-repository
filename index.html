@@ -54,10 +54,21 @@
       z-index: 1000;
     }
 
-    .download-link {
-      font-size: 0.8em;
-      margin-left: 20px;
-    }
+    .download-button {
+  display: inline-block;
+  background: #007BFF;
+  color: white;
+  border: none;
+  padding: 4px 6px;
+  margin-left: 8px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 14px;
+  cursor: pointer;
+  }
+  .download-button:hover {
+    background: #0056b3;
+  }
   </style>
 </head>
 <body>
@@ -138,13 +149,14 @@
       label.htmlFor = id;
       label.appendChild(document.createTextNode(' ' + layerInfo.name));
 
-      // Download link (hidden until checked)
+      // Download button (hidden until checked)
       var download = document.createElement('a');
       download.href = 'data/' + layerInfo.file;
       download.download = layerInfo.file;
-      download.textContent = 'Download';
-      download.className = 'download-link';
+      download.innerHTML = '⬇️';
+      download.className = 'download-button';
       download.style.display = 'none';
+
 
       controlDiv.appendChild(checkbox);
       controlDiv.appendChild(label);

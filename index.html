@@ -23,7 +23,10 @@
       font-size: 1.2em;
       z-index: 1000;
     }
-
+    .leaflet-control-layers {
+      top: 80px !important;   /* adjust top offset here */
+      right: 10px !important; /* keep right */
+    }
     #layerControl {
       position: absolute;
       top: 60px;      /* below header */
@@ -109,6 +112,10 @@
   // === Initialize map ===
   var map = L.map('map').setView([37.98, 23.72], 12);
 
+  var map = L.map('map', {
+    zoomControl: false  // turn off default zoom control
+  }).setView([37.98, 23.72], 12);
+
   var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap'
   }).addTo(map);
@@ -117,12 +124,16 @@
     attribution: 'Tiles &copy; Esri'
   });
 
+    // Add zoom in top-right
+  L.control.zoom({ position: 'bottomright' }).addTo(map);
+  
   var baseMaps = {
     "OpenStreetMap": osm,
     "Esri Satellite": esriSat
   };
 
-  L.control.layers(baseMaps).addTo(map);
+    // Add basemap switcher in top-right (or elsewhere)
+  L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
 
   // === Define layers by category ===
   var layerCategories = {
@@ -196,11 +207,21 @@
             .then(res => res.json())
             .then(data => {
               var layer = L.geoJSON(data, {
-                style: {
-                  color: getRandomColor(),
+                  color: 'blue',          // border
                   weight: 2,
+                  fillColor: 'lightblue', // inside
                   fillOpacity: 0.3
                 },
+              pointToLayer: function (feature, latlng) {
+                return L.circleMarker(latlng, {
+                  radius: 6,
+                  fillColor: 'red',
+                  color: '#000',
+                  weight: 1,
+                  opacity: 1,
+                  fillOpacity: 0.8
+                });
+              },
                 onEachFeature: function (feature, layer) {
                   if (feature.properties) {
                     var popupContent = '<pre>' + JSON.stringify(feature.properties, null, 2) + '</pre>';

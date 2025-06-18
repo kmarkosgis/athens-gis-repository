@@ -2,196 +2,163 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Athens GIS</title>
+  <title>Athens GIS Viewer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
   <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #f5f5f5;
-      color: #333;
+    body, html { margin: 0; padding: 0; height: 100%; }
+    #map { width: 100%; height: 100%; }
+    #layerControl {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: sans-serif;
     }
-    header {
-      padding: 1em;
-      background: #004d99;
-      color: white;
-    }
-    footer {
+    #footer {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.8);
       text-align: center;
-      padding: 1em;
-      background: #004d99;
-      color: white;
-      font-size: 0.9em;
+      padding: 5px;
+      font-family: sans-serif;
     }
-    header h1 {
-      margin: 0;
-      font-size: 1.5em;
-    }
-    #controls {
-      padding: 1em;
-      background: #e9f2fb;
-      border-bottom: 2px solid #ccc;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 1em;
-    }
-    #layerContainer {
-      display: flex;
-      align-items: center;
-      gap: 0.5em;
-    }
-    #map {
-      height: 80vh;
-    }
-    select, button {
-      padding: 0.5em;
-      font-size: 1em;
-      cursor: pointer;
-    }
-    button:disabled {
-      cursor: not-allowed;
-      opacity: 0.6;
-    }
-    a {
-      color: #0066cc;
-      text-decoration: none;
-    }
-    a:hover {
-      text-decoration: underline;
+    h4 {
+      margin: 8px 0 4px;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>Athens GIS </h1>
-  </header>
+<div id="map"></div>
 
-  <!-- Controls: dropdown + basemap switcher + dynamic download button -->
-  <div id="controls">
+<div id="layerControl">
+  <strong>Layers:</strong><br>
+  <!-- Categories and checkboxes will be generated here -->
+</div>
 
-    <div id="layerContainer">
-      <label for="layerSelect">Select Layer:</label>
-      <select id="layerSelect">
-        <option value="">-- Choose --</option>
-      </select>
-      <a id="downloadLink" href="#" download style="padding:0.5em 1em; background:#007acc; color:white; text-decoration:none; border-radius:4px; user-select:none; pointer-events:none; opacity:0.5;">
-        ⬇️ Download
-      </a>
-    </div>
+<div id="footer">
+  Created by Konstantinos Markos | Athens GIS Projects
+</div>
 
-  </div>
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-  <!-- Map container -->
-  <div id="map"></div>
+<script>
+  // Initialize map
+  var map = L.map('map').setView([37.98, 23.72], 12);
 
-  <footer>
-  <p>Created by Konstantinos Markos &mdash; PhD candidate, SRSGE, NTUA </p>
-  </footer>
+  // Basemaps
+  var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap'
+  }).addTo(map);
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
-    // Initialize map
-    var map = L.map('map').setView([37.98, 23.72], 12);
+  var esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri'
+  });
 
-    // Basemaps
-    var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap'
-    }).addTo(map);
+  var baseMaps = {
+    "OpenStreetMap": osm,
+    "Esri Satellite": esriSat
+  };
 
-    var satellite = L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      { attribution: 'Tiles © Esri' }
-    );
+  L.control.layers(baseMaps).addTo(map);
 
-    var baseMaps = {
-      "OpenStreetMap": osm,
-      "Satellite": satellite
-    };
-
-    L.control.layers(baseMaps).addTo(map);
-
-    // GeoJSON files with full paths
-    var geojsonFiles = [
-      { name: "Athens Train/OSE", file: "data/AthensTrain.geojson" },
-      { name: "Athens Tram", file: "data/AthensTram.geojson" },
-      { name: "Athens Center Green Spaces", file: "data/AthensCenterGreenSpaces.geojson" },
+  // === Define layers grouped by categories ===
+  var layerCategories = {
+    "Administrative Boundaries": [
       { name: "Athens Center Sector", file: "data/AthensCenterSector.json" },
       { name: "Athens South Sector", file: "data/AthensSouthSector.json" },
       { name: "Athens North Sector", file: "data/AthensNorthSector.json" },
       { name: "Athens West Sector", file: "data/AthensWestSector.json" },
-      { name: "Piraeus", file: "data/Piraeus.json" },
-      // Add more here: { name: "OtherLayer", file: "data/OtherLayer.geojson" }
-    ];
+      { name: "Piraeus", file: "data/Piraeus.json" }
+    ],
+    "Transportation": [
+     { name: "Athens Train/OSE", file: "data/AthensTrain.geojson" },
+      { name: "Athens Tram", file: "data/AthensTram.geojson" }
+    ],
+    "Green Spaces": [
+     { name: "Athens Center Green Spaces", file: "data/AthensCenterGreenSpaces.geojson" }
+    ]
+  };
 
-    // Object to store loaded layers
-    var geojsonLayers = {};
+  // Store active layers
+  var geojsonLayers = {};
 
-    // Elements
-    var select = document.getElementById('layerSelect');
-    var downloadLink = document.getElementById('downloadLink');
+  var controlDiv = document.getElementById('layerControl');
 
-    // Populate dropdown with clean names (no folder or extension)
-    geojsonFiles.forEach(function(layer) {
-      var option = document.createElement('option');
-      option.value = layer.name; // simple name without extension/folder
-      option.text = layer.name;
-      select.add(option);
+  // === Generate categories and checkboxes ===
+  for (var category in layerCategories) {
+    var catHeader = document.createElement('h4');
+    catHeader.textContent = category;
+    controlDiv.appendChild(catHeader);
+
+    layerCategories[category].forEach(function(layerInfo) {
+      var id = layerInfo.name.replace(/\s+/g, '_');
+
+      var checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.id = id;
+      checkbox.dataset.filename = layerInfo.file;
+
+      var label = document.createElement('label');
+      label.htmlFor = id;
+      label.appendChild(document.createTextNode(' ' + layerInfo.name));
+
+      controlDiv.appendChild(checkbox);
+      controlDiv.appendChild(label);
+      controlDiv.appendChild(document.createElement('br'));
+
+      checkbox.addEventListener('change', function() {
+        var filename = this.dataset.filename;
+        if (this.checked) {
+          // Load and add layer
+          fetch('data/' + filename)
+            .then(res => res.json())
+            .then(data => {
+              var layer = L.geoJSON(data, {
+                style: {
+                  color: getRandomColor(),
+                  weight: 2,
+                  fillOpacity: 0.3
+                },
+                onEachFeature: function (feature, layer) {
+                  if (feature.properties) {
+                    var popupContent = '<pre>' + JSON.stringify(feature.properties, null, 2) + '</pre>';
+                    layer.bindPopup(popupContent);
+                  }
+                }
+              }).addTo(map);
+              geojsonLayers[filename] = layer;
+              map.fitBounds(layer.getBounds());
+            });
+        } else {
+          // Remove layer
+          if (geojsonLayers[filename]) {
+            map.removeLayer(geojsonLayers[filename]);
+            delete geojsonLayers[filename];
+          }
+        }
+      });
     });
+  }
 
-    // Load GeoJSON files (do not show initially)
-    geojsonFiles.forEach(function(layer) {
-      fetch(layer.file)
-        .then(res => res.json())
-        .then(data => {
-          var gLayer = L.geoJSON(data, {
-            style: { color: getRandomColor(), weight: 2 },
-            onEachFeature: function(feature, layer) {
-              var props = feature.properties;
-              var popup = '<b>Properties:</b><br>';
-              for (var key in props) {
-                popup += key + ': ' + props[key] + '<br>';
-              }
-              layer.bindPopup(popup);
-            }
-          });
-          geojsonLayers[layer.name] = gLayer;
-        });
-    });
+  // === Random color helper ===
+  function getRandomColor() {
+    var colors = ['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999'];
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
 
-    // Show selected layer and update download link
-    select.addEventListener('change', function() {
-      var chosen = this.value;
+</script>
 
-      // Remove all layers
-      Object.values(geojsonLayers).forEach(l => map.removeLayer(l));
-
-      if (chosen && geojsonLayers[chosen]) {
-        map.addLayer(geojsonLayers[chosen]);
-        map.fitBounds(geojsonLayers[chosen].getBounds());
-
-        // Enable download button and set href dynamically
-        var layerObj = geojsonFiles.find(l => l.name === chosen);
-        downloadLink.href = layerObj.file;
-        downloadLink.style.pointerEvents = 'auto';
-        downloadLink.style.opacity = 1;
-      } else {
-        // Disable download button when no layer chosen
-        downloadLink.href = '#';
-        downloadLink.style.pointerEvents = 'none';
-        downloadLink.style.opacity = 0.5;
-      }
-    });
-
-    // Random color helper
-    function getRandomColor() {
-      return '#' + Math.floor(Math.random()*16777215).toString(16);
-    }
-  </script>
 </body>
 </html>

@@ -236,18 +236,18 @@ for (var category in layerCategories) {
                 return {
                   color: 'blue',
                   weight: 1,
-                  fillColor: 'blue',
+                  fillColor: 'lightblue',
                   fillOpacity: 0.7
                 };
               },
               pointToLayer: function (feature, latlng) {
                 return L.circleMarker(latlng, {
-                  radius: 4,
+                  radius: 3,
                   fillColor: '#40b3ff',
                   color: '#40b3ff',
                   weight: 1,
                   opacity: 1,
-                  fillOpacity: 0.8
+                  fillOpacity: 0.5
                 });
               },
               onEachFeature: function (feature, layer) {

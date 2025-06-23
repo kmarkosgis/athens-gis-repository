@@ -151,14 +151,16 @@
       { name: "Athens North Sector", file: "AthensNorthSector.json" },
       { name: "Athens West Sector", file: "AthensWestSector.json" },
       { name: "Athens Western Area", file: "AthensWest.json" },
-      { name: "Athens Eastern Area", file: "AthensEast.json" },
+      { name: "Athens Eastern Area", file: "AthensEast.geojson" },
       { name: "Piraeus", file: "Piraeus.json" }
     ],
     "Transportation": [
-      { name: "Metro Stations 1, 2 & 3", file: "AthensMetro123.geojson" },
+      { name: "Metro 1, 2 & 3 Stations", file: "AthensMetro123.geojson" },
+      { name: "Metro 4 Phase A Stations ", file: "Metro4PhaseA.json" },
       { name: "Train/OSE Stations", file: "AthensTrain.geojson" },
       { name: "Tram Stations", file: "AthensTram.geojson" },
-      { name: "Highways", file: "AthensHighways.json" }
+      { name: "Highways", file: "AthensHighways.json" },
+      { name: "Avenues", file: "AthensAvenues.json" }
     ],
     "Nature": [
       { name: "Athens Center Green Spaces", file: "AthensGreenCenter.geojson" },
@@ -226,17 +228,17 @@ for (var category in layerCategories) {
                   color: 'lightblue',
                   weight: 1,
                   fillColor: 'lightblue',
-                  fillOpacity: 0.5
+                  fillOpacity: 0.7
                 };
               },
               pointToLayer: function (feature, latlng) {
                 return L.circleMarker(latlng, {
-                  radius: 5,
-                  fillColor: 'lightblue',
+                  radius: 4,
+                  fillColor: 'lightgrey',
                   color: '#000',
                   weight: 1,
                   opacity: 1,
-                  fillOpacity: 0.8
+                  fillOpacity: 0.9
                 });
               },
               onEachFeature: function (feature, layer) {

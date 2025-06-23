@@ -117,7 +117,16 @@
   
     // Add zoom in top-right
   L.control.zoom({ position: 'bottomright' }).addTo(map);
-  
+
+  var positron = L.tileLayer(
+  'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  {
+    attribution: '&copy; <a href="https://carto.com/">CartoDB</a>',
+    subdomains: 'abcd',
+    maxZoom: 19
+  }
+  );
+
   var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap'
   }).addTo(map);
@@ -135,8 +144,9 @@
   });
 
   var baseMaps = {
+    "Carto Light BaseMap": positron,
+    "Carto Dark BaseMap": darkMatter,
     "OpenStreetMap": osm,
-    "Dark Matter": darkMatter,
     "Esri Satellite": esriSat
   };
 
@@ -162,7 +172,7 @@
       { name: "Highways", file: "AthensHighways.json" },
       { name: "Avenues", file: "AthensAvenues.json" }
     ],
-    "Nature": [
+    "Environment": [
       { name: "Athens Center Green Spaces", file: "AthensGreenCenter.geojson" },
       { name: "Athens West Green Spaces", file: "AthensGreenWest.geojson" },
       { name: "Piraeus Green Spaces", file: "PiraeusGreen.geojson" }
@@ -234,11 +244,9 @@ for (var category in layerCategories) {
               pointToLayer: function (feature, latlng) {
                 return L.circleMarker(latlng, {
                   radius: 4,
-                  fillColor: 'blue',
-                  color: 'blue',
-                  weight: 1,
-                  opacity: 1,
-                  fillOpacity: 0.9
+                  fillColor: rgba(64, 179, 255, 0.9),
+                  color: rgba(64, 179, 255, 1),
+                  weight: 1
                 });
               },
               onEachFeature: function (feature, layer) {

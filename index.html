@@ -89,6 +89,22 @@
       top: 70px !important;   /* adjust top offset here */
       right: 10px !important; /* keep right */
     }
+    .leaflet-popup-content table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    
+    .leaflet-popup-content th,
+    .leaflet-popup-content td {
+      border-bottom: 1px solid #ddd;
+      padding: 4px;
+      font-size: 12px;
+    }
+    
+    .leaflet-popup-content th {
+      background: #f0f0f0;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -254,7 +270,11 @@ for (var category in layerCategories) {
               },
               onEachFeature: function (feature, layer) {
                 if (feature.properties) {
-                  var popupContent = '<pre>' + JSON.stringify(feature.properties, null, 2) + '</pre>';
+                  var popupContent = '<table>';
+                  for (var key in feature.properties) {
+                    popupContent += '<tr><th style="text-align:left; padding-right:5px;">' + key + '</th><td>' + feature.properties[key] + '</td></tr>';
+                  }
+                  popupContent += '</table>';
                   layer.bindPopup(popupContent);
                 }
               }

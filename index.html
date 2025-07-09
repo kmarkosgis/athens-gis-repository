@@ -324,6 +324,7 @@ for (var category in layerCategories) {
     checkbox.addEventListener('change', function() {
       var filename = this.dataset.filename;
       var link = this.parentElement.querySelector('.download-button');
+      var infoBox = document.getElementById('layerInfoBox');
 
       if (this.checked) {
         link.style.display = 'inline-block';
@@ -362,7 +363,7 @@ for (var category in layerCategories) {
               }
             }).addTo(map);
             geojsonLayers[filename] = layer;
-            map.fitBounds(layer.getBounds());
+            setTimeout(() => map.fitBounds(layer.getBounds()), 100);
           });
                 // Load TXT info and show in info box
         var txtFile = filename.replace(/\.[^/.]+$/, "") + ".txt"; // same name but .txt
@@ -375,6 +376,7 @@ for (var category in layerCategories) {
           })
           .catch(err => {
             console.log('No info file found for ' + filename);
+            infoBox.style.display = 'none'; // Optional: hide if not found
           });
       } else {
         link.style.display = 'none';
@@ -382,8 +384,6 @@ for (var category in layerCategories) {
           map.removeLayer(geojsonLayers[filename]);
           delete geojsonLayers[filename];
         }
-         // Optionally: hide info box if you want when layer is unchecked:
-        document.getElementById('layerInfoBox').style.display = 'none';
       }
     });
   });

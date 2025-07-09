@@ -11,6 +11,51 @@
   <style>
     body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; }
     #map { width: 100%; height: 100%; }
+    
+    /* Modal overlay */
+    #welcomeModal {
+      position: fixed;
+      z-index: 2000; /* above everything else */
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.6); /* dark overlay */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    /* Modal content box */
+    #welcomeContent {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      max-width: 500px;
+      text-align: center;
+      font-family: sans-serif;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    }
+    
+    #welcomeContent h2 {
+      margin-top: 0;
+    }
+    
+    #welcomeContent button {
+      margin-top: 20px;
+      padding: 8px 20px;
+      background-color: #007BFF;
+      border: none;
+      color: white;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    #welcomeContent button:hover {
+      background-color: #0056b3;
+    }
 
     header {
       position: absolute;
@@ -30,7 +75,7 @@
       bottom: 250px;   /* above footer */
       left: 10px;     /* left side */
       width: 250px;   /* adjust width as needed */
-      background: rgba(252, 251, 246, 0.9); /* white with 70% opacity */
+      background: rgba(252, 251, 246, 0.9); /* white with 90% opacity */
       padding: 10px;
       border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
@@ -85,8 +130,8 @@
     .download-button:hover {
       background: #0056b3;
     }
-        .leaflet-control-layers {
-      top: 70px !important;   /* adjust top offset here */
+    .leaflet-control-layers {
+      top: 60px !important;   /* adjust basemap top offset here */
       right: 10px !important; /* keep right */
     }
     .leaflet-popup-content table {
@@ -109,17 +154,35 @@
 </head>
 <body>
 
-<header>Athens GIS</header>
+<header>Athens GIS Repository</header>
 
 <div id="map"></div>
 
 <div id="layerControl">
-  <strong></strong><br>
+  <strong>Choose layer to display</strong><br>
   <!-- Categories and checkboxes will be generated here -->
 </div>
 
 <div id="footer">
   Created by Konstantinos Markos | PhD Candidate, SRSGE, NTUA
+</div>
+
+<!-- Welcome Modal -->
+<div id="welcomeModal">
+  <div id="welcomeContent">
+    <h2>Welcome to Athens GIS Repository</h2>
+    <p>
+      Here you can find information regarding the administrative boundaries, transportation systems, and environment of the Athens Metropolitan Area.
+    </p>
+    <p>
+      On the left, select as many layers as you want to explore and then click the blue button to download the layers you would like.
+    </p>
+    <p>
+      Top right on the map browse interesting basemaps to help you explore the data.
+    </p>
+    <p><strong>Have fun!</strong></p>
+    <button id="closeWelcome">OK</button>
+  </div>
 </div>
 
 <!-- Leaflet JS -->
@@ -299,6 +362,12 @@ for (var category in layerCategories) {
     var colors = ['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999'];
     return colors[Math.floor(Math.random() * colors.length)];
   }
+
+  // Welcome modal logic
+document.getElementById('closeWelcome').addEventListener('click', function() {
+  document.getElementById('welcomeModal').style.display = 'none';
+});
+
 </script>
 
 </body>

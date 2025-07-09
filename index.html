@@ -90,6 +90,21 @@
       font-size: 14px;
     }
 
+    #layerInfoBox {
+      position: absolute;
+      bottom: 50px;   /* above footer */
+      left: 10px;
+      width: 250px;
+      max-height: 200px;
+      overflow-y: auto;
+      background: rgba(252, 251, 246, 0.9);
+      border-radius: 8px;
+      padding: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      font-size: 12px;
+      display: none;  /* hidden by default */
+    }
+
     #footer {
       position: absolute;
       bottom: 0;
@@ -153,6 +168,7 @@
     }
   </style>
 </head>
+  
 <body>
 
 <header>Athens GIS Repository</header>
@@ -163,6 +179,8 @@
   <strong>Choose layer to display</strong><br>
   <!-- Categories and checkboxes will be generated here -->
 </div>
+
+<div id="layerInfoBox"></div>
 
 <div id="footer">
   Created by Konstantinos Markos | PhD Candidate, SRSGE, NTUA
@@ -346,12 +364,26 @@ for (var category in layerCategories) {
             geojsonLayers[filename] = layer;
             map.fitBounds(layer.getBounds());
           });
+                // Load TXT info and show in info box
+        var txtFile = filename.replace(/\.[^/.]+$/, "") + ".txt"; // same name but .txt
+        fetch('data/' + txtFile)
+          .then(res => res.text())
+          .then(text => {
+            var infoBox = document.getElementById('layerInfoBox');
+            infoBox.innerHTML = '<strong>Layer Info:</strong><br>' + text;
+            infoBox.style.display = 'block';
+          })
+          .catch(err => {
+            console.log('No info file found for ' + filename);
+          });
       } else {
         link.style.display = 'none';
         if (geojsonLayers[filename]) {
           map.removeLayer(geojsonLayers[filename]);
           delete geojsonLayers[filename];
         }
+         // Optionally: hide info box if you want when layer is unchecked:
+        document.getElementById('layerInfoBox').style.display = 'none';
       }
     });
   });

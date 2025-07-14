@@ -381,6 +381,7 @@ for (var category in layerCategories) {
           .then(text => {
             lastLayerInfo = '<strong>Layer Info:</strong><br>' + text;
             infoBox.innerHTML = lastLayerInfo;
+            infoBox.style.display = 'block'; // Ensure visible
           })
           .catch(err => {
             console.log('No info file found for ' + filename);
@@ -419,11 +420,11 @@ document.getElementById('closeWelcome').addEventListener('click', function() {
   // === Keep layer info visible when map moves ===
 map.on('moveend', function() {
   var infoBox = document.getElementById('layerInfoBox');
-  if (lastLayerInfo) {
-    infoBox.innerHTML = lastLayerInfo;
+  if (lastLayerInfo && infoBox.style.display === 'none') {
     infoBox.style.display = 'block';
   }
 });
+
 
 </script>
 

@@ -374,20 +374,21 @@ for (var category in layerCategories) {
     
         var txtFile = filename.replace(/\.[^/.]+$/, "") + ".txt";
         fetch('data/' + txtFile)
-          .then(res => {
-            if (!res.ok) throw new Error('No info file');
-            return res.text();
-          })
-          .then(text => {
-            lastLayerInfo = '<strong>Layer Info:</strong><br>' + text;
-            infoBox.innerHTML = lastLayerInfo;
-            infoBox.style.display = 'block'; // Ensure visible
-          })
-          .catch(err => {
-            console.log('No info file found for ' + filename);
-            lastLayerInfo = '<em>No extra info available for this layer.</em>';
-            infoBox.innerHTML = lastLayerInfo;
-          });
+        .then(res => {
+          if (!res.ok) throw new Error('No info file');
+          return res.text();
+        })
+        .then(text => {
+          lastLayerInfo = '<strong>Layer Info:</strong><br>' + text;
+          infoBox.innerHTML = lastLayerInfo;
+          infoBox.style.display = 'block'; // force visible
+        })
+        .catch(err => {
+          console.log('No info file found for ' + filename);
+          lastLayerInfo = '<em>No extra info available for this layer.</em>';
+          infoBox.innerHTML = lastLayerInfo;
+          infoBox.style.display = 'block'; // force visible anyway
+        });
     
       } else {
         link.style.display = 'none';
@@ -420,10 +421,12 @@ document.getElementById('closeWelcome').addEventListener('click', function() {
   // === Keep layer info visible when map moves ===
 map.on('moveend', function() {
   var infoBox = document.getElementById('layerInfoBox');
+  // If hidden but last info exists, just show it — do not overwrite text.
   if (lastLayerInfo && infoBox.style.display === 'none') {
     infoBox.style.display = 'block';
   }
 });
+
 
 
 </script>

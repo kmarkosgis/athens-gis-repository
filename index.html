@@ -418,16 +418,6 @@ document.getElementById('closeWelcome').addEventListener('click', function() {
   document.getElementById('welcomeModal').style.display = 'none';
 });
 
-  // === Keep layer info visible when map moves ===
-map.on('moveend', function() {
-  var infoBox = document.getElementById('layerInfoBox');
-  // If hidden but last info exists, just show it — do not overwrite text.
-  if (lastLayerInfo && infoBox.style.display === 'none') {
-    infoBox.style.display = 'block';
-  }
-});
-
-
 
 </script>
 

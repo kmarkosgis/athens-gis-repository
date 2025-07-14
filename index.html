@@ -330,6 +330,10 @@ for (var category in layerCategories) {
 
       if (this.checked) {
         link.style.display = 'inline-block';
+        
+          // Show info box IMMEDIATELY
+    infoBox.style.display = 'block';
+    infoBox.innerHTML = '<em>Loading layer info...</em>';
 
         fetch('data/' + filename)
           .then(res => res.json())
@@ -365,21 +369,22 @@ for (var category in layerCategories) {
               }
             }).addTo(map);
             geojsonLayers[filename] = layer;
-        // Safe fitBounds
-        setTimeout(() => map.fitBounds(layer.getBounds()), 50);
-      });
+            // Safe fitBounds
+            setTimeout(() => map.fitBounds(layer.getBounds()), 50);
+          });
 
     // Load TXT info
     var txtFile = filename.replace(/\.[^/.]+$/, "") + ".txt";
     fetch('data/' + txtFile)
       .then(res => res.text())
       .then(text => {
-        lastLayerInfo = text;  // store for later
+        lastLayerInfo = text;  // store for fallback
         infoBox.innerHTML = '<strong>Layer Info:</strong><br>' + text;
-        infoBox.style.display = 'block';
       })
       .catch(err => {
         console.log('No info file found for ' + filename);
+        lastLayerInfo = "";
+        infoBox.innerHTML = '<em>No extra info available for this layer.</em>';
       });
 
   } else {

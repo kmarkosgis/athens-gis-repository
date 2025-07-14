@@ -346,7 +346,11 @@ for (var category in layerCategories) {
 
         if (this.checked) {
           link.style.display = 'inline-block';
-
+        
+          // ✅ Add placeholder immediately
+          activeLayerInfos[layername] = '<em>Loading info...</em>';
+          updateInfoBox();
+        
           fetch('data/' + filename)
             .then(res => res.json())
             .then(data => {
@@ -372,7 +376,7 @@ for (var category in layerCategories) {
               geojsonLayers[filename] = layer;
               map.fitBounds(layer.getBounds());
             });
-
+        
           var txtFile = filename.replace(/\.[^/.]+$/, "") + ".txt";
           fetch('data/' + txtFile)
             .then(res => {
@@ -387,7 +391,7 @@ for (var category in layerCategories) {
               activeLayerInfos[layername] = '<em>No extra info available for this layer.</em>';
               updateInfoBox();
             });
-
+        
         } else {
           link.style.display = 'none';
           if (geojsonLayers[filename]) {

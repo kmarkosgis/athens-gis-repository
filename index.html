@@ -317,6 +317,8 @@ for (var category in layerCategories) {
     checkbox.id = id;
     checkbox.dataset.filename = layerInfo.file;
 
+    checkbox.dataset.layername = layerInfo.name;
+    
     var label = document.createElement('label');
     label.htmlFor = id;
     label.textContent = layerInfo.name;

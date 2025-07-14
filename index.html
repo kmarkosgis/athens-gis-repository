@@ -208,7 +208,7 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-  var lastLayerInfo = ""; // store text for last active layer
+  var activeLayerInfos = {}; // store info for all active layers
 
   // === Initialize map ===
   var map = L.map('map', {
@@ -284,7 +284,21 @@
   var geojsonLayers = {};
 
   var controlDiv = document.getElementById('layerControl');
-
+  
+  function updateInfoBox() {
+    var infoBox = document.getElementById('layerInfoBox');
+    var content = '';
+    for (var key in activeLayerInfos) {
+      content += '<strong>' + key + '</strong><br>' + activeLayerInfos[key] + '<hr>';
+    }
+    if (content) {
+      infoBox.innerHTML = content;
+      infoBox.style.display = 'block';
+    } else {
+      infoBox.style.display = 'none';
+    }
+  }
+  
   // === Generate checkboxes and download links inside flex containers ===
 for (var category in layerCategories) {
   var catHeader = document.createElement('h4');
@@ -323,102 +337,71 @@ for (var category in layerCategories) {
     controlDiv.appendChild(layerItem);
 
     // Checkbox logic
-    checkbox.addEventListener('change', function() {
-      var filename = this.dataset.filename;
-      var link = this.parentElement.querySelector('.download-button');
-      var infoBox = document.getElementById('layerInfoBox');
-    
-      if (this.checked) {
-        link.style.display = 'inline-block';
-    
-        // Show info box immediately with fallback text
-        infoBox.style.display = 'block';
-        infoBox.innerHTML = '<em>Loading layer info...</em>';
-    
-        fetch('data/' + filename)
-          .then(res => res.json())
-          .then(data => {
-            var layer = L.geoJSON(data, {
-              style: function (feature) {
-                return {
-                  color: 'blue',
-                  weight: 1,
-                  fillColor: 'lightblue',
-                  fillOpacity: 0.7
-                };
-              },
-              pointToLayer: function (feature, latlng) {
-                return L.circleMarker(latlng, {
-                  radius: 3,
-                  fillColor: '#40b3ff',
-                  color: '#40b3ff',
-                  weight: 1,
-                  opacity: 1,
-                  fillOpacity: 0.5
-                });
-              },
-              onEachFeature: function (feature, layer) {
-                if (feature.properties) {
-                  var popupContent = '<table>';
-                  for (var key in feature.properties) {
-                    popupContent += '<tr><th style="text-align:left; padding-right:5px;">' + key + '</th><td>' + feature.properties[key] + '</td></tr>';
-                  }
-                  popupContent += '</table>';
-                  layer.bindPopup(popupContent);
-                }
-              }
-            }).addTo(map);
-            geojsonLayers[filename] = layer;
-            setTimeout(() => map.fitBounds(layer.getBounds()), 50);
-          });
-    
-        var txtFile = filename.replace(/\.[^/.]+$/, "") + ".txt";
-        fetch('data/' + txtFile)
-        .then(res => {
-          if (!res.ok) throw new Error('No info file');
-          return res.text();
-        })
-        .then(text => {
-          lastLayerInfo = '<strong>Layer Info:</strong><br>' + text;
-          infoBox.innerHTML = lastLayerInfo;
-          infoBox.style.display = 'block'; // force visible
-        })
-        .catch(err => {
-          console.log('No info file found for ' + filename);
-          lastLayerInfo = '<em>No extra info available for this layer.</em>';
-          infoBox.innerHTML = lastLayerInfo;
-          infoBox.style.display = 'block'; // force visible anyway
-        });
-    
-      } else {
-        link.style.display = 'none';
-    
-        if (geojsonLayers[filename]) {
-          map.removeLayer(geojsonLayers[filename]);
-          delete geojsonLayers[filename];
-        }
-    
-        var anyChecked = Array.from(document.querySelectorAll('#layerControl input[type=checkbox]')).some(cb => cb.checked);
-        if (!anyChecked) {
-          infoBox.style.display = 'none';
-        }
-      }
-    });
-  });
-}
+      checkbox.addEventListener('change', function() {
+        var filename = this.dataset.filename;
+        var layername = this.dataset.layername;
+        var link = this.parentElement.querySelector('.download-button');
 
-  // === Random color helper ===
-  function getRandomColor() {
-    var colors = ['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999'];
-    return colors[Math.floor(Math.random() * colors.length)];
+        if (this.checked) {
+          link.style.display = 'inline-block';
+
+          fetch('data/' + filename)
+            .then(res => res.json())
+            .then(data => {
+              var layer = L.geoJSON(data, {
+                style: { color: 'blue', weight: 1, fillColor: 'lightblue', fillOpacity: 0.7 },
+                pointToLayer: function (feature, latlng) {
+                  return L.circleMarker(latlng, {
+                    radius: 3, fillColor: '#40b3ff', color: '#40b3ff',
+                    weight: 1, opacity: 1, fillOpacity: 0.5
+                  });
+                },
+                onEachFeature: function (feature, layer) {
+                  if (feature.properties) {
+                    var popupContent = '<table>';
+                    for (var key in feature.properties) {
+                      popupContent += '<tr><th style="text-align:left; padding-right:5px;">' + key + '</th><td>' + feature.properties[key] + '</td></tr>';
+                    }
+                    popupContent += '</table>';
+                    layer.bindPopup(popupContent);
+                  }
+                }
+              }).addTo(map);
+              geojsonLayers[filename] = layer;
+              map.fitBounds(layer.getBounds());
+            });
+
+          var txtFile = filename.replace(/\.[^/.]+$/, "") + ".txt";
+          fetch('data/' + txtFile)
+            .then(res => {
+              if (!res.ok) throw new Error('No info file');
+              return res.text();
+            })
+            .then(text => {
+              activeLayerInfos[layername] = text;
+              updateInfoBox();
+            })
+            .catch(err => {
+              activeLayerInfos[layername] = '<em>No extra info available for this layer.</em>';
+              updateInfoBox();
+            });
+
+        } else {
+          link.style.display = 'none';
+          if (geojsonLayers[filename]) {
+            map.removeLayer(geojsonLayers[filename]);
+            delete geojsonLayers[filename];
+          }
+          delete activeLayerInfos[layername];
+          updateInfoBox();
+        }
+      });
+    });
   }
 
-  // Welcome modal logic
-document.getElementById('closeWelcome').addEventListener('click', function() {
-  document.getElementById('welcomeModal').style.display = 'none';
-});
-
-
+  document.getElementById('closeWelcome').addEventListener('click', function() {
+    document.getElementById('welcomeModal').style.display = 'none';
+  });
 </script>
 
 </body>

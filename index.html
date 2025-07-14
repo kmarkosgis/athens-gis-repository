@@ -91,7 +91,7 @@
     }
 
     #layerInfoBox {
-      position: absolute;
+      position: fixed;
       bottom: 50px;   /* above footer */
       left: 10px;
       width: 250px;
@@ -208,6 +208,8 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
+  var lastLayerInfo = ""; // store text for last active layer
+
   // === Initialize map ===
   var map = L.map('map', {
     zoomControl: false  // turn off default zoom control
@@ -363,32 +365,40 @@ for (var category in layerCategories) {
               }
             }).addTo(map);
             geojsonLayers[filename] = layer;
-            setTimeout(() => map.fitBounds(layer.getBounds()), 100);
-          });
-                // Load TXT info and show in info box
-        var txtFile = filename.replace(/\.[^/.]+$/, "") + ".txt"; // same name but .txt
-        fetch('data/' + txtFile)
-          .then(res => res.text())
-          .then(text => {
-            var infoBox = document.getElementById('layerInfoBox');
-            infoBox.innerHTML = '<strong>Layer Info:</strong><br>' + text;
-            infoBox.style.display = 'block';
-          })
-          .catch(err => {
-            console.log('No info file found for ' + filename);
-            infoBox.style.display = 'none'; // Optional: hide if not found
-          });
-      } else {
-        link.style.display = 'none';
-        if (geojsonLayers[filename]) {
-          map.removeLayer(geojsonLayers[filename]);
-          delete geojsonLayers[filename];
+        // Safe fitBounds
+        setTimeout(() => map.fitBounds(layer.getBounds()), 50);
+      });
+
+    // Load TXT info
+    var txtFile = filename.replace(/\.[^/.]+$/, "") + ".txt";
+    fetch('data/' + txtFile)
+      .then(res => res.text())
+      .then(text => {
+        lastLayerInfo = text;  // store for later
+        infoBox.innerHTML = '<strong>Layer Info:</strong><br>' + text;
+        infoBox.style.display = 'block';
+      })
+      .catch(err => {
+        console.log('No info file found for ' + filename);
+      });
+
+  } else {
+    link.style.display = 'none';
+
+    if (geojsonLayers[filename]) {
+      map.removeLayer(geojsonLayers[filename]);
+      delete geojsonLayers[filename];
+    }
+
+    // Optionally check if any checkboxes are still checked
+    var anyChecked = Array.from(document.querySelectorAll('#layerControl input[type=checkbox]')).some(cb => cb.checked);
+    if (!anyChecked) {
+      infoBox.style.display = 'none';
         }
       }
     });
   });
 }
-
 
   // === Random color helper ===
   function getRandomColor() {
@@ -399,6 +409,15 @@ for (var category in layerCategories) {
   // Welcome modal logic
 document.getElementById('closeWelcome').addEventListener('click', function() {
   document.getElementById('welcomeModal').style.display = 'none';
+});
+
+  // === Keep layer info visible when map moves ===
+map.on('moveend', function() {
+  var infoBox = document.getElementById('layerInfoBox');
+  if (lastLayerInfo) {
+    infoBox.innerHTML = '<strong>Layer Info:</strong><br>' + lastLayerInfo;
+    infoBox.style.display = 'block';
+  }
 });
 
 </script>

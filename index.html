@@ -327,14 +327,14 @@ for (var category in layerCategories) {
       var filename = this.dataset.filename;
       var link = this.parentElement.querySelector('.download-button');
       var infoBox = document.getElementById('layerInfoBox');
-
+    
       if (this.checked) {
         link.style.display = 'inline-block';
-        
-          // Show info box IMMEDIATELY
-    infoBox.style.display = 'block';
-    infoBox.innerHTML = '<em>Loading layer info...</em>';
-
+    
+        // Show info box immediately with fallback text
+        infoBox.style.display = 'block';
+        infoBox.innerHTML = '<em>Loading layer info...</em>';
+    
         fetch('data/' + filename)
           .then(res => res.json())
           .then(data => {
@@ -369,36 +369,36 @@ for (var category in layerCategories) {
               }
             }).addTo(map);
             geojsonLayers[filename] = layer;
-            // Safe fitBounds
             setTimeout(() => map.fitBounds(layer.getBounds()), 50);
           });
-
-    // Load TXT info
-    var txtFile = filename.replace(/\.[^/.]+$/, "") + ".txt";
-    fetch('data/' + txtFile)
-      .then(res => res.text())
-      .then(text => {
-        lastLayerInfo = text;  // store for fallback
-        infoBox.innerHTML = '<strong>Layer Info:</strong><br>' + text;
-      })
-      .catch(err => {
-        console.log('No info file found for ' + filename);
-        lastLayerInfo = "";
-        infoBox.innerHTML = '<em>No extra info available for this layer.</em>';
-      });
-
-  } else {
-    link.style.display = 'none';
-
-    if (geojsonLayers[filename]) {
-      map.removeLayer(geojsonLayers[filename]);
-      delete geojsonLayers[filename];
-    }
-
-    // Optionally check if any checkboxes are still checked
-    var anyChecked = Array.from(document.querySelectorAll('#layerControl input[type=checkbox]')).some(cb => cb.checked);
-    if (!anyChecked) {
-      infoBox.style.display = 'none';
+    
+        var txtFile = filename.replace(/\.[^/.]+$/, "") + ".txt";
+        fetch('data/' + txtFile)
+          .then(res => {
+            if (!res.ok) throw new Error('No info file');
+            return res.text();
+          })
+          .then(text => {
+            lastLayerInfo = '<strong>Layer Info:</strong><br>' + text;
+            infoBox.innerHTML = lastLayerInfo;
+          })
+          .catch(err => {
+            console.log('No info file found for ' + filename);
+            lastLayerInfo = '<em>No extra info available for this layer.</em>';
+            infoBox.innerHTML = lastLayerInfo;
+          });
+    
+      } else {
+        link.style.display = 'none';
+    
+        if (geojsonLayers[filename]) {
+          map.removeLayer(geojsonLayers[filename]);
+          delete geojsonLayers[filename];
+        }
+    
+        var anyChecked = Array.from(document.querySelectorAll('#layerControl input[type=checkbox]')).some(cb => cb.checked);
+        if (!anyChecked) {
+          infoBox.style.display = 'none';
         }
       }
     });
@@ -420,7 +420,7 @@ document.getElementById('closeWelcome').addEventListener('click', function() {
 map.on('moveend', function() {
   var infoBox = document.getElementById('layerInfoBox');
   if (lastLayerInfo) {
-    infoBox.innerHTML = '<strong>Layer Info:</strong><br>' + lastLayerInfo;
+    infoBox.innerHTML = lastLayerInfo;
     infoBox.style.display = 'block';
   }
 });

@@ -379,7 +379,7 @@ for (var category in layerCategories) {
             });
         
           var txtFile = filename.replace(/\.[^/.]+$/, "") + ".txt";
-          fetch('data/' + txtFile)
+          fetch('info/' + txtFile)
             .then(res => {
               if (!res.ok) throw new Error('No info file');
               return res.text();

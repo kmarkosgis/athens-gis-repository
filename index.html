@@ -134,9 +134,9 @@
 
     .download-button {
       display: inline-block;
-      background: #007BFF;
-      color: white;
-      border: none;
+      background: white;
+      color: black;
+      border: 1px solid #0056b3;
       padding: 2px 6px;
       border-radius: 4px;
       text-decoration: none;
@@ -144,11 +144,13 @@
       cursor: pointer;
       line-height: 1;
       flex-shrink: 0;
+      transition-duration: 0.4s;
     }
-
     .download-button:hover {
       background: #0056b3;
+      color: white;
     }
+    
     .leaflet-control-layers {
       top: 50px !important;   /* adjust basemap top offset here */
       right: 10px !important; /* keep right */
@@ -331,7 +333,7 @@ for (var category in layerCategories) {
     var download = document.createElement('a');
     download.href = 'data/' + layerInfo.file;
     download.download = layerInfo.file;
-    download.innerHTML = '⬇️';
+    download.innerHTML = '⇩';
     download.className = 'download-button';
     download.style.display = 'none';
 

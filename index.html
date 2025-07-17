@@ -333,7 +333,7 @@ for (var category in layerCategories) {
     var download = document.createElement('a');
     download.href = 'data/' + layerInfo.file;
     download.download = layerInfo.file;
-    download.innerHTML = '⇩';
+    download.innerHTML = '&#8681;';  // ⇩ arrow
     download.className = 'download-button';
     download.style.display = 'none';
 

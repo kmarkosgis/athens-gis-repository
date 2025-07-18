@@ -373,7 +373,11 @@ for (var category in layerCategories) {
                   if (feature.properties) {
                     var popupContent = '<table>';
                     for (var key in feature.properties) {
-                      popupContent += '<tr><th style="text-align:left; padding-right:5px;">' + key + '</th><td>' + feature.properties[key] + '</td></tr>';
+                      var value = feature.properties[key];
+                      if (!isNaN(value) && value !== null && value !== '') {
+                        value = Number(value).toFixed(2);
+                      }
+                      popupContent += '<tr><th style="text-align:left; padding-right:5px;">' + key + '</th><td>' + value + '</td></tr>';
                     }
                     popupContent += '</table>';
                     layer.bindPopup(popupContent);

@@ -132,6 +132,40 @@
       margin-left: 4px;
     }
 
+    /* Make checkboxes look circular */
+    .layer-item input[type="checkbox"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #007BFF;
+      border-radius: 50%; /* Makes it a circle */
+      background-color: white;
+      cursor: pointer;
+      outline: none;
+      position: relative;
+    }
+    
+    .layer-item input[type="checkbox"]:checked {
+      background-color: #007BFF;
+    }
+    
+    .layer-item input[type="checkbox"]::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: white;
+      display: none;
+    }
+    
+    .layer-item input[type="checkbox"]:checked::after {
+      display: block;
+    }
+
     .download-button {
       display: inline-block;
       background: white;
@@ -374,10 +408,17 @@ for (var category in layerCategories) {
                     var popupContent = '<table>';
                     for (var key in feature.properties) {
                       var value = feature.properties[key];
-                      if (!isNaN(value) && value !== null && value !== '') {
+                      var displayKey = key;
+                
+                      if (key.toLowerCase() === 'shapeleng_km') {
                         value = Number(value).toFixed(2);
+                        displayKey = 'Shape length (km)';
+                      } else if (key.toLowerCase() === 'shapearea') {
+                        value = Number(value).toFixed(2);
+                        displayKey = 'Shape Area (km²)';
                       }
-                      popupContent += '<tr><th style="text-align:left; padding-right:5px;">' + key + '</th><td>' + value + '</td></tr>';
+                
+                      popupContent += '<tr><th style="text-align:left; padding-right:5px;">' + displayKey + '</th><td>' + value + '</td></tr>';
                     }
                     popupContent += '</table>';
                     layer.bindPopup(popupContent);

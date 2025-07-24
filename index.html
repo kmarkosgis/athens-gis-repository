@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Athens GIS Repo</title>
+  <title>Athens GIS Repository</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Leaflet CSS -->
@@ -34,8 +34,8 @@
       border-radius: 8px;
       max-width: 500px;
       text-align: center;
-      font-family: sans-serif;
-      font-size: 12px;
+      font-family: Helvetica;
+      font-size: 14px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.4);
     }
     
@@ -47,7 +47,7 @@
       margin-top: 20px;
       padding: 8px 20px;
       background-color: white;
-      border: 1px solid #0056b3;
+      border: 1px solid #4682B4;
       color: black;
       font-size: 14px;
       border-radius: 4px;
@@ -56,7 +56,7 @@
     }
     
     #welcomeContent button:hover {
-      background-color: #0056b3;
+      background-color: #4682B4;
       color: white;
     }
 
@@ -64,11 +64,15 @@
       position: absolute;
       top: 0;
       width: 100%;
-      background: rgba(0, 255, 255, 0.9);
-      color: grey;
+      background: rgba(70,130,180, 0.8);
+      color: #333;
       text-align: center;
+      font-weight: 500;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
       padding: 10px;
       font-size: 1.2em;
+      font-family: Helvetica;
       z-index: 1000;
     }
 
@@ -85,6 +89,7 @@
       overflow-y: auto;     /* makes it scrollable */
       z-index: 999;
       font-size: 12px;
+      font-family: Helvetica;
     }
 
     #layerControl h4 {
@@ -104,6 +109,7 @@
       padding: 10px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       font-size: 12px;
+      font-family: Helvetica;
       display: none;  /* hidden by default */
       z-index: 2000;  /* ✅ force on top! */
     }
@@ -112,11 +118,12 @@
       position: absolute;
       bottom: 0;
       width: 100%;
-      background: rgba(0, 255, 255, 0.9);
+      background: rgba(0,255,240, 0.9);
       color: grey;
       text-align: center;
       padding: 5px;
-      font-size: 0.9em;
+      font-size: 11px;
+      font-family: Helvetica;
       z-index: 1000;
     }
 
@@ -136,9 +143,9 @@
     .layer-item input[type="checkbox"] {
       -webkit-appearance: none;
       appearance: none;
-      width: 15px;
-      height: 15px;
-      border: 1px solid #007BFF;
+      width: 14px;
+      height: 14px;
+      border: 1px solid #4682B4;
       border-radius: 50%; /* Makes it a circle */
       background-color: white;
       cursor: pointer;
@@ -147,7 +154,7 @@
     }
     
     .layer-item input[type="checkbox"]:checked {
-      background-color: #007BFF;
+      background-color: #4682B4;
     }
     
     .layer-item input[type="checkbox"]::after {
@@ -170,24 +177,24 @@
       display: inline-block;
       background: white;
       color: black;
-      border: 1px solid #0056b3;
-      padding: 2px 6px;
+      border: 1px solid #4682B4;
+      padding: 2px 4px;
       border-radius: 4px;
       text-decoration: none;
-      font-size: 13px;
+      font-size: 14px;
       cursor: pointer;
       line-height: 1;
       flex-shrink: 0;
       transition-duration: 0.4s;
     }
     .download-button:hover {
-      background: #0056b3;
+      background: #4682B4;
       color: white;
     }
     
     .leaflet-control-layers {
-      top: 50px !important;   /* adjust basemap top offset here */
-      right: 10px !important; /* keep right */
+      top: 40px !important;   /* adjust basemap top offset here */
+      right: 0px !important; /* keep right */
     }
     .leaflet-popup-content table {
       border-collapse: collapse;
@@ -367,7 +374,7 @@ for (var category in layerCategories) {
     var download = document.createElement('a');
     download.href = 'data/' + layerInfo.file;
     download.download = layerInfo.file;
-    download.innerHTML = '&#8681;';  // ⇩ arrow
+    download.innerHTML = '&#129035;';  // ⇩ arrow
     download.className = 'download-button';
     download.style.display = 'none';
 

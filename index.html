@@ -174,6 +174,13 @@
       display: block;
     }
 
+    .layer-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1px 0;
+    }
+
     .download-button {
       display: inline-block;
       background: white;
@@ -235,7 +242,6 @@
 <div id="layerInfoBox"></div>
 
 <div id="layerControl">
-  <strong>Choose layer to display</strong><br>
   <!-- Categories and checkboxes will be generated here -->
 </div>
 
@@ -311,7 +317,7 @@
 
         // Add basemap switcher in top-right (or elsewhere)
   L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
-  
+
   // === Define layers by category ===
   var layerCategories = {
     "Administrative Boundaries": [
@@ -343,6 +349,18 @@
   var geojsonLayers = {};
 
   var controlDiv = document.getElementById('layerControl');
+  
+    var searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.id = 'layerSearch';
+    searchInput.placeholder = 'Search layers...';
+    searchInput.style.width = '80%';
+    searchInput.style.padding = '3px';
+    searchInput.style.marginBottom = '6px';
+    searchInput.style.borderRadius = '6px';
+    searchInput.style.border = '1px solid #ccc';
+    controlDiv.appendChild(searchInput);
+  
   
   function updateInfoBox() {
     var infoBox = document.getElementById('layerInfoBox');
@@ -478,6 +496,21 @@ for (var category in layerCategories) {
   document.getElementById('closeWelcome').addEventListener('click', function() {
     document.getElementById('welcomeModal').style.display = 'none';
   });
+
+  document.getElementById('layerSearch').addEventListener('input', function() {
+    var searchTerm = this.value.toLowerCase();
+    var layerItems = document.querySelectorAll('.layer-item');
+
+    layerItems.forEach(function(item) {
+      var label = item.querySelector('label').textContent.toLowerCase();
+      if (label.includes(searchTerm)) {
+        item.style.display = 'flex'; // or 'block' depending on your layout
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  });
+
 </script>
 
 </body>

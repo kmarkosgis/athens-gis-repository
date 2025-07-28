@@ -65,10 +65,11 @@
       top: 0;
       width: 100%;
       background: rgba(70,130,180, 0.8);
-      color: #333;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+      color: black;
       text-align: center;
-      font-weight: 500;
-      letter-spacing: 0.7px;
+      font-weight: 400;
+      letter-spacing: 0.9px;
       text-transform: uppercase;
       padding: 10px;
       font-size: 1.2em;
@@ -143,8 +144,8 @@
     .layer-item input[type="checkbox"] {
       -webkit-appearance: none;
       appearance: none;
-      width: 14px;
-      height: 14px;
+      width: 12px;
+      height: 12px;
       border: 1px solid #4682B4;
       border-radius: 50%; /* Makes it a circle */
       background-color: white;
@@ -160,8 +161,8 @@
     .layer-item input[type="checkbox"]::after {
       content: "";
       position: absolute;
-      top: 3px;
-      left: 3px;
+      top: 2px;
+      left: 2px;
       width: 6px;
       height: 6px;
       border-radius: 50%;
@@ -181,7 +182,7 @@
       padding: 2px 4px;
       border-radius: 4px;
       text-decoration: none;
-      font-size: 14px;
+      font-size: 12px;
       cursor: pointer;
       line-height: 1;
       flex-shrink: 0;
@@ -214,7 +215,17 @@
     }
   </style>
 </head>
-  
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-BSNF6CGQ5J"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-BSNF6CGQ5J');
+</script>  
+
 <body>
 
 <header>Athens GIS Repository</header>
@@ -313,7 +324,7 @@
       { name: "Piraeus", file: "Piraeus.json" }
     ],
     "Transportation": [
-      { name: "Metro 1, 2 & 3 Stations", file: "AthensMetro123.geojson" },
+      { name: "Metro Stations 1, 2 & 3 ", file: "AthensMetro123.geojson" },
       { name: "Train/OSE Stations", file: "AthensTrain.geojson" },
       { name: "Tram Stations", file: "AthensTram.geojson" },
       { name: "Bus Stops", file: "AthensBusStops.geojson" },
@@ -419,7 +430,7 @@ for (var category in layerCategories) {
                 
                       if (key.toLowerCase() === 'shapeleng_km') {
                         value = Number(value).toFixed(2);
-                        displayKey = 'Shape length (km)';
+                        displayKey = 'Shape Length (km)';
                       } else if (key.toLowerCase() === 'shapearea') {
                         value = Number(value).toFixed(2);
                         displayKey = 'Shape Area (km²)';

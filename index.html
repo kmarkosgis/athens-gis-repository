@@ -10,6 +10,10 @@
   <link rel="icon" href="images/favicon.png" type="image/png">
   <meta name="google-site-verification" content="fxtrJ6Zsjm3yh8GZ1ltWQILOA6U0zxt1FD2YVYdz1MU" />
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet">
+
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
@@ -51,7 +55,8 @@
       border-radius: 8px;
       max-width: 500px;
       text-align: center;
-      font-family: Helvetica;
+      font-family: "Newsreader", serif;
+      font-style: normal;
       font-size: 14px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.4);
     }
@@ -76,27 +81,53 @@
       background-color: #4682B4;
       color: white;
     }
+    .welcome-logo {
+      display: block;
+      margin: 0 auto 20px auto;
+      width: 240px;
+      height: 60px;
+    }
 
     header {
       position: absolute;
       top: 0;
-      width: 100%;
-      background: rgba(70,130,180, 0.8);
+      width: 98.9%;
+      background: rgba(70, 130, 180, 0.8);
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
-      color: black;
+      color: #f5f5dc;
       text-align: center;
-      font-weight: 400;
-      letter-spacing: 0.9px;
+      font-weight: 500;
+      letter-spacing: 1px;
       text-transform: uppercase;
       padding: 10px;
-      font-size: 1.2em;
-      font-family: Helvetica;
+      font-size: 21px;
+      font-family: "Newsreader", serif;
+      font-style: normal;
       z-index: 1000;
+    }
+    .announcement-box {
+      position: absolute;
+      top: 50px; /* adjust based on your header height */
+      right: 70px;
+      background-color: rgba(240, 244, 255, 0.8);
+      color: rgb(0, 51, 102);
+      border: 1px solid rgb(200, 216, 255);
+      padding: 10px 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: "Newsreader", serif;
+      font-style: normal;
+      font-weight: 400;
+      text-align: left;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      max-width: 200px;
+      height: auto;
+      z-index: 999;
     }
 
     #layerControl {
       position: absolute;
-      top: 60px;      /* below header */
+      top: 50px;      /* below header */
       bottom: 250px;   /* above footer */
       left: 10px;     /* left side */
       width: 250px;   /* adjust width as needed */
@@ -106,8 +137,9 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       overflow-y: auto;     /* makes it scrollable */
       z-index: 999;
-      font-size: 12px;
-      font-family: Helvetica;
+      font-size: 13px;
+      font-family: "Newsreader", serif;
+      font-style: normal;
     }
 
     #layerControl h4 {
@@ -127,7 +159,7 @@
       padding: 10px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       font-size: 12px;
-      font-family: Helvetica;
+      font-family: "Newsreader", serif;
       display: none;  /* hidden by default */
       z-index: 2000;  /* ✅ force on top! */
     }
@@ -135,13 +167,14 @@
     #footer {
       position: absolute;
       bottom: 0;
-      width: 100%;
-      background: rgba(0,255,240, 0.9);
+      width: 99.5%;
+      background: rgba(0,255,240, 0.7);
       color: grey;
       text-align: center;
-      padding: 5px;
+      padding: 3px;
       font-size: 11px;
-      font-family: Helvetica;
+      font-family: "Newsreader", serif;
+      font-style: normal;
       z-index: 1000;
     }
 
@@ -253,10 +286,16 @@
 <body>
 
 <div class="logo-container">
-  <img src="images/1EDIT.png" alt="Athens GIS Logo" class="logo">
+  <img src="images/4.png" alt="Athens GIS Logo" class="logo">
 </div>
 
-<header>Athens GIS Repository</header>
+<header>   Athens GIS Repository</header>
+
+<div class="announcement-box">
+  📢 Notice: <strong>ALPHA VERSION</strong>
+  <p>🚧 The repository is currently under development. Please standby for full version.</p>
+  <p>⚠️ Data provided by the repository may contain errors.</p>
+</div>
 
 <div id="map"></div>
 
@@ -273,10 +312,8 @@
 <!-- Welcome Modal -->
 <div id="welcomeModal">
   <div id="welcomeContent">
-    <h2>Welcome to Athens GIS Repository</h2>
-    <p>
-     <strong>ALPHA VERSION</strong>
-    </p>    
+    <h2>Welcome to Athens GIS Repository</h2>    
+    <img src="images/3.png" alt="Logo" class="welcome-logo">
     <p>
       Here you can find information about the administrative boundaries, transportation systems, and environment of the Athens Metropolitan Area.
     </p>

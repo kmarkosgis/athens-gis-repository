@@ -1,6 +1,0 @@
-Bus stations of Athens Bus lines operating by OASA
-
-Uploaded: 23-06-2025
-Contributors: K. Markos
-Source: OSM, OASA
- 

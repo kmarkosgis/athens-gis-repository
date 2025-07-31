@@ -16,9 +16,11 @@
     "@type": "Organization",
     "name": "Athens GIS Repository",
     "url": "https://kmarkosgis.github.io/athens-gis-repository/",
-    "logo": "images/1EDIT.png"  
+    "logo": "https://kmarkosgis.github.io/athens-gis-repository/images/1EDIT.png"
   }
   </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -130,7 +132,7 @@
       font-weight: 400;
       text-align: left;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-      max-width: 200px;
+      max-width: 250px;
       height: auto;
       z-index: 999;
     }
@@ -138,7 +140,7 @@
     #layerControl {
       position: absolute;
       top: 50px;      /* below header */
-      bottom: 250px;   /* above footer */
+      bottom: 220px;   /* above footer */
       left: 10px;     /* left side */
       width: 250px;   /* adjust width as needed */
       background: rgba(252, 251, 246, 0.9); /* white with 90% opacity */
@@ -159,7 +161,7 @@
 
     #layerInfoBox {
       position: fixed;
-      bottom: 50px;   /* above footer */
+      bottom: 30px;   /* above footer */
       left: 10px;
       width: 250px;
       height: 160px;
@@ -259,7 +261,20 @@
       background: #4682B4;
       color: white;
     }
-    
+    .feature-highlight {
+    filter: drop-shadow(3px 3px 3px rgba(0, 0, 0, 0.7));
+    }
+
+    #layer-search-container {
+    margin-bottom: 10px;
+    }
+
+    #layer-search {
+      width: 100%;
+      padding: 6px;
+      font-size: 14px;
+    }
+
     .leaflet-control-layers {
       top: 40px !important;   /* adjust basemap top offset here */
       right: 0px !important; /* keep right */
@@ -389,27 +404,32 @@
   // === Define layers by category ===
   var layerCategories = {
     "Administrative Boundaries": [
-      { name: "Athens Center Sector", file: "AthensCenterSector.geojson" },
-      { name: "Athens South Sector", file: "AthensSouthSector.json" },
-      { name: "Athens North Sector", file: "AthensNorthSector.json" },
-      { name: "Athens West Sector", file: "AthensWestSector.json" },
-      { name: "Athens Western Area", file: "AthensWest.json" },
-      { name: "Athens Eastern Area", file: "AthensEast.geojson" },
-      { name: "Piraeus", file: "Piraeus.json" }
+      { name: "Athens Center Sector", file: "Boundaries/AthensCenterSector.json" },
+      { name: "Athens South Sector", file: "Boundaries/AthensSouthSector.json" },
+      { name: "Athens North Sector", file: "Boundaries/AthensNorthSector.json" },
+      { name: "Athens West Sector", file: "Boundaries/AthensWestSector.json" },
+      { name: "Athens Western Area", file: "Boundaries/AthensWest.json" },
+      { name: "Athens Eastern Area", file: "Boundaries/AthensEast.json" },
+      { name: "Piraeus", file: "Boundaries/Piraeus.json" },
+      { name: "Islands of Attica region", file: "Boundaries/AthensIslands.json" }
     ],
     "Transportation": [
-      { name: "Metro Stations 1, 2 & 3 ", file: "AthensMetro123.geojson" },
-      { name: "Train/OSE Stations", file: "AthensTrain.geojson" },
-      { name: "Tram Stations", file: "AthensTram.geojson" },
-      { name: "Bus Stops", file: "AthensBusStops.geojson" },
-      { name: "Highways", file: "AthensHighways.json" },
-      { name: "Avenues", file: "AthensAvenues.json" }
+      { name: "Metro Stations 1, 2 & 3 ", file: "Transportation/AthensMetro123.geojson" },
+      { name: "Train/OSE Stations", file: "Transportation/AthensTrain.geojson" },
+      { name: "Tram Stations", file: "Transportation/AthensTram.geojson" },
+      { name: "Bus Stops", file: "Transportation/AthensBusStops.geojson" },
+      { name: "Highways", file: "Transportation/AthensHighways.json" },
+      { name: "Avenues", file: "Transportation/AthensAvenues.json" }
     ],
     "Environment": [
-      { name: "Athens Center Green Spaces", file: "AthensGreenCenter.geojson" },
-      { name: "Athens South Green Spaces", file: "AthensGreenSouth.geojson" },
-      { name: "Athens West Green Spaces", file: "AthensGreenWest.geojson" },
-      { name: "Piraeus Green Spaces", file: "PiraeusGreen.geojson" }
+      { name: "Center Sector Green Spaces", file: "Environment/AthensGreenCenter.geojson" },
+      { name: "North Sector Green Spaces", file: "Environment/AthensGreenNorth.geojson" },      
+      { name: "South Sector Green Spaces", file: "Environment/AthensGreenSouth.geojson" },
+      { name: "West Sector Green Spaces", file: "Environment/AthensGreenWest.geojson" },
+      { name: "Piraeus Green Spaces", file: "Environment/PiraeusGreen.geojson" }
+    ],
+    "Social - Economic": [
+      { name: "Athens Population 2021", file: "Socioeconomic/Population2021.json" }
     ]
   };
 
@@ -443,47 +463,47 @@
       infoBox.style.display = 'none';
     }
   }
-  
-  // === Generate checkboxes and download links inside flex containers ===
-for (var category in layerCategories) {
-  var catHeader = document.createElement('h4');
-  catHeader.textContent = category;
-  controlDiv.appendChild(catHeader);
 
-  layerCategories[category].forEach(function(layerInfo) {
+  // === Generate checkboxes and download links inside flex containers ===
+  for (var category in layerCategories) {
+    var catHeader = document.createElement('h4');
+    catHeader.textContent = category;
+    controlDiv.appendChild(catHeader);
+
+    layerCategories[category].forEach(function(layerInfo) {
     var id = layerInfo.name.replace(/\s+/g, '_');
 
-    // Create flex row container
-    var layerItem = document.createElement('div');
-    layerItem.className = 'layer-item'; // Add a CSS class
+      // Create flex row container
+      var layerItem = document.createElement('div');
+      layerItem.className = 'layer-item'; // Add a CSS class
 
-    var checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.id = id;
-    checkbox.dataset.filename = layerInfo.file;
+      var checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.id = id;
+      checkbox.dataset.filename = layerInfo.file;
 
-    checkbox.dataset.layername = layerInfo.name;
-    
-    var label = document.createElement('label');
-    label.htmlFor = id;
-    label.textContent = layerInfo.name;
+      checkbox.dataset.layername = layerInfo.name;
+      
+      var label = document.createElement('label');
+      label.htmlFor = id;
+      label.textContent = layerInfo.name;
 
-    var download = document.createElement('a');
-    download.href = 'data/' + layerInfo.file;
-    download.download = layerInfo.file;
-    download.innerHTML = '&#129035;';  // ⇩ arrow
-    download.className = 'download-button';
-    download.style.display = 'none';
+      var download = document.createElement('a');
+      download.href = 'data/' + layerInfo.file;
+      download.download = layerInfo.file;
+      download.innerHTML = '&#129035;';  // ⇩ arrow
+      download.className = 'download-button';
+      download.style.display = 'none';
 
-    // Add to flex row container
-    layerItem.appendChild(checkbox);
-    layerItem.appendChild(label);
-    layerItem.appendChild(download);
+      // Add to flex row container
+      layerItem.appendChild(checkbox);
+      layerItem.appendChild(label);
+      layerItem.appendChild(download);
 
-    // Append the row to sidebar
-    controlDiv.appendChild(layerItem);
+      // Append the row to sidebar
+      controlDiv.appendChild(layerItem);
 
-    // Checkbox logic
+      // Checkbox logic
       checkbox.addEventListener('change', function() {
         var filename = this.dataset.filename;
         var layername = this.dataset.layername;
@@ -495,33 +515,75 @@ for (var category in layerCategories) {
           // ✅ Add placeholder immediately
           activeLayerInfos[layername] = '<em>Loading info...</em>';
           updateInfoBox();
-        
+          let selectedFeature = null;
           fetch('data/' + filename)
             .then(res => res.json())
             .then(data => {
-              var layer = L.geoJSON(data, {
-                style: { color: 'blue', weight: 1, fillColor: 'lightblue', fillOpacity: 0.7 },
+              const geojsonLayer = L.geoJSON(data, {
+                style: {
+                  color: '#4682B4',
+                  weight: 1,
+                  fillColor: '#4682B4',
+                  fillOpacity: 0.3
+                },
                 pointToLayer: function (feature, latlng) {
                   return L.circleMarker(latlng, {
-                    radius: 3, fillColor: '#40b3ff', color: '#40b3ff',
-                    weight: 1, opacity: 1, fillOpacity: 0.5
+                    radius: 4,
+                    fillColor: '#4682B4',
+                    color: '#40b3ff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.5
                   });
                 },
                 onEachFeature: function (feature, layer) {
+                  // Highlight effect on click
+                  layer.on("click", function (e) {
+                    if (selectedFeature) {
+                      geojsonLayer.resetStyle(selectedFeature);
+                    }
+
+                    selectedFeature = e.target;
+
+                    e.target.setStyle({
+                      color: "#4682B4",    // border
+                      weight: 2,
+                      fillOpacity: 0.5
+                    });
+
+                    const path = e.target._path;
+                    if (path) {
+                      path.classList.add("feature-highlight");
+                    }
+
+                    document.querySelectorAll("path.feature-highlight").forEach(el => {
+                      if (el !== path) {
+                        el.classList.remove("feature-highlight");
+                      }
+                    });
+                  });
+
+                  // Optional: show popup with attributes
                   if (feature.properties) {
                     var popupContent = '<table>';
                     for (var key in feature.properties) {
                       var value = feature.properties[key];
                       var displayKey = key;
-                
-                      if (key.toLowerCase() === 'shapeleng_km') {
+
+                      if (key.toLowerCase() === 'shapeleng_') {
                         value = Number(value).toFixed(2);
                         displayKey = 'Shape Length (km)';
                       } else if (key.toLowerCase() === 'shapearea') {
                         value = Number(value).toFixed(2);
                         displayKey = 'Shape Area (km²)';
+                      } else if (key.toLowerCase() === 'name') {
+                        displayKey = 'Name';
+                      } else if (key.toLowerCase() === 'sectionnam') {
+                        displayKey = 'Section Name';
+                      } else if (key.toLowerCase() === 'metroline') {
+                        displayKey = 'Metro Line';
                       }
-                
+
                       popupContent += '<tr><th style="text-align:left; padding-right:5px;">' + displayKey + '</th><td>' + value + '</td></tr>';
                     }
                     popupContent += '</table>';
@@ -529,10 +591,12 @@ for (var category in layerCategories) {
                   }
                 }
               }).addTo(map);
-              geojsonLayers[filename] = layer;
-              map.fitBounds(layer.getBounds());
+
+              geojsonLayers[filename] = geojsonLayer;
+              map.fitBounds(geojsonLayer.getBounds());
             });
-        
+
+
           var txtFile = filename.replace(/\.[^/.]+$/, "") + ".txt";
           fetch('info/' + txtFile)
             .then(res => {
@@ -560,7 +624,7 @@ for (var category in layerCategories) {
       });
     });
   }
-
+    
   document.getElementById('closeWelcome').addEventListener('click', function() {
     document.getElementById('welcomeModal').style.display = 'none';
   });
@@ -578,7 +642,6 @@ for (var category in layerCategories) {
       }
     });
   });
-
 </script>
 
 </body>

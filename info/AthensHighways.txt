@@ -1,5 +1,0 @@
-Highways and highways connectors layout in Attica Region
-
-Uploaded: 20-06-2025
-Contributors: K. Markos
-Source: OSM

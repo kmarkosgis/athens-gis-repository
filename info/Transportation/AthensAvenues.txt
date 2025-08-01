@@ -1,5 +1,5 @@
-Avenues layout in Attica Region
+Avenues layout in Attica Region.
 
-Uploaded: 23-06-2025
+<p>Uploaded: 23-06-2025
 Contributors: K. Markos
-Source: OSM
+Source: OSM<p/>

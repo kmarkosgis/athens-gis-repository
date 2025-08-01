@@ -1,5 +1,5 @@
-Tram stations of Athens Tram lines
+Tram stations of Athens Tram lines.
 
-Uploaded: 17-06-2025
+<p>Uploaded: 23-06-2025
 Contributors: K. Markos
-Source: OSM, Stasy
+Source: OSM, Stasy<p/>

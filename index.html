@@ -47,8 +47,8 @@
 
     /* Modal overlay */
     #welcomeModal {
-      position: fixed;
-      z-index: 2000; /* above everything else */
+      position:fixed;
+      z-index: 9999; /* above everything else */
       left: 0;
       top: 0;
       width: 100%;
@@ -62,6 +62,10 @@
     
     /* Modal content box */
     #welcomeContent {
+      position: relative;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%); /* perfect centering */
       background-color: rgba(252, 251, 246, 0.9);
       padding: 30px;
       border-radius: 8px;
@@ -99,6 +103,12 @@
       width: 240px;
       height: 60px;
     }
+    #welcomeContent input{
+      position: relative;
+      border: 1px solid #4682B4;
+      font-size: 20px;
+      cursor: pointer;
+    }    
 
     header {
       position: absolute;
@@ -175,6 +185,33 @@
       display: none;  /* hidden by default */
       z-index: 2000;  /* ✅ force on top! */
     }
+
+    /* Toolbar styling */
+    #toolbar {
+      position: fixed;
+      bottom: 30px; /* adjust to sit above footer */
+      right: -60px;
+      height: 15px;
+      transform: translateX(-50%);
+      background: rgba(252, 251, 246, 0.9);
+      border: 1px solid rgb(204, 204, 204);
+      border-radius: 8px;
+      padding: 8px 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: "Newsreader", serif;
+      font-size: 12px;
+      z-index: 1000; /* keep above map */
+    }
+
+    #opacityRange {
+      width: 100px;
+      height: 5px;
+      color: #4682B4;
+      cursor: pointer;
+    }    
 
     #footer {
       position: absolute;
@@ -262,7 +299,7 @@
       color: white;
     }
     .feature-highlight {
-    filter: drop-shadow(3px 3px 3px rgba(0, 0, 0, 0.7));
+    filter: drop-shadow(1px 1px 5px rgba(0, 0, 0, 0.7));
     }
 
     #layer-search-container {
@@ -278,22 +315,6 @@
     .leaflet-control-layers {
       top: 40px !important;   /* adjust basemap top offset here */
       right: 0px !important; /* keep right */
-    }
-    .leaflet-popup-content table {
-      border-collapse: collapse;
-      width: 100%;
-    }
-    
-    .leaflet-popup-content th,
-    .leaflet-popup-content td {
-      border-bottom: 1px solid #ddd;
-      padding: 4px;
-      font-size: 12px;
-    }
-    
-    .leaflet-popup-content th {
-      background: #f0f0f0;
-      font-weight: bold;
     }
   </style>
 </head>
@@ -330,6 +351,21 @@
   <!-- Categories and checkboxes will be generated here -->
 </div>
 
+<div id="infoBox" 
+     style="position: absolute; top: 210px; right: 10px; width: 310px; 
+            max-height: 300px; overflow-y: auto; padding: 10px; font-size: 12px; font-family: Newsreader, serif;
+            background:rgba(252, 251, 246, 0.9); border: 1px solid #ccc; border-radius: 8px; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3); display: none; z-index: 1000;">
+</div>
+
+<!-- Toolbar container -->
+<div id="toolbar">
+  <label for="opacityRange">Layer Transparency:</label>
+  <span id="opacityValue">0%</span>
+  <input type="range" id="opacityRange" min="0" max="1" step="0.05" value="1">
+  <span id="opacityValue">100%</span>
+</div>
+
 <div id="footer">
   Created by Konstantinos Markos | PhD Candidate, SRSGE, NTUA
 </div>
@@ -340,15 +376,17 @@
     <h2>Welcome to Athens GIS Repository</h2>    
     <img src="images/3.png" alt="Logo" class="welcome-logo">
     <p>
-      Here you can find information about the administrative boundaries, transportation systems, and environment of the Athens Metropolitan Area.
+      Here you can explore information about the administrative boundaries, transportation, environment, and population of the Athens Metropolitan Area.
     </p>
     <p>
-      On the left side of the map, select as many layers as you wish to explore, and then click the blue button to download them.
-    </p>
-    <p>
-      At the top right of the map, you can browse interesting basemaps to help you explore the data.
+      Use the panel on the left side of the map to explore the layers you’re interested in, then click the button to download them. You can find more details about the selected layers at the bottom left of the map.
     </p>
     <p><strong>Have fun!</strong></p>
+    <p>
+    <label>
+    <input type="checkbox" id="dontShowAgain"> Don't show again
+    </label>
+    </p>
     <button id="closeWelcome">OK</button>
   </div>
 </div>
@@ -413,7 +451,7 @@
       { name: "Piraeus", file: "Boundaries/Piraeus.json" },
       { name: "Islands of Attica region", file: "Boundaries/AthensIslands.json" }
     ],
-    "Transportation": [
+    "Transport": [
       { name: "Metro Stations 1, 2 & 3 ", file: "Transportation/AthensMetro123.geojson" },
       { name: "Train/OSE Stations", file: "Transportation/AthensTrain.geojson" },
       { name: "Tram Stations", file: "Transportation/AthensTram.geojson" },
@@ -428,10 +466,24 @@
       { name: "West Sector Green Spaces", file: "Environment/AthensGreenWest.geojson" },
       { name: "Piraeus Green Spaces", file: "Environment/PiraeusGreen.geojson" }
     ],
-    "Social - Economic": [
-      { name: "Athens Population 2021", file: "Socioeconomic/Population2021.json" }
+    "Population and social conditions": [
+      { name: "Athens Population 2021", file: "Social/Population2021.json" }
     ]
   };
+
+  // Store global opacity value
+  let currentOpacity = 1;
+    // Update opacity for all active layers
+  function updateLayerOpacity() {
+    map.eachLayer(function(layer) {
+      if (layer.setStyle) {
+        layer.setStyle({
+          fillOpacity: currentOpacity,
+          opacity: currentOpacity
+        });
+      }
+    });
+  }
 
   // === Active layers ===
   var geojsonLayers = {};
@@ -521,19 +573,19 @@
             .then(data => {
               const geojsonLayer = L.geoJSON(data, {
                 style: {
-                  color: '#4682B4',
+                  color: '#699bc4',
                   weight: 1,
                   fillColor: '#4682B4',
-                  fillOpacity: 0.3
+                  fillOpacity: currentOpacity
                 },
                 pointToLayer: function (feature, latlng) {
                   return L.circleMarker(latlng, {
                     radius: 4,
                     fillColor: '#4682B4',
                     color: '#40b3ff',
-                    weight: 2,
-                    opacity: 1,
-                    fillOpacity: 0.5
+                    weight: 1,
+                    opacity: currentOpacity,
+                    fillOpacity: currentOpacity
                   });
                 },
                 onEachFeature: function (feature, layer) {
@@ -548,7 +600,8 @@
                     e.target.setStyle({
                       color: "#4682B4",    // border
                       weight: 2,
-                      fillOpacity: 0.5
+                      fillColor: '#3f75a2',
+                      fillOpacity: currentOpacity
                     });
 
                     const path = e.target._path;
@@ -584,11 +637,27 @@
                         displayKey = 'Metro Line';
                       }
 
-                      popupContent += '<tr><th style="text-align:left; padding-right:5px;">' + displayKey + '</th><td>' + value + '</td></tr>';
+                      popupContent += '<tr><th style="text-align:left; padding-right:5px;">' 
+                                    + displayKey + '</th><td>' + value + '</td></tr>';
                     }
                     popupContent += '</table>';
-                    layer.bindPopup(popupContent);
+
+                    // Show info box when feature clicked
+                    layer.on("click", function (e) {
+                      var infoBox = document.getElementById("infoBox");
+                      infoBox.innerHTML = popupContent;
+                      infoBox.style.display = "block";
+
+                      // Stop click from bubbling to the map
+                      L.DomEvent.stopPropagation(e);
+                    });
                   }
+
+                  // Hide info box when clicking outside features (on map)
+                  map.on("click", function () {
+                    var infoBox = document.getElementById("infoBox");
+                    infoBox.style.display = "none";
+                  });
                 }
               }).addTo(map);
 
@@ -629,17 +698,37 @@
     document.getElementById('welcomeModal').style.display = 'none';
   });
 
-  document.getElementById('layerSearch').addEventListener('input', function() {
-    var searchTerm = this.value.toLowerCase();
-    var layerItems = document.querySelectorAll('.layer-item');
+  // Slider listener
+  document.getElementById("opacityRange").addEventListener("input", function(e) {
+    currentOpacity = parseFloat(e.target.value);
+    updateLayerOpacity();
+  });
 
-    layerItems.forEach(function(item) {
-      var label = item.querySelector('label').textContent.toLowerCase();
-      if (label.includes(searchTerm)) {
-        item.style.display = 'flex'; // or 'block' depending on your layout
-      } else {
-        item.style.display = 'none';
+  // Hook into layeradd event → applies opacity to newly enabled layers
+  map.on("layeradd", function(e) {
+    if (e.layer.setStyle) {
+      e.layer.setStyle({
+        fillOpacity: currentOpacity,
+        opacity: currentOpacity
+      });
+    }
+  });
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("welcomeModal");
+    const closeBtn = document.getElementById("closeModal");
+    const dontShowAgain = document.getElementById("dontShowAgain");
+
+    // Show modal only if not previously dismissed
+    if (!localStorage.getItem("hideWelcomeModal")) {
+      modal.style.display = "block";
+    }
+
+    closeBtn.addEventListener("click", () => {
+      if (dontShowAgain.checked) {
+        localStorage.setItem("hideWelcomeModal", "true");
       }
+      modal.style.display = "none";
     });
   });
 </script>

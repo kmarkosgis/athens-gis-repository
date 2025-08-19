@@ -1,6 +1,6 @@
 Train stations of Athens Suburban and Regional Railway managed by Hellenic Train.
 
-<p>Uploaded: 23-06-2025
-Contributors: K. Markos
-Source: OSM, Hellenic Train<p/>
+<p>Uploaded: 23-06-2025<p/>
+<p>Contributors: K. Markos<p/>
+<p>Source: OSM, Hellenic Train<p/>
  

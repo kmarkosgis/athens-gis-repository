@@ -22,6 +22,13 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
 
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <!-- EasyPrint -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-easyprint/dist/bundle.css" />
+  <script src="https://unpkg.com/leaflet-easyprint/dist/bundle.js"></script>
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet">
@@ -30,7 +37,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
   <style>
-    body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; }
+    body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", serif; }
     #map { width: 100%; height: 100%; }
     
     ::-webkit-scrollbar {
@@ -66,7 +73,7 @@
 
     /* Modal overlay */
     #welcomeModal {
-      position: fixed;
+      position:fixed;
       z-index: 9999; /* above everything else */
       left: 0;
       top: 0;
@@ -130,25 +137,26 @@
       top: 50px;
       right: 10px;
       border: none;
-      background-color: rgba(252, 251, 246, 0.9);
+      background: rgb(252, 251, 246);
+      height: 35px;
       color: black;
       font-size: 20px;
-      padding: 8px 20px;
-      border-radius: 4px;
+      text-align: center;
+      padding: 1px 15px;
+      border-radius: 100%;
       cursor: pointer;
       z-index: 1100;
       transition-duration: 0.4s;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
     #openWelcome:hover {
-      background-color: #4682B4;
-      color: white;
+      background-color: white;
     }
 
     header {
       position: absolute;
       top: 0;
-      width: 98.9%;
+      width: 98.95%;
       background: rgba(70, 130, 180, 0.8);
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
       color: #f5f5dc;
@@ -162,10 +170,27 @@
       font-style: normal;
       z-index: 1000;
     }
+
+    #linkedin-btn {
+      position: absolute;
+      top: 6px;
+      right: 12px;
+    }
+
+    #linkedin-btn:hover {
+      background: #4682B4;
+    }
+
+    #linkedin-btn img {
+      display: block;
+      height: 28px /* Adjust size as needed */;
+      width: auto;
+    }
+
     .announcement-box {
       position: absolute;
-      top: 50px; /* adjust based on your header height */
-      right: 70px;
+      top: 100px; /* adjust based on your header height */
+      right: 60px;
       background-color: rgba(240, 244, 255, 0.8);
       color: rgb(0, 51, 102);
       border: 1px solid rgb(200, 216, 255);
@@ -225,19 +250,19 @@
     #toolbar {
       position: fixed;
       bottom: 30px; /* adjust to sit above footer */
-      right: 30px;
-      height: 15px;
-      transform: translateX(-50%);
+      right: 100px;
+      height: 20px;
       background: rgba(252, 251, 246, 0.9);
       border: 1px solid rgb(204, 204, 204);
-      border-radius: 8px;
-      padding: 8px 10px;
+      border-radius: 9999px;
+      padding: 8px;
+      padding-left: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       display: flex;
       align-items: center;
       gap: 10px;
       font-family: "Newsreader", serif;
-      font-size: 12px;
+      font-size: 14px;
       z-index: 1000; /* keep above map */
     }
 
@@ -247,6 +272,90 @@
       color: #4682B4;
       cursor: pointer;
     }    
+
+    #exportBtn {
+      background-color: rgba(252, 251, 246, 0.9);
+      color: black;
+      font-size: 14px;
+      padding: 5px 8px;
+      border-radius: 9999px;
+      border: 0px solid #4682B4;
+      cursor: pointer;
+      transition-duration: 0.4s;
+      font-family: "Newsreader", serif;
+      font-style: normal;
+    }
+
+    #exportBtn:hover {
+      background-color: #4682B4;
+      color: white;
+    }
+      /* Hide zoom controls when exporting */
+    .leaflet-control-container { display: block; }
+    .hide-controls .leaflet-control-container { display: none !important; }
+
+    #search-box {
+      position: absolute;
+      top: 50px;
+      right: 60px;
+      width: 265px;
+      height: 27px;
+      z-index: 1000;
+      border: none;
+      background: rgba(252, 251, 246, 0.9);
+      padding: 4px;
+      border-radius: 9999px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+
+    #search-box input {
+      width: 225px;
+      height: 25px;
+      border: none;
+      font-size: 14px;
+      border-radius: 9999px;
+      padding-left: 10px;
+    }
+
+    #search-box button{
+      border: none;
+      font-size: 12px;
+      background: rgba(252, 251, 246, 0.9);
+      padding: 2px;
+      border-radius: 100%;
+      cursor: pointer;
+      transition-duration: 0.4s;
+    }
+
+    #search-box button:hover{
+      background-color: white;
+    }
+    #search-box ul {
+      position: absolute;
+      left: 10px;
+      top: 32px;
+      width: 210px;
+      max-height: 200px;
+      background:rgba(252, 251, 246, 0.7);
+      z-index: 1001;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      border-radius: 4px;
+    }
+    #search-box ul li {
+      padding: 5px 10px;
+      cursor: pointer;
+      font-size: 12px;
+      font-family: "Newsreader", serif;
+      font-style: normal;
+      background:rgba(252, 251, 246, 0.7);      
+      border-radius: 4px;
+    }
+    #search-box ul li:hover {
+      background-color: white;
+    }
 
     #footer {
       position: absolute;
@@ -355,6 +464,160 @@
       bottom: 100px !important; 
       right: 0px !important; 
     }
+
+    /* Custom zoom controls */
+    #custom-zoom-controls {
+      position: absolute;
+      bottom: 90px;
+      right: 10px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    #custom-zoom-controls button {
+      background: rgba(252, 251, 246, 0.9);
+      height: 35px;
+      width: 35px;
+      border: none;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      color: black;
+      border-radius: 100%;
+      cursor: pointer;
+      transition-duration: 0.4s;
+      font-family: "Newsreader", serif;
+      font-size: 30px;
+    }
+
+    #custom-zoom-controls button:hover {
+      background: white;
+    }
+
+    #custom-basemap-switcher {
+      position: absolute;
+      bottom: 30px;
+      right: 10px;
+      z-index: 1001;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+    
+    #basemap-btn {
+      background: rgba(252,251,246,0.9);
+      border: none;
+      border-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      width: 50px;
+      height: 50px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition-duration: 0.4s;
+      padding: 0;
+    }
+    
+    #basemap-btn:hover {
+      background: white;
+    }
+    
+    #basemap-btn img {
+      width: 35px;                  /* Increase icon size */
+      height: 35px;
+      pointer-events: none;
+      margin: 0;
+      padding: 0;      
+    }
+    
+    #basemap-dropdown {
+      display: none;
+      position: absolute;
+      bottom: 54px;
+      right: 0;
+      background: rgba(252,251,246,0.9);
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      min-width: 140px;
+      font-family: "Newsreader", serif;
+      font-size: 14px;
+    }
+    
+    #basemap-dropdown ul {
+      list-style: none;
+      margin: 0;
+      padding: 6px 0;
+    }
+    
+    #basemap-dropdown li {
+      padding: 8px 18px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+      transition: background 0.2s;
+    }
+    
+    #basemap-dropdown li:last-child {
+      border-bottom: none;
+    }
+    
+    #basemap-dropdown li:hover {
+      background: white;
+    }
+
+    #legend-bar {
+      position: absolute;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      background: rgba(252,251,246,0.9);
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      min-width: 80px;
+      max-height: 360px;
+      font-family: "Newsreader", serif;
+      font-size: 14px;
+      z-index: 1100;
+      padding: 12px 18px;
+      overflow: auto;
+    }
+
+    #legend-title {
+      font-size: 13px;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: black;
+    }
+
+    #legend-list {
+      list-style-type: none;
+      padding: 0;
+      margin: 0; 
+      font-size: 13px;
+      color: black;
+    }
+
+    #legend-list li {
+      margin-bottom: 10px;
+    }
+
+    #legend-list span {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-right: 8px;
+      border-radius: 2px;
+    }
+    .legend-color {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      margin-right: 8px;
+      border-radius: 4px;
+      border: none;
+      vertical-align: middle;
+    }
   </style>
 </head>
 
@@ -374,7 +637,32 @@
   <img src="images/4.png" alt="Athens GIS Logo" class="logo">
 </div>
 
-<header>Athens GIS Repository</header>
+<header>
+  Athens GIS Repository
+  <a href="https://www.linkedin.com/in/konstantinos-markos/" id="linkedin-btn" title="Visit my LinkedIn">
+    <img src="images/linkedin_icon.png" alt="LinkedIn">
+  </a>
+  </header>
+
+<div id="custom-zoom-controls">
+  <button id="zoom-in" title="Zoom In"><strong>+</strong></button>
+  <button id="zoom-out" title="Zoom Out"><strong>-</strong></button>
+</div>
+
+<!-- Custom Basemap Switcher Button -->
+<div id="custom-basemap-switcher">
+  <button id="basemap-btn" title="Change Basemap">
+    <img src="images/map_layers_icon.png" alt="Basemap" style="vertical-align:middle;">
+  </button>
+  <div id="basemap-dropdown">
+    <ul>
+      <li data-basemap="positron">Carto Light</li>
+      <li data-basemap="darkMatter">Carto Dark</li>
+      <li data-basemap="osm">OpenStreetMap</li>
+      <li data-basemap="esriSat">Esri Satellite</li>
+    </ul>
+  </div>
+</div>
 
 <div class="announcement-box">
   📢 Notice: <strong>ALPHA VERSION</strong>
@@ -399,10 +687,23 @@
 
 <!-- Toolbar container -->
 <div id="toolbar">
+  <button id="exportBtn" title="Export the current map view">Map Export</button>
   <label for="opacityRange">Layer Transparency:</label>
-  <span id="opacityValue">0%</span>
+  <span id="opacityValueMin">0%</span>
   <input type="range" id="opacityRange" min="0" max="1" step="0.05" value="1">
-  <span id="opacityValue">100%</span>
+  <span id="opacityValueMax">100%</span>
+</div>
+
+<div id="search-box">
+  <input type="text" id="address" placeholder="Search for an address">
+  <button id="search-btn" title="Search">🔍</button>
+  <ul id="suggestions" ></ul>
+</div>
+
+<div id="legend-bar" style="display:none;">
+  <strong>Legend</strong>
+  <h4 id="legend-title"></h4>
+  <ul id="legend-list"></ul>
 </div>
 
 <div id="footer">
@@ -425,10 +726,7 @@
   </div>
 </div>
 <!-- Reopen Welcome Button -->
-<button id="openWelcome" title="Open Welcome Message">&#8505;</button>
-
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<button id="openWelcome" title="Open Info Message">&#8505;</button>
 
 <script>
   var activeLayerInfos = {}; // store info for all active layers
@@ -437,9 +735,6 @@
   var map = L.map('map', {
     zoomControl: false  // turn off default zoom control
   }).setView([37.98, 23.72], 12);
-  
-    // Add zoom in top-right
-  L.control.zoom({ position: 'bottomright' }).addTo(map);
 
   var positron = L.tileLayer(
   'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
@@ -475,6 +770,17 @@
         // Add basemap switcher in top-right (or elsewhere)
   L.control.layers(baseMaps, null, { position: 'bottomright' }).addTo(map);
 
+  var printer = L.easyPrint({
+    tileLayer: positron ,   // your default basemap layer
+    sizeModes: ['Current'], 
+    filename: 'map_export', 
+    exportOnly: true,       // hide the default print button
+    hideControlContainer: true,
+    hidden: true
+  }).addTo(map);
+
+  var marker; // We'll store the current marker here
+
   // === Define layers by category ===
   var layerCategories = {
     "Administrative Boundaries": [
@@ -488,7 +794,7 @@
       { name: "Islands of Attica region", file: "Boundaries/AthensIslands.json" }
     ],
     "Transport": [
-      { name: "Metro Stations 1, 2 & 3 ", file: "Transportation/AthensMetro123.geojson" },
+      { name: "Metro Stations 1, 2 & 3", file: "Transportation/AthensMetro123.geojson" },
       { name: "Train/OSE Stations", file: "Transportation/AthensTrain.geojson" },
       { name: "Tram Stations", file: "Transportation/AthensTram.geojson" },
       { name: "Bus Stops", file: "Transportation/AthensBusStops.geojson" },
@@ -584,6 +890,7 @@
       download.innerHTML = '&#129035;';  // ⇩ arrow
       download.className = 'download-button';
       download.style.display = 'none';
+      download.title='Download the selected layer'
 
       // Add to flex row container
       layerItem.appendChild(checkbox);
@@ -595,155 +902,203 @@
 
       // Checkbox logic
       checkbox.addEventListener('change', function() {
-        var filename = this.dataset.filename;
-        var layername = this.dataset.layername;
-        var link = this.parentElement.querySelector('.download-button');
+  var filename = this.dataset.filename;
+  var layername = this.dataset.layername;
+  var link = this.parentElement.querySelector('.download-button');
 
-        if (this.checked) {
-          link.style.display = 'inline-block';
-        
-          // ✅ Add placeholder immediately
-          activeLayerInfos[layername] = '<em>Loading info...</em>';
-          updateInfoBox();
-          let selectedFeature = null;
-          fetch('data/' + filename)
-          .then(res => res.json())
-          .then(data => {
-            const geojsonLayer = L.geoJSON(data, {
-              style: function (feature) {
-                return {
-                  color: '#699bc4',
-                  weight: 1,
-                  fillColor: '#4682B4',
-                  fillOpacity: currentOpacity
-                };
-              },
-              pointToLayer: function (feature, latlng) {
-                return L.circleMarker(latlng, {
-                  radius: 4,
-                  fillColor: '#4682B4',
-                  color: '#40b3ff',
-                  weight: 1,
-                  opacity: currentOpacity,
-                  fillOpacity: currentOpacity
-                });
-              },
-              onEachFeature: function (feature, layer) {
-                // Highlight effect on click
-                layer.on("click", function (e) {
-                  // Reset previously selected feature
-                  if (selectedFeature) {
-                    geojsonLayer.resetStyle(selectedFeature);
-                  }
+  if (this.checked) {
+    link.style.display = 'inline-block';
 
-                  selectedFeature = e.target;
+    activeLayerInfos[layername] = '<em>Loading info...</em>';
+    updateInfoBox();
+    let selectedFeature = null;
+    fetch('data/' + filename)
+    .then(res => res.json())
+    .then(data => {
+      // Use legend config if available
+      const legendConfig = legendConfigs[layername];
 
-                  e.target.setStyle({
-                    color: "#4682B4",    // border
-                    weight: 2,
-                    fillColor: '#3f75a2',
-                    fillOpacity: currentOpacity
-                  });
+      const geojsonLayer = L.geoJSON(data, {
+        style: function (feature) {
+          // If legend config exists, use its color for each class
+          if (legendConfig && feature.properties && legendConfig.field in feature.properties) {
+            const classValue = feature.properties[legendConfig.field];
+            const classStyle = legendConfig.classes[classValue];
+            if (classStyle) {
+              return {
+                color: classStyle.color,      // border color
+                weight: 2,
+                fillColor: classStyle.color,  // fill color
+                fillOpacity: currentOpacity
+              };
+            }
+          }
+          // Default style
+          return {
+            color: '#699bc4',
+            weight: 1,
+            fillColor: '#4682B4',
+            fillOpacity: currentOpacity
+          };
+        },
+        pointToLayer: function (feature, latlng) {
+          // Use legend config for point color
+          if (legendConfig && feature.properties && legendConfig.field in feature.properties) {
+            const classValue = feature.properties[legendConfig.field];
+            const classStyle = legendConfig.classes[classValue];
+            if (classStyle) {
+              return L.circleMarker(latlng, {
+                radius: 4,
+                fillColor: classStyle.color,
+                color: classStyle.color,
+                weight: 1,
+                opacity: currentOpacity,
+                fillOpacity: currentOpacity
+              });
+            }
+          }
+          // Default style
+          return L.circleMarker(latlng, {
+            radius: 4,
+            fillColor: '#4682B4',
+            color: '#40b3ff',
+            weight: 1,
+            opacity: currentOpacity,
+            fillOpacity: currentOpacity
+          });
+        },
+        onEachFeature: function (feature, layer) {
+          // Highlight effect on click
+          layer.on("click", function (e) {
+            // Reset previously selected feature
+            if (selectedFeature) {
+              geojsonLayer.resetStyle(selectedFeature);
+            }
 
-                  const path = e.target._path;
-                  if (path) {
-                    path.classList.add("feature-highlight");
-                  }
-                    // 👉 Move feature on top of others
-                  e.target.bringToFront();
+            selectedFeature = e.target;
 
-                  document.querySelectorAll("path.feature-highlight").forEach(el => {
-                    if (el !== path) {
-                      el.classList.remove("feature-highlight");
-                    }
-                  });
-                });
-
-                // Info box handling
-                if (feature.properties) {
-                  var popupContent = '<table>';
-                  for (var key in feature.properties) {
-                    var value = feature.properties[key];
-                    var displayKey = key;
-
-                    if (key.toLowerCase() === 'shapeleng_') {
-                      value = Number(value).toFixed(2);
-                      displayKey = 'Shape Length (km)';
-                    } else if (key.toLowerCase() === 'shapearea') {
-                      value = Number(value).toFixed(2);
-                      displayKey = 'Shape Area (km²)';
-                    } else if (key.toLowerCase() === 'name') {
-                      displayKey = 'Name';
-                    } else if (key.toLowerCase() === 'sectionnam') {
-                      displayKey = 'Section Name';
-                    } else if (key.toLowerCase() === 'metroline') {
-                      displayKey = 'Metro Line';
-                    }
-
-                    popupContent += '<tr><th style="text-align:left; padding-right:5px;">' 
-                                  + displayKey + '</th><td>' + value + '</td></tr>';
-                  }
-                  popupContent += '</table>';
-
-                  layer.on("click", function (e) {
-                    var infoBox = document.getElementById("infoBox");
-                    infoBox.innerHTML = popupContent;
-                    infoBox.style.display = "block";
-                    L.DomEvent.stopPropagation(e);
-                  });
-                }
-              }
-            }).addTo(map);
-
-            // ✅ Reset highlight + hide info when clicking outside
-            map.on("click", function () {
-              var infoBox = document.getElementById("infoBox");
-              infoBox.style.display = "none";
-
-              if (selectedFeature) {
-                geojsonLayer.resetStyle(selectedFeature);
-                // ❌ remove shadow class
-                const path = selectedFeature._path;
-                if (path) {
-                path.classList.remove("feature-highlight");
-                }
-                selectedFeature = null;
-              }
+            e.target.setStyle({
+              color: "#4682B4",    // border
+              weight: 2,
+              fillColor: '#3f75a2',
+              fillOpacity: currentOpacity
             });
 
-            geojsonLayers[filename] = geojsonLayer;
-            map.fitBounds(geojsonLayer.getBounds());
+            const path = e.target._path;
+            if (path) {
+              path.classList.add("feature-highlight");
+            }
+              // 👉 Move feature on top of others
+            e.target.bringToFront();
+
+            document.querySelectorAll("path.feature-highlight").forEach(el => {
+              if (el !== path) {
+                el.classList.remove("feature-highlight");
+              }
+            });
           });
 
+          // Info box handling
+          if (feature.properties) {
+            var popupContent = '<table>';
+            for (var key in feature.properties) {
+              var value = feature.properties[key];
+              var displayKey = key;
 
-          var txtFile = filename.replace(/\.[^/.]+$/, "") + ".txt";
-          fetch('info/' + txtFile)
-            .then(res => {
-              if (!res.ok) throw new Error('No info file');
-              return res.text();
-            })
-            .then(text => {
-              activeLayerInfos[layername] = text;
-              updateInfoBox();
-            })
-            .catch(err => {
-              activeLayerInfos[layername] = '<em>No extra info available for this layer.</em>';
-              updateInfoBox();
+              if (key.toLowerCase() === 'shapeleng_') {
+                value = Number(value).toFixed(2);
+                displayKey = 'Shape Length (km)';
+              } else if (key.toLowerCase() === 'shapearea') {
+                value = Number(value).toFixed(2);
+                displayKey = 'Shape Area (km²)';
+              } else if (key.toLowerCase() === 'name') {
+                displayKey = 'Name';
+              } else if (key.toLowerCase() === 'sectionnam') {
+                displayKey = 'Section Name';
+              } else if (key.toLowerCase() === 'metroline') {
+                displayKey = 'Metro Line';
+              }
+
+              popupContent += '<tr><th style="text-align:left; padding-right:5px;">' 
+                              + displayKey + '</th><td>' + value + '</td></tr>';
+            }
+            popupContent += '</table>';
+
+            layer.on("click", function (e) {
+              var infoBox = document.getElementById("infoBox");
+              infoBox.innerHTML = popupContent;
+              infoBox.style.display = "block";
+              L.DomEvent.stopPropagation(e);
             });
-        
-        } else {
-          link.style.display = 'none';
-          if (geojsonLayers[filename]) {
-            map.removeLayer(geojsonLayers[filename]);
-            delete geojsonLayers[filename];
           }
-          delete activeLayerInfos[layername];
-          updateInfoBox();
+        }
+      }).addTo(map);
+
+      // ✅ Reset highlight + hide info when clicking outside
+      map.on("click", function () {
+        var infoBox = document.getElementById("infoBox");
+        infoBox.style.display = "none";
+
+        if (selectedFeature) {
+          geojsonLayer.resetStyle(selectedFeature);
+          // ❌ remove shadow class
+          const path = selectedFeature._path;
+          if (path) {
+          path.classList.remove("feature-highlight");
+          }
+          selectedFeature = null;
         }
       });
+
+      geojsonLayers[filename] = geojsonLayer;
+      map.fitBounds(geojsonLayer.getBounds());
+    });
+
+
+    var txtFile = filename.replace(/\.[^/.]+$/, "") + ".txt";
+    fetch('info/' + txtFile)
+      .then(res => {
+        if (!res.ok) throw new Error('No info file');
+        return res.text();
+      })
+      .then(text => {
+        activeLayerInfos[layername] = text;
+        updateInfoBox();
+      })
+      .catch(err => {
+        activeLayerInfos[layername] = '<em>No extra info available for this layer.</em>';
+        updateInfoBox();
+      });
+        
+  } else {
+    link.style.display = 'none';
+    if (geojsonLayers[filename]) {
+      map.removeLayer(geojsonLayers[filename]);
+      delete geojsonLayers[filename];
+    }
+    delete activeLayerInfos[layername];
+    updateInfoBox();
+  }
+});
+
     });
   }
-    
+
+  //Layers Search
+  document.getElementById('layerSearch').addEventListener('input', function() {
+    var searchTerm = this.value.toLowerCase();
+    var layerItems = document.querySelectorAll('.layer-item');
+
+    layerItems.forEach(function(item) {
+      var label = item.querySelector('label').textContent.toLowerCase();
+      if (label.includes(searchTerm)) {
+        item.style.display = 'flex'; // or 'block' depending on your layout
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  });
+
   // Slider listener
   document.getElementById("opacityRange").addEventListener("input", function(e) {
     currentOpacity = parseFloat(e.target.value);
@@ -790,6 +1145,210 @@
     });
   });
 
+  document.getElementById("exportBtn").addEventListener("click", function () {
+    printer.printMap('CurrentSize', 'map_export');
+
+    setTimeout(() => {
+      let exportImg = document.querySelector(".leaflet-print > img");
+      if (!exportImg) return;
+
+      let canvas = document.createElement("canvas");
+      let ctx = canvas.getContext("2d");
+
+      canvas.width = exportImg.naturalWidth;
+      canvas.height = exportImg.naturalHeight;
+
+      // Draw map only (no logo, no date)
+      ctx.drawImage(exportImg, 0, 0);
+
+      // Save PNG
+      let link = document.createElement("a");
+      link.download = "map_export.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }, 1200); // slight delay so EasyPrint finishes
+  });
+
+  // Address search
+  function searchAddress() {
+      var address = document.getElementById('address').value;
+      if (!address) return;
+
+      fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`)
+          .then(response => response.json())
+          .then(data => {
+              if (data.length > 0) {
+                  var lat = parseFloat(data[0].lat);
+                  var lon = parseFloat(data[0].lon);
+
+                  // Remove old marker if exists
+                  if (marker) {
+                      map.removeLayer(marker);
+                  }
+
+                  // Add new marker
+                  marker = L.marker([lat, lon]).addTo(map)
+                      .bindPopup(`<b>${data[0].display_name}</b>`).openPopup();
+
+                  // Zoom to location
+                  map.setView([lat, lon], 14);
+              } else {
+                  alert("Address not found!");
+              }
+          })
+          .catch(err => console.error(err));
+  }
+
+  document.getElementById('search-btn').addEventListener('click', searchAddress);
+
+  document.getElementById('address').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+          searchAddress();
+      }
+  });
+
+const addressInput = document.getElementById('address');
+const suggestionsList = document.getElementById('suggestions');
+
+// Show suggestions as user types
+addressInput.addEventListener('input', function() {
+    const query = addressInput.value.trim();
+    if (query.length < 3) {
+        suggestionsList.innerHTML = '';
+        suggestionsList.style.display = 'none';
+        return;
+    }
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5`)
+        .then(response => response.json())
+        .then(data => {
+            suggestionsList.innerHTML = '';
+            if (data.length === 0) {
+                suggestionsList.style.display = 'none';
+                return;
+            }
+            data.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item.display_name;
+                li.style.cursor = 'pointer';
+                li.style.padding = '4px 8px';
+                li.style.background = '#fff';
+                li.style.borderBottom = '1px solid #eee';
+                li.addEventListener('mousedown', function(e) {
+                    addressInput.value = item.display_name;
+                    suggestionsList.innerHTML = '';
+                    suggestionsList.style.display = 'none';
+                    searchAddress();
+                });
+                suggestionsList.appendChild(li);
+            });
+            suggestionsList.style.display = 'block';
+        });
+});
+
+// Hide suggestions when clicking outside
+document.addEventListener('click', function(e) {
+    if (!addressInput.contains(e.target) && !suggestionsList.contains(e.target)) {
+        suggestionsList.innerHTML = '';
+        suggestionsList.style.display = 'none';
+    }
+});
+
+// Remove marker when clicking elsewhere on the map
+map.on('click', function() {
+    if (marker) {
+        map.removeLayer(marker);
+        marker = null;
+    }
+});
+
+// Custom zoom controls
+document.getElementById('zoom-in').addEventListener('click', function() {
+  map.zoomIn();
+});
+
+document.getElementById('zoom-out').addEventListener('click', function() {
+  map.zoomOut();
+});
+
+// Custom Basemap Switcher Logic
+const basemapBtn = document.getElementById('basemap-btn');
+const basemapDropdown = document.getElementById('basemap-dropdown');
+const basemapLayers = { positron, darkMatter, osm, esriSat };
+
+basemapBtn.addEventListener('click', function(e) {
+  basemapDropdown.style.display = basemapDropdown.style.display === 'block' ? 'none' : 'block';
+  e.stopPropagation();
+});
+
+basemapDropdown.addEventListener('click', function(e) {
+  if (e.target.tagName === 'LI') {
+    // Remove current basemap
+    Object.values(basemapLayers).forEach(layer => map.removeLayer(layer));
+    // Add selected basemap
+    basemapLayers[e.target.dataset.basemap].addTo(map);
+    basemapDropdown.style.display = 'none';
+  }
+  e.stopPropagation();
+});
+
+// Hide dropdown when clicking outside
+document.addEventListener('click', function(e) {
+  if (!basemapDropdown.contains(e.target) && e.target !== basemapBtn) {
+    basemapDropdown.style.display = 'none';
+  }
+});
+
+// Legend configuration: choose layers, field, and styles
+const legendConfigs = {
+  "Metro Stations 1, 2 & 3": {
+    field: "metroline",
+    title: "Metro Lines",
+    classes: {
+      "1": { color: "#008000" },
+      "2": { color: "#ff0000" },
+      "3": { color: "#0000ff" }
+    }
+  }
+  // Add more layers as needed
+};
+
+// Show legend for a layer
+function showLegend(layerName) {
+  const config = legendConfigs[layerName];
+  if (!config) {
+    document.getElementById("legend-bar").style.display = "none";
+    return;
+  }
+  document.getElementById("legend-title").textContent = config.title;
+  const legendList = document.getElementById("legend-list");
+  legendList.innerHTML = "";
+  Object.entries(config.classes).forEach(([className, style]) => {
+    const li = document.createElement("li");
+    const colorBox = document.createElement("span");
+    colorBox.className = "legend-color";
+    colorBox.style.background = style.color;
+    li.appendChild(colorBox);
+    li.appendChild(document.createTextNode(className));
+    legendList.appendChild(li);
+  });
+  document.getElementById("legend-bar").style.display = "block";
+}
+
+// Hide legend
+function hideLegend() {
+  document.getElementById("legend-bar").style.display = "none";
+}
+
+// Hook into layer checkbox logic
+document.querySelectorAll('.layer-item input[type="checkbox"]').forEach(function(checkbox) {
+  checkbox.addEventListener('change', function() {
+    if (this.checked) {
+      showLegend(this.dataset.layername);
+    } else {
+      hideLegend();
+    }
+  });
+});
 </script>
 
 </body>

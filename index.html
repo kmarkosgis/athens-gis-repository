@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="stylesheet" href="style.css">
   <meta charset="utf-8" />
   <title>Athens GIS Repository</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,596 +30,15 @@
   <!-- jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
+  <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet">
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-
-  <style>
-    body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", serif; }
-    #map { width: 100%; height: 100%; }
-    
-    ::-webkit-scrollbar {
-      width: 5px;              /* width of vertical scrollbar */
-      height: 5px;             /* height of horizontal scrollbar */
-    }
-
-    ::-webkit-scrollbar-track {
-      background: rgba(252, 251, 246, 0.9);      /* scrollbar track color */
-      border-radius: 5px;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: rgba(70, 130, 180, 0.7);      /* scrollbar thumb color */
-      border-radius: 5px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgb(70, 130, 180);      /* darker on hover */
-    }
-
-    .logo-container {
-      position: absolute;
-      top: 1px;
-      left: 1px;
-      z-index: 2000;
-    }
-
-    .logo {
-      height: 40px; /* Adjust size as needed */
-      width: auto;
-    }
-
-    /* Modal overlay */
-    #welcomeModal {
-      position:fixed;
-      z-index: 9999; /* above everything else */
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0,0,0,0.6); /* dark overlay */
-      display: none;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    /* Modal content box */
-    #welcomeContent {
-      background-color: rgba(252, 251, 246, 0.9);
-      padding: 30px;
-      border-radius: 8px;
-      max-width: 500px;
-      text-align: center;
-      font-family: "Newsreader", serif;
-      font-style: normal;
-      font-size: 14px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.4);
-    }
-    
-    #welcomeContent h2 {
-      margin-top: 0;
-    }
-    
-    #welcomeContent button {
-      margin-top: 20px;
-      padding: 8px 20px;
-      background-color: white;
-      border: 1px solid #4682B4;
-      color: black;
-      font-size: 14px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition-duration: 0.4s;
-    }
-    
-    #welcomeContent button:hover {
-      background-color: #4682B4;
-      color: white;
-    }
-    .welcome-logo {
-      display: block;
-      margin: 0 auto 20px auto;
-      width: 240px;
-      height: 60px;
-    }
-    #welcomeContent input{
-      position: relative;
-      border: 1px solid #4682B4;
-      font-size: 20px;
-      cursor: pointer;
-    }    
-    /* Info Button top-right */
-    #openWelcome {
-      position: fixed;
-      top: 50px;
-      right: 10px;
-      border: none;
-      background: rgb(252, 251, 246);
-      height: 35px;
-      color: black;
-      font-size: 20px;
-      text-align: center;
-      padding: 1px 15px;
-      border-radius: 100%;
-      cursor: pointer;
-      z-index: 1100;
-      transition-duration: 0.4s;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    }
-    #openWelcome:hover {
-      background-color: white;
-    }
-
-    header {
-      position: absolute;
-      top: 0;
-      width: 98.95%;
-      background: rgba(70, 130, 180, 0.8);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
-      color: #f5f5dc;
-      text-align: center;
-      font-weight: 500;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      padding: 10px;
-      font-size: 21px;
-      font-family: "Newsreader", serif;
-      font-style: normal;
-      z-index: 1000;
-    }
-
-    #linkedin-btn {
-      position: absolute;
-      top: 6px;
-      right: 12px;
-    }
-
-    #linkedin-btn:hover {
-      background: #4682B4;
-    }
-
-    #linkedin-btn img {
-      display: block;
-      height: 28px /* Adjust size as needed */;
-      width: auto;
-    }
-
-    .announcement-box {
-      position: absolute;
-      top: 100px; /* adjust based on your header height */
-      right: 60px;
-      background-color: rgba(240, 244, 255, 0.8);
-      color: rgb(0, 51, 102);
-      border: 1px solid rgb(200, 216, 255);
-      padding: 10px 10px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-family: "Newsreader", serif;
-      font-style: normal;
-      font-weight: 400;
-      text-align: left;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-      max-width: 250px;
-      height: auto;
-      z-index: 999;
-    }
-
-    #layerControl {
-      position: absolute;
-      top: 50px;      /* below header */
-      bottom: 220px;   /* above footer */
-      left: 10px;     /* left side */
-      width: 250px;   /* adjust width as needed */
-      background: rgba(252, 251, 246, 0.9); /* white with 90% opacity */
-      padding: 10px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      overflow-y: auto;     /* makes it scrollable */
-      z-index: 999;
-      font-size: 13px;
-      font-family: "Newsreader", serif;
-      font-style: normal;
-    }
-
-    #layerControl h4 {
-      margin: 8px 0 4px;
-      font-size: 14px;
-    }
-
-    #layerInfoBox {
-      position: fixed;
-      bottom: 30px;   /* above footer */
-      left: 10px;
-      width: 250px;
-      height: 160px;
-      overflow-y: auto;
-      background: rgba(252, 251, 246, 0.9);
-      border-radius: 8px;
-      padding: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      font-size: 12px;
-      font-family: "Newsreader", serif;
-      display: none;  /* hidden by default */
-      z-index: 2000;  /* ✅ force on top! */
-    }
-
-    /* Toolbar styling */
-    #toolbar {
-      position: fixed;
-      bottom: 30px; /* adjust to sit above footer */
-      right: 100px;
-      height: 20px;
-      background: rgba(252, 251, 246, 0.9);
-      border: 1px solid rgb(204, 204, 204);
-      border-radius: 9999px;
-      padding: 8px;
-      padding-left: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-family: "Newsreader", serif;
-      font-size: 14px;
-      z-index: 1000; /* keep above map */
-    }
-
-    #opacityRange {
-      width: 100px;
-      height: 5px;
-      color: #4682B4;
-      cursor: pointer;
-    }    
-
-    #exportBtn {
-      background-color: rgba(252, 251, 246, 0.9);
-      color: black;
-      font-size: 14px;
-      padding: 5px 8px;
-      border-radius: 9999px;
-      border: 0px solid #4682B4;
-      cursor: pointer;
-      transition-duration: 0.4s;
-      font-family: "Newsreader", serif;
-      font-style: normal;
-    }
-
-    #exportBtn:hover {
-      background-color: #4682B4;
-      color: white;
-    }
-      /* Hide zoom controls when exporting */
-    .leaflet-control-container { display: block; }
-    .hide-controls .leaflet-control-container { display: none !important; }
-
-    #search-box {
-      position: absolute;
-      top: 50px;
-      right: 60px;
-      width: 265px;
-      height: 27px;
-      z-index: 1000;
-      border: none;
-      background: rgba(252, 251, 246, 0.9);
-      padding: 4px;
-      border-radius: 9999px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    }
-
-    #search-box input {
-      width: 225px;
-      height: 25px;
-      border: none;
-      font-size: 14px;
-      border-radius: 9999px;
-      padding-left: 10px;
-    }
-
-    #search-box button{
-      border: none;
-      font-size: 12px;
-      background: rgba(252, 251, 246, 0.9);
-      padding: 2px;
-      border-radius: 100%;
-      cursor: pointer;
-      transition-duration: 0.4s;
-    }
-
-    #search-box button:hover{
-      background-color: white;
-    }
-    #search-box ul {
-      position: absolute;
-      left: 10px;
-      top: 32px;
-      width: 210px;
-      max-height: 200px;
-      background:rgba(252, 251, 246, 0.7);
-      z-index: 1001;
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      border-radius: 4px;
-    }
-    #search-box ul li {
-      padding: 5px 10px;
-      cursor: pointer;
-      font-size: 12px;
-      font-family: "Newsreader", serif;
-      font-style: normal;
-      background:rgba(252, 251, 246, 0.7);      
-      border-radius: 4px;
-    }
-    #search-box ul li:hover {
-      background-color: white;
-    }
-
-    #footer {
-      position: absolute;
-      bottom: 0;
-      width: 99.5%;
-      background: rgba(0,255,240, 0.7);
-      color: grey;
-      text-align: center;
-      padding: 3px;
-      font-size: 11px;
-      font-family: "Newsreader", serif;
-      font-style: normal;
-      z-index: 1000;
-    }
-
-    .layer-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 5px;
-    }
-
-    .layer-item label {
-      flex-grow: 1;
-      margin-left: 4px;
-    }
-
-    /* Make checkboxes look circular */
-    .layer-item input[type="checkbox"] {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 12px;
-      height: 12px;
-      border: 1px solid #4682B4;
-      border-radius: 50%; /* Makes it a circle */
-      background-color: white;
-      cursor: pointer;
-      outline: none;
-      position: relative;
-    }
-    
-    .layer-item input[type="checkbox"]:checked {
-      background-color: #4682B4;
-    }
-    
-    .layer-item input[type="checkbox"]::after {
-      content: "";
-      position: absolute;
-      top: 2px;
-      left: 2px;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: white;
-      display: none;
-    }
-    
-    .layer-item input[type="checkbox"]:checked::after {
-      display: block;
-    }
-
-    .layer-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1px 0;
-    }
-
-    .download-button {
-      display: inline-block;
-      background: white;
-      color: black;
-      border: 1px solid #4682B4;
-      padding: 2px 4px;
-      border-radius: 4px;
-      text-decoration: none;
-      font-size: 12px;
-      cursor: pointer;
-      line-height: 1;
-      flex-shrink: 0;
-      transition-duration: 0.4s;
-    }
-    .download-button:hover {
-      background: #4682B4;
-      color: white;
-    }
-    .feature-highlight {
-    filter: drop-shadow(1px 1px 5px rgba(0, 0, 0, 0.7));
-    }
-
-    #layer-search-container {
-    margin-bottom: 10px;
-    }
-
-    #layer-search {
-      width: 100%;
-      padding: 6px;
-      font-size: 14px;
-    }
-
-    .leaflet-control-layers {
-      bottom: -75px !important; 
-      right: 0px !important;   
-    }
-    .leaflet-control-zoom {
-      bottom: 100px !important; 
-      right: 0px !important; 
-    }
-
-    /* Custom zoom controls */
-    #custom-zoom-controls {
-      position: absolute;
-      bottom: 90px;
-      right: 10px;
-      z-index: 1000;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-
-    #custom-zoom-controls button {
-      background: rgba(252, 251, 246, 0.9);
-      height: 35px;
-      width: 35px;
-      border: none;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      color: black;
-      border-radius: 100%;
-      cursor: pointer;
-      transition-duration: 0.4s;
-      font-family: "Newsreader", serif;
-      font-size: 30px;
-    }
-
-    #custom-zoom-controls button:hover {
-      background: white;
-    }
-
-    #custom-basemap-switcher {
-      position: absolute;
-      bottom: 30px;
-      right: 10px;
-      z-index: 1001;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-    }
-    
-    #basemap-btn {
-      background: rgba(252,251,246,0.9);
-      border: none;
-      border-radius: 4px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      width: 50px;
-      height: 50px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition-duration: 0.4s;
-      padding: 0;
-    }
-    
-    #basemap-btn:hover {
-      background: white;
-    }
-    
-    #basemap-btn img {
-      width: 35px;                  /* Increase icon size */
-      height: 35px;
-      pointer-events: none;
-      margin: 0;
-      padding: 0;      
-    }
-    
-    #basemap-dropdown {
-      display: none;
-      position: absolute;
-      bottom: 54px;
-      right: 0;
-      background: rgba(252,251,246,0.9);
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      min-width: 140px;
-      font-family: "Newsreader", serif;
-      font-size: 14px;
-    }
-    
-    #basemap-dropdown ul {
-      list-style: none;
-      margin: 0;
-      padding: 6px 0;
-    }
-    
-    #basemap-dropdown li {
-      padding: 8px 18px;
-      cursor: pointer;
-      border-bottom: 1px solid #eee;
-      transition: background 0.2s;
-    }
-    
-    #basemap-dropdown li:last-child {
-      border-bottom: none;
-    }
-    
-    #basemap-dropdown li:hover {
-      background: white;
-    }
-
-    #legend-bar {
-      position: absolute;
-      top: 50%;
-      right: 10px;
-      transform: translateY(-50%);
-      background: rgba(252,251,246,0.9);
-      border: none;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      min-width: 80px;
-      max-height: 360px;
-      font-family: "Newsreader", serif;
-      font-size: 14px;
-      z-index: 1100;
-      padding: 12px 18px;
-      overflow: auto;
-    }
-
-    #legend-title {
-      font-size: 13px;
-      margin-bottom: 8px;
-      font-weight: bold;
-      color: black;
-    }
-
-    #legend-list {
-      list-style-type: none;
-      padding: 0;
-      margin: 0; 
-      font-size: 13px;
-      color: black;
-    }
-
-    #legend-list li {
-      margin-bottom: 10px;
-    }
-
-    #legend-list span {
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      margin-right: 8px;
-      border-radius: 2px;
-    }
-    .legend-color {
-      display: inline-block;
-      width: 18px;
-      height: 18px;
-      margin-right: 8px;
-      border-radius: 4px;
-      border: none;
-      vertical-align: middle;
-    }
-  </style>
 </head>
 
 <!-- Google tag (gtag.js) -->
@@ -633,6 +53,10 @@
 
 <body>
 
+<button id="menuBtn" title="Show Layers" style="position:fixed;top:50px;z-index:2001;background: rgba(252,251,246,0.95);color:black;border:none;border-radius:9999px;padding:8px 11px;font-size:16px;display:none;box-shadow: 0 2px 12px rgba(0,0,0,0.25);">
+  <strong>☰</strong>
+</button>
+
 <div class="logo-container">
   <img src="images/4.png" alt="Athens GIS Logo" class="logo">
 </div>
@@ -642,7 +66,7 @@
   <a href="https://www.linkedin.com/in/konstantinos-markos/" id="linkedin-btn" title="Visit my LinkedIn">
     <img src="images/linkedin_icon.png" alt="LinkedIn">
   </a>
-  </header>
+</header>
 
 <div id="custom-zoom-controls">
   <button id="zoom-in" title="Zoom In"><strong>+</strong></button>
@@ -664,7 +88,8 @@
   </div>
 </div>
 
-<div class="announcement-box">
+<div class="announcement-box" id="announcement-box">
+  <button class="close-btn" onclick="document.getElementById('announcement-box').style.display='none'">&times;</button>
   📢 Notice: <strong>ALPHA VERSION</strong>
   <p>🚧 The repository is currently under development. Please standby for full version.</p>
   <p>⚠️ Data provided by the repository may contain errors.</p>
@@ -678,20 +103,20 @@
   <!-- Categories and checkboxes will be generated here -->
 </div>
 
-<div id="infoBox" 
-     style="position: absolute; bottom: 30px; left: 290px; width: 250px; 
-            height: 160px; overflow-y: auto; padding: 10px 5px; font-size: 12px; font-family: Newsreader, serif;
-            background:rgba(252, 251, 246, 0.9); border: 1px solid #ccc; border-radius: 8px; 
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3); display: none; z-index: 1000;">
-</div>
+<div id="infoBox"></div>
 
 <!-- Toolbar container -->
 <div id="toolbar">
-  <button id="exportBtn" title="Export the current map view">Map Export</button>
+  <button id="measureBtn" title="Measure distance"><img src="images/length.png" alt="Measure"></button>
+  <button id="exportBtn" title="Export the current map view"><img src="images/import-export.png" alt="Export"> </button>
   <label for="opacityRange">Layer Transparency:</label>
   <span id="opacityValueMin">0%</span>
   <input type="range" id="opacityRange" min="0" max="1" step="0.05" value="1">
   <span id="opacityValueMax">100%</span>
+</div>
+
+<div id="measure-msg" style="display:none;position:fixed;top:50px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.95);padding:8px 18px;border-radius:8px;z-index:3000;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
+  Click on the map to draw your measurement. Double click to finish. Press ESC to cancel.
 </div>
 
 <div id="search-box">
@@ -780,6 +205,10 @@
   }).addTo(map);
 
   var marker; // We'll store the current marker here
+  
+  let measureControl;
+  let measureEnabled = false;
+  let measureLayer = null; // store the drawn line
 
   // === Define layers by category ===
   var layerCategories = {
@@ -943,20 +372,35 @@
         },
         pointToLayer: function (feature, latlng) {
           // Use legend config for point color
-          if (legendConfig && feature.properties && legendConfig.field in feature.properties) {
+            if (legendConfig && feature.properties && legendConfig.field in feature.properties) {
             const classValue = feature.properties[legendConfig.field];
             const classStyle = legendConfig.classes[classValue];
             if (classStyle) {
+              // For points
+              if (feature.geometry.type === "Point" || feature.geometry.type === "MultiPoint") {
               return L.circleMarker(latlng, {
                 radius: 4,
                 fillColor: classStyle.color,
-                color: classStyle.color,
+                color: '#40b3ff',
                 weight: 1,
                 opacity: currentOpacity,
                 fillOpacity: currentOpacity
               });
+              }
+              // For polygons
+              if (
+              feature.geometry.type === "Polygon" ||
+              feature.geometry.type === "MultiPolygon"
+              ) {
+              return {
+                color: classStyle.color,
+                weight: 1,
+                fillColor: classStyle.color,
+                fillOpacity: currentOpacity
+              };
+              }
             }
-          }
+            }
           // Default style
           return L.circleMarker(latlng, {
             radius: 4,
@@ -977,18 +421,39 @@
 
             selectedFeature = e.target;
 
-            e.target.setStyle({
-              color: "#4682B4",    // border
+            // Get legend config for this layer
+            const legendConfig = legendConfigs[layername];
+            let highlightStyle = {
               weight: 2,
-              fillColor: '#3f75a2',
               fillOpacity: currentOpacity
-            });
+            };
+
+            if (
+              legendConfig &&
+              feature.properties &&
+              legendConfig.field in feature.properties
+            ) {
+              const classValue = feature.properties[legendConfig.field];
+              const classStyle = legendConfig.classes[classValue];
+              if (classStyle) {
+                highlightStyle.color = classStyle.color;
+                highlightStyle.fillColor = classStyle.color;
+              } else {
+                highlightStyle.color = "#4682B4";
+                highlightStyle.fillColor = "#3f75a2";
+              }
+            } else {
+              highlightStyle.color = "#4682B4";
+              highlightStyle.fillColor = "#3f75a2";
+            }
+
+            e.target.setStyle(highlightStyle);
 
             const path = e.target._path;
             if (path) {
               path.classList.add("feature-highlight");
             }
-              // 👉 Move feature on top of others
+            // 👉 Move feature on top of others
             e.target.bringToFront();
 
             document.querySelectorAll("path.feature-highlight").forEach(el => {
@@ -1019,8 +484,8 @@
                 displayKey = 'Metro Line';
               }
 
-              popupContent += '<tr><th style="text-align:left; padding-right:5px;">' 
-                              + displayKey + '</th><td>' + value + '</td></tr>';
+                popupContent += '<tr><th style="text-align:left; padding:5px; width: 50%; border-bottom: 1px solid #ccc;">' 
+                        + displayKey + '</th><td style="border-bottom: 1px solid #ccc;">' + value + '</td></tr>';
             }
             popupContent += '</table>';
 
@@ -1075,6 +540,19 @@
     if (geojsonLayers[filename]) {
       map.removeLayer(geojsonLayers[filename]);
       delete geojsonLayers[filename];
+
+      // Hide infoBox if the selected feature was from this layer
+      if (selectedFeature && selectedFeature.feature && selectedFeature.feature.properties) {
+        // Check if the selected feature belongs to the removed layer
+        if (
+          selectedFeature._map === undefined || // feature is no longer on the map
+          selectedFeature._leaflet_id && !geojsonLayers[filename].hasLayer(selectedFeature)
+        ) {
+          var infoBox = document.getElementById("infoBox");
+          infoBox.style.display = "none";
+          selectedFeature = null;
+        }
+      }
     }
     delete activeLayerInfos[layername];
     updateInfoBox();
@@ -1304,51 +782,196 @@ const legendConfigs = {
     field: "metroline",
     title: "Metro Lines",
     classes: {
-      "1": { color: "#008000" },
-      "2": { color: "#ff0000" },
-      "3": { color: "#0000ff" }
+      "1": { color: "#008000",label:"1" },  //green
+      "2": { color: "#ff0000",label:"2"  },  //red
+      "3": { color: "#0000ff",label:"3" }   //blue
+    }
+  },
+  "Center Sector Green Spaces": {
+    field: "gridcode",
+    title: "Vegetation Type",
+    classes: {
+      "1": { color: "#00e600", label: "Grass, shrubs, sparse vegetation" }, //light green
+      "2": { color: "#008000", label: "Healthy trees, dense vegetation" }     //green
+    }
+  },
+    "South Sector Green Spaces": {
+    field: "gridcode",
+    title: "Vegetation Type",
+    classes: {
+      "1": { color: "#00e600", label: "Grass, shrubs, sparse vegetation" }, //light green
+      "2": { color: "#008000", label: "Healthy trees, dense vegetation" }     //green
+    }
+  },
+    "North Sector Green Spaces": {
+    field: "gridcode",
+    title: "Vegetation Type",
+    classes: {
+      "1": { color: "#00e600", label: "Grass, shrubs, sparse vegetation" }, //light green
+      "2": { color: "#008000", label: "Healthy trees, dense vegetation" }     //green
+    }
+  },
+    "West Sector Green Spaces": {
+    field: "gridcode",
+    title: "Vegetation Type",
+    classes: {
+      "1": { color: "#00e600", label: "Grass, shrubs, sparse vegetation" }, //light green
+      "2": { color: "#008000", label: "Healthy trees, dense vegetation" }     //green
+    }
+  },
+    "Piraeus Green Spaces": {
+    field: "gridcode",
+    title: "Vegetation Type",
+    classes: {
+      "1": { color: "#00e600", label: "Grass, shrubs, sparse vegetation" }, //light green
+      "2": { color: "#008000", label: "Healthy trees, dense vegetation" }     //green
     }
   }
   // Add more layers as needed
 };
 
-// Show legend for a layer
-function showLegend(layerName) {
-  const config = legendConfigs[layerName];
-  if (!config) {
-    document.getElementById("legend-bar").style.display = "none";
-    return;
-  }
-  document.getElementById("legend-title").textContent = config.title;
+// Track which legend configs are currently active
+let activeLegendLayers = new Set();
+
+// Show all active legends
+function updateLegendBar() {
+  const legendBar = document.getElementById("legend-bar");
   const legendList = document.getElementById("legend-list");
   legendList.innerHTML = "";
-  Object.entries(config.classes).forEach(([className, style]) => {
-    const li = document.createElement("li");
-    const colorBox = document.createElement("span");
-    colorBox.className = "legend-color";
-    colorBox.style.background = style.color;
-    li.appendChild(colorBox);
-    li.appendChild(document.createTextNode(className));
-    legendList.appendChild(li);
-  });
-  document.getElementById("legend-bar").style.display = "block";
-}
 
-// Hide legend
-function hideLegend() {
-  document.getElementById("legend-bar").style.display = "none";
+  if (activeLegendLayers.size === 0) {
+    legendBar.style.display = "none";
+    return;
+  }
+
+  legendBar.style.display = "block";
+
+  // Track which legend configs have already been shown
+  const shownConfigs = new Set();
+
+  activeLegendLayers.forEach(layerName => {
+    const config = legendConfigs[layerName];
+    if (!config) return;
+
+    // Create a unique key for the config (e.g., by its title and classes)
+    const configKey = JSON.stringify(config.classes) + config.title;
+
+    if (shownConfigs.has(configKey)) return; // skip if already shown
+    shownConfigs.add(configKey);
+
+    // Title for each legend
+    const titleLi = document.createElement("li");
+    titleLi.innerHTML = `<strong>${config.title}</strong>`;
+    titleLi.style.marginTop = "8px";
+    legendList.appendChild(titleLi);
+
+    Object.entries(config.classes).forEach(([className, style]) => {
+      const li = document.createElement("li");
+      const colorBox = document.createElement("span");
+      colorBox.className = "legend-color";
+      colorBox.style.background = style.color;
+      li.appendChild(colorBox);
+      li.appendChild(document.createTextNode(style.label || className));
+      legendList.appendChild(li);
+    });
+  });
 }
 
 // Hook into layer checkbox logic
 document.querySelectorAll('.layer-item input[type="checkbox"]').forEach(function(checkbox) {
   checkbox.addEventListener('change', function() {
-    if (this.checked) {
-      showLegend(this.dataset.layername);
+    const layerName = this.dataset.layername;
+    if (this.checked && legendConfigs[layerName]) {
+      activeLegendLayers.add(layerName);
     } else {
-      hideLegend();
+      activeLegendLayers.delete(layerName);
     }
+    updateLegendBar();
   });
 });
+
+// Add this after DOMContentLoaded
+document.getElementById('menuBtn').addEventListener('click', function() {
+  var layerControl = document.getElementById('layerControl');
+  if (layerControl.style.display === 'block') {
+    layerControl.style.display = 'none';
+  } else {
+    layerControl.style.display = 'block';
+  }
+});
+
+// Optional: Hide layerControl when clicking outside (mobile)
+document.addEventListener('click', function(e) {
+  var layerControl = document.getElementById('layerControl');
+  var menuBtn = document.getElementById('menuBtn');
+  if (window.innerWidth <= 600 && layerControl.style.display === 'block') {
+    if (!layerControl.contains(e.target) && e.target !== menuBtn) {
+      layerControl.style.display = 'none';
+    }
+  }
+});
+
+document.getElementById("measureBtn").addEventListener("click", function () {
+  if (!measureEnabled) {
+    // Show measurement message
+    document.getElementById('measure-msg').style.display = 'block';
+
+    map.on('draw:canceled', function () {
+      measureEnabled = false;
+    });
+    
+    // Enable polyline drawing
+    measureControl = new L.Draw.Polyline(map, {
+      shapeOptions: {
+        color: "grey",
+        weight: 3
+      }
+    });
+    
+    measureControl.enable();
+    measureEnabled = true;
+
+    // When polyline is finished
+    map.once(L.Draw.Event.CREATED, function (e) {
+      measureLayer = e.layer;
+      map.addLayer(measureLayer);
+
+      const latlngs = measureLayer.getLatLngs();
+      let total = 0;
+      for (let i = 1; i < latlngs.length; i++) {
+        total += latlngs[i - 1].distanceTo(latlngs[i]);
+      }
+
+      L.popup()
+        .setLatLng(latlngs[latlngs.length - 1])
+        .setContent("Distance: " + (total / 1000).toFixed(2) + " km")
+        .openOn(map);
+
+      measureEnabled = false;
+      document.getElementById('measure-msg').style.display = 'none';
+
+      // 👇 Wait for the next click anywhere to clear the line + popup
+      map.once("click", function () {
+        if (measureLayer) {
+          map.removeLayer(measureLayer);
+          measureLayer = null;
+        }
+        map.closePopup();
+
+        map.eachLayer(function(layer) {
+          if (layer instanceof L.CircleMarker && layer.options.radius === 3 && layer.options.color === 'grey') {
+            map.removeLayer(layer);
+          }
+        });
+      });
+    });
+      // Hide message if user clicks outside before drawing
+      map.once("click", function () {
+      document.getElementById('measure-msg').style.display = 'none';
+    });
+  }
+});
+
 </script>
 
 </body>

@@ -1,4 +1,4 @@
-Bus stations of Athens Bus lines operating by OASA.
+Bus stations of the Athens Bus lines operating by OASA.
 
 <p>Uploaded: 23-06-2025<p/>
 <p>Contributors: K. Markos<p/>

@@ -1,4 +1,4 @@
-Metro stations of Athens Metro lines 1, 2 and 3.
+Metro stations of the Athens Metro lines 1, 2 and 3.
 
 <p>Uploaded: 23-06-2025<p/>
 <p>Contributors: K. Markos<p/>

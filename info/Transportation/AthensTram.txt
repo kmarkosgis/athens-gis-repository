@@ -1,4 +1,4 @@
-Tram stations of Athens Tram lines.
+Tram stations of the Athens Tram lines.
 
 <p>Uploaded: 23-06-2025<p/>
 <p>Contributors: K. Markos<p/>

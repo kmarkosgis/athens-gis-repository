@@ -91,7 +91,7 @@
 <div class="announcement-box" id="announcement-box">
   <button class="close-btn" onclick="document.getElementById('announcement-box').style.display='none'">&times;</button>
   📢 Notice: <strong>EARLY VERSION</strong>
-  <p>🚧 The repository is currently under development. Please stand by for the full version.</p>
+  <p>🚧 The repository is currently under development. Please standby for full version.</p>
   <p>⚠️ Data provided by the repository may contain errors.</p>
 </div>
 
@@ -144,7 +144,7 @@
       Explore the geography of the Athens Metropolitan Area with interactive maps and data. Here you’ll find layers on administrative boundaries, transportation networks, green spaces, and population statistics — all in one place.
     </p>
     <p>
-      Use the panel on the left to select the layers you want to view, adjust transparency, and download data. Click on features to view detailed information, and use the provided tools to explore Athens in greater depth.
+      Use the panel on the left to select the layers you want to view, adjust transparency, and download data. Click on features to see detailed information, and use the tools provided to explore Athens in more depth.
     </p>
     <p>
       This repository is a work in progress. More data and features will be added over time, so check back often for updates!
@@ -227,6 +227,7 @@
     ],
     "Transport": [
       { name: "Metro Stations 1, 2 & 3", file: "Transportation/AthensMetro123.geojson" },
+      { name: "Metro Stations 4", file: "Transportation/AthensMetro4.geojson" },
       { name: "Train/OSE Stations", file: "Transportation/AthensTrain.geojson" },
       { name: "Tram Stations", file: "Transportation/AthensTram.geojson" },
       { name: "Bus Stops", file: "Transportation/AthensBusStops.geojson" },
@@ -274,7 +275,6 @@
     searchInput.style.borderRadius = '6px';
     searchInput.style.border = '1px solid #ccc';
     controlDiv.appendChild(searchInput);
-  
   
   function updateInfoBox() {
     var infoBox = document.getElementById('layerInfoBox');
@@ -359,7 +359,7 @@
             if (classStyle) {
               return {
                 color: classStyle.color,      // border color
-                weight: 2,
+                weight: 1,
                 fillColor: classStyle.color,  // fill color
                 fillOpacity: currentOpacity
               };
@@ -480,14 +480,26 @@
                 value = Number(value).toFixed(2);
                 displayKey = 'Shape Area (km²)';
               } else if (key.toLowerCase() === 'name') {
-                displayKey = 'Name';
+                displayKey = 'Name (GR)';
+              } else if (key.toLowerCase() === 'gname') {
+                displayKey = 'Name (GR)';
+              } else if (key.toLowerCase() === 'name_en') {
+                displayKey = 'Name (ENG)';                
+              } else if (key.toLowerCase() === 'ename') {
+                displayKey = 'Name (ENG)';                
               } else if (key.toLowerCase() === 'sectionnam') {
                 displayKey = 'Section Name';
               } else if (key.toLowerCase() === 'metroline') {
                 displayKey = 'Metro Line';
+              } else if (key.toLowerCase() === 'highway') {
+                displayKey = 'Type';
+              } else if (key.toLowerCase() === 'oneway') {
+                displayKey = 'One-Way Road';
+              } else if (key.toLowerCase() === 'surface') {
+                displayKey = 'Surface Type';
               }
 
-                popupContent += '<tr><th style="text-align:left; padding:5px; width: 50%; border-bottom: 1px solid #ccc;">' 
+                popupContent += '<tr><th style="text-align:left; padding:5px; width: 115px; border-bottom: 1px solid #ccc;">' 
                         + displayKey + '</th><td style="border-bottom: 1px solid #ccc;">' + value + '</td></tr>';
             }
             popupContent += '</table>';

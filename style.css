@@ -216,6 +216,7 @@
       display: none;  /* hidden by default */
       z-index: 2000;  /* ✅ force on top! */
     }
+
     #infoBox {
       position: fixed;
       bottom: 30px;
@@ -249,7 +250,7 @@
       align-items: center;
       gap: 10px;
       font-family: "Newsreader", serif;
-      font-size: 14px;
+      font-size: 12px;
       z-index: 1000; /* keep above map */
     }
 
@@ -261,7 +262,7 @@
     }    
 
     #measureBtn {
-      background-color: none;
+      background-color: rgba(252, 251, 246, 0.9);
       color: black;
       font-size: 14px;
       padding: 5px 15px;
@@ -273,20 +274,20 @@
       font-style: normal;
     }
     #measureBtn:hover {
-      background-color: rgba(70, 130, 180, 0.9);
+      background-color: rgba(171, 199, 222, 0.9);
       color: white;
     }
     #measureBtn img {
-      height: 18px; /* Adjust size as needed */
+      height: 16px; /* Adjust size as needed */
       width: auto;
       vertical-align: middle;
     }
 
     #exportBtn {
-      background-color: none;
+      background-color: rgba(252, 251, 246, 0.9);
       color: black;
       font-size: 14px;
-      padding: 5px 15px;
+      padding: 6px 15px;
       border-radius: 9999px;
       border:none;
       cursor: pointer;
@@ -296,11 +297,11 @@
     }
 
     #exportBtn:hover {
-      background-color: rgba(70, 130, 180, 0.9);
+      background-color: rgba(171, 199, 222, 0.9);
       color: white;
     }
     #exportBtn img {
-      height: 18px; /* Adjust size as needed */
+      height: 14px; /* Adjust size as needed */
       width: auto;
       vertical-align: middle;
     }
@@ -377,7 +378,7 @@
       position: absolute;
       bottom: 0;
       width: 99.7vw;
-      background: rgba(0,255,240, 0.7);
+      background: rgba(171, 199, 222, 0.6);
       color: grey;
       text-align: center;
       padding: 3px;
@@ -697,7 +698,7 @@
         overflow-y: auto;
         border-radius: 8px;
         padding: 8px 8px;
-        font-size: 20px;
+        font-size: 18px;
       }
       #openWelcome {
         right: 3vw;
@@ -735,6 +736,23 @@
       }
       #opacityValueMin, #opacityValueMax {
         font-size: 12px;
+      }
+      .download-button {
+        width: 50px;
+        height: 10px;
+        padding-left: 5px;
+        font-size: 10px !important;
+        align-items: center;
+        justify-content: center;
+
+      }
+      .download-button::after {
+        content: "Download";
+        font-size: 10px;
+      }
+      .download-button {
+        /* Hide the arrow in mobile */
+        font-size: 0 !important;
       }
     ::-webkit-scrollbar { display: none; } /* hide scrollbar */
     }

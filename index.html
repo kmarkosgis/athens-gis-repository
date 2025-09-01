@@ -53,8 +53,8 @@
 
 <body>
 
-<button id="menuBtn" title="Show Layers" style="position:fixed;top:50px;z-index:2001;background: rgba(252,251,246,0.95);color:black;border:none;border-radius:9999px;padding:8px 11px;font-size:16px;display:none;box-shadow: 0 2px 12px rgba(0,0,0,0.25);">
-  <strong>☰</strong>
+<button id="menuBtn" title="Show Layers" style="position:fixed;top:50px;height: 35px;width: 35px;z-index:2001;background: rgba(252,251,246,0.95);color:black;border:none;border-radius:9999px;font-size:16px;display:none;box-shadow: 0 2px 12px rgba(0,0,0,0.25);">
+  <span id="menuIcon" style="transition: all 0.5s;">☰</span>
 </button>
 
 <div class="logo-container">
@@ -225,15 +225,6 @@
       { name: "Piraeus", file: "Boundaries/Piraeus.json" },
       { name: "Islands of Attica region", file: "Boundaries/AthensIslands.json" }
     ],
-    "Transport": [
-      { name: "Metro Stations 1, 2 & 3", file: "Transportation/AthensMetro123.geojson" },
-      { name: "Metro Stations 4", file: "Transportation/AthensMetro4.geojson" },
-      { name: "Train/OSE Stations", file: "Transportation/AthensTrain.geojson" },
-      { name: "Tram Stations", file: "Transportation/AthensTram.geojson" },
-      { name: "Bus Stops", file: "Transportation/AthensBusStops.geojson" },
-      { name: "Highways", file: "Transportation/AthensHighways.json" },
-      { name: "Avenues", file: "Transportation/AthensAvenues.json" }
-    ],
     "Environment": [
       { name: "Center Sector Green Spaces", file: "Environment/AthensGreenCenter.geojson" },
       { name: "North Sector Green Spaces", file: "Environment/AthensGreenNorth.geojson" },      
@@ -242,7 +233,20 @@
       { name: "Piraeus Green Spaces", file: "Environment/PiraeusGreen.geojson" }
     ],
     "Population and social conditions": [
-      { name: "2021 Population Census", file: "Social/Population2021.json" }
+      { name: "2021 Population Census", file: "Social/Population2021.json" },
+      { name: "2011 Population Census", file: "Social/Population2011.json" },
+    ],
+    "Urban Planning": [
+      { name: "Corine Land Cover (2018)", file: "UrbanPlanning/AthensCorine2018.json" },
+    ],
+    "Transportation Systems": [
+      { name: "Metro Stations 1, 2 & 3", file: "Transportation/AthensMetro123.geojson" },
+      { name: "Metro Stations 4", file: "Transportation/AthensMetro4.geojson" },
+      { name: "Train/OSE Stations", file: "Transportation/AthensTrain.geojson" },
+      { name: "Tram Stations", file: "Transportation/AthensTram.geojson" },
+      { name: "Bus Stops", file: "Transportation/AthensBusStops.geojson" },
+      { name: "Highways", file: "Transportation/AthensHighways.json" },
+      { name: "Avenues", file: "Transportation/AthensAvenues.json" }
     ]
   };
 
@@ -497,6 +501,10 @@
                 displayKey = 'One-Way Road';
               } else if (key.toLowerCase() === 'surface') {
                 displayKey = 'Surface Type';
+              } else if (key.toLowerCase() === 'fid') {
+                displayKey = 'Feature ID';
+              } else if (key.toLowerCase() === 'popul2011') {
+                displayKey = 'Population';
               }
 
                 popupContent += '<tr><th style="text-align:left; padding:5px; width: 115px; border-bottom: 1px solid #ccc;">' 
@@ -802,6 +810,13 @@ const legendConfigs = {
       "3": { color: "#0000ff",label:"3" }   //blue
     }
   },
+  "Metro Stations 4": {
+    field: "STOP",
+    title: "Metro Lines",
+    classes: {
+      "4": { color: "#ffff00", label: "4" } //yellow
+    }
+  },
   "Center Sector Green Spaces": {
     field: "gridcode",
     title: "Vegetation Type",
@@ -840,10 +855,49 @@ const legendConfigs = {
     classes: {
       "1": { color: "#00e600", label: "Grass, shrubs, sparse vegetation" }, //light green
       "2": { color: "#008000", label: "Healthy trees, dense vegetation" }     //green
+    },
+  },
+    "Corine Land Cover (2018)": {
+      field: "Code_18",
+      title: "Corine Land Cover (2018)",
+      classes: {
+        "111": { color: "#e41a1c", label: "Συνεχής αστική οικοδόµηση" },           // deep red
+        "112": { color: "#fb6a4a", label: "∆ιακεκοµµένη αστική οικοδόµηση" },       // light red
+        "121": { color: "#fec44f", label: "Βιοµηχανικές ή εµπορικές ζώνες" },       // orange
+        "122": { color: "#fd8d3c", label: "Οδικά και σιδηροδροµικά δίκτυα και γειτνιάζουσα γη" }, // orange-red
+        "123": { color: "#6baed6", label: "Ζώνες λιµένων" },                       // blue
+        "124": { color: "#ffffff", label: "Αεροδρόμια" },                          // white
+        "131": { color: "#bdbdbd", label: "Χώροι εξόρυξης ορυκτών" },               // grey
+        "132": { color: "#636363", label: "Χώροι απόρριψης απορριµµάτων" },         // dark grey
+        "141": { color: "#a1d99b", label: "Περιοχές αστικού πρασίνου" },            // light green
+        "142": { color: "#41ab5d", label: "Εγκαταστάσεις αθλητισµού και αναψυχής" },// medium green
+        "211": { color: "#ffffb2", label: "Μη αρδεύσιµη-αρόσιµη γη" },              // pale yellow
+        "212": { color: "#fecc5c", label: "Μόνιµα αρδευόµενη γη" },                 // light orange
+        "221": { color: "#c2e699", label: "Αµπελώνες" },                            // light green
+        "222": { color: "#78c679", label: "Οπωροφόρα δέντρα και φυτείες µε σαρκώδεις καρπούς" }, // green
+        "223": { color: "#238443", label: "Ελαιώνες" },                             // dark green
+        "231": { color: "#d9f0a3", label: "Λιβάδια" },                             // pale green
+        "241": { color: "#addd8e", label: "Ετήσιες καλλιέργειες που συνδέονται µε µόνιµες καλλιέργειες" }, // green
+        "242": { color: "#31a354", label: "Σύνθετα συστήµατα καλλιέργειας" },       // dark green
+        "243": { color: "#006837", label: "Γη που καλύπτεται κυρίως από γεωργία µε σηµαντικές εκτάσεις φυσικής βλάστησης" }, // very dark green
+        "311": { color: "#b8860b", label: "∆άσος πλατύφυλλων" },                    // brown
+        "312": { color: "#a0522d", label: "∆άσος κωνοφόρων" },                      // brown
+        "313": { color: "#8b4513", label: "Μικτό δάσος" },                          // brown
+        "321": { color: "#fdae6b", label: "Φυσικοί βοσκότοποι" },                   // orange
+        "323": { color: "#fd8d3c", label: "Σκληροφυλλική βλάστηση" },               // orange-red
+        "324": { color: "#fdd0a2", label: "Μεταβατικές δασώδεις-θαµνώδεις εκτάσεις" }, // light orange
+        "332": { color: "#cccccc", label: "Απογυµνωµένοι βράχοι" },                 // light grey
+        "333": { color: "#969696", label: "Εκτάσεις µε αραιή βλάστηση" },           // grey
+        "334": { color: "#525252", label: "Αποτεφρωµένες εκτάσεις" },               // dark grey
+        "411": { color: "#c6dbef", label: "Βάλτοι στην ενδοχώρα" },                 // pale blue
+        "421": { color: "#9ecae1", label: "Παραθαλάσσιοι βάλτοι" },                 // light blue
+        "512": { color: "#6baed6", label: "Συλλογές υδάτων" },                      // blue
+        "521": { color: "#4292c6", label: "Παράκτιες λιµνοθάλασσες" },              // blue
+        "523": { color: "#08519c", label: "Θάλασσα" }                               // deep blue
+      }
     }
-  }
+  };
   // Add more layers as needed
-};
 
 // Track which legend configs are currently active
 let activeLegendLayers = new Set();
@@ -908,10 +962,15 @@ document.querySelectorAll('.layer-item input[type="checkbox"]').forEach(function
 // Add this after DOMContentLoaded
 document.getElementById('menuBtn').addEventListener('click', function() {
   var layerControl = document.getElementById('layerControl');
+  var menuIcon = document.getElementById('menuIcon');
   if (layerControl.style.display === 'block') {
     layerControl.style.display = 'none';
+    menuIcon.textContent = '☰';
+    menuIcon.classList.remove('animated');
   } else {
     layerControl.style.display = 'block';
+    menuIcon.textContent = '✕';
+    menuIcon.classList.add('animated');
   }
 });
 
@@ -919,9 +978,12 @@ document.getElementById('menuBtn').addEventListener('click', function() {
 document.addEventListener('click', function(e) {
   var layerControl = document.getElementById('layerControl');
   var menuBtn = document.getElementById('menuBtn');
+  var menuIcon = document.getElementById('menuIcon');
   if (window.innerWidth <= 600 && layerControl.style.display === 'block') {
     if (!layerControl.contains(e.target) && e.target !== menuBtn) {
       layerControl.style.display = 'none';
+      menuIcon.textContent = '☰';
+      menuIcon.classList.remove('animated');
     }
   }
 });

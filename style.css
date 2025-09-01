@@ -593,7 +593,8 @@
       border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       min-width: 80px;
-      max-height: 360px;
+      max-width: 200px;
+      max-height: 300px;
       font-family: "Newsreader", serif;
       font-size: 14px;
       z-index: 1100;
@@ -665,6 +666,12 @@
       header {
         padding: 12px 4px;
         font-size: 18px;
+        width: 98vw;
+      }
+      #footer {
+        width: 98vw;
+        font-size: 9px;
+        background-color: rgba(255, 255, 255, 1);
       }
       .announcement-box {
         width: 60vw;
@@ -753,6 +760,11 @@
       .download-button {
         /* Hide the arrow in mobile */
         font-size: 0 !important;
+      }
+            /* Add to your style.css */
+      #menuIcon.animated {
+        transform: rotate(180deg) scale(1.2);
+        transition: transform 0.5s;
       }
     ::-webkit-scrollbar { display: none; } /* hide scrollbar */
     }

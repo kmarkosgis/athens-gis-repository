@@ -1072,6 +1072,18 @@ document.getElementById("measureBtn").addEventListener("click", function () {
   }
 });
 
+document.querySelectorAll('.download-button').forEach(function(downloadLink) {
+  downloadLink.addEventListener('click', function(e) {
+    if (typeof gtag === 'function') {
+      gtag('event', 'download', {
+        'event_category': 'Layer Download',
+        'event_label': downloadLink.getAttribute('href'),
+        'value': 1
+      });
+    }
+  });
+});
+
 </script>
 
 </body>

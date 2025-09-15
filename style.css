@@ -1,4 +1,4 @@
-    body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", serif; }
+body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", serif; }
     #map { width: 100%; height: 100%; }
     
     ::-webkit-scrollbar {
@@ -265,20 +265,20 @@
       background-color: rgba(252, 251, 246, 0.9);
       color: black;
       font-size: 14px;
-      padding: 5px 15px;
+      padding: 4px 15px;
       border-radius: 9999px;
-      border: none;
+      border: 1px solid rgba(171, 199, 222, 0.3);
       cursor: pointer;
       transition-duration: 0.4s;
       font-family: "Newsreader", serif;
       font-style: normal;
     }
     #measureBtn:hover {
-      background-color: rgba(171, 199, 222, 0.9);
+      background-color: rgba(171, 199, 222, 0.2);
       color: white;
     }
     #measureBtn img {
-      height: 16px; /* Adjust size as needed */
+      height: 18px; /* Adjust size as needed */
       width: auto;
       vertical-align: middle;
     }
@@ -287,9 +287,9 @@
       background-color: rgba(252, 251, 246, 0.9);
       color: black;
       font-size: 14px;
-      padding: 6px 15px;
+      padding: 5px 15px;
       border-radius: 9999px;
-      border:none;
+      border: 1px solid rgba(171, 199, 222, 0.3);
       cursor: pointer;
       transition-duration: 0.4s;
       font-family: "Newsreader", serif;
@@ -297,11 +297,11 @@
     }
 
     #exportBtn:hover {
-      background-color: rgba(171, 199, 222, 0.9);
+      background-color: rgba(171, 199, 222, 0.2);
       color: white;
     }
     #exportBtn img {
-      height: 14px; /* Adjust size as needed */
+      height: 16px; /* Adjust size as needed */
       width: auto;
       vertical-align: middle;
     }
@@ -395,42 +395,25 @@
       margin-bottom: 5px;
     }
 
-    .layer-item label {
-      flex-grow: 1;
-      margin-left: 4px;
+    /* Remove checkbox styles */
+    .layer-item input[type="checkbox"] {
+      display: none !important;
     }
 
-    /* Make checkboxes look circular */
-    .layer-item input[type="checkbox"] {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 12px;
-      height: 12px;
-      border: 1px solid #4682B4;
-      border-radius: 50%; /* Makes it a circle */
-      background-color: white;
+    /* Highlight selected layer with colored background */
+    .layer-item.selected {
+      background: rgba(70, 130, 180, 0.2); /* #4682B4 with 0.5 opacity */
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      color: black;
+      border-radius: 6px;
+      transition: background 0.4s;
+    }
+
+    /* Optional: make label full width and center vertically */
+    .layer-item label {
+      width: 100%;
+      padding: 4px 6px;
       cursor: pointer;
-      outline: none;
-      position: relative;
-    }
-    
-    .layer-item input[type="checkbox"]:checked {
-      background-color: #4682B4;
-    }
-    
-    .layer-item input[type="checkbox"]::after {
-      content: "";
-      position: absolute;
-      top: 2px;
-      left: 2px;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: white;
-      display: none;
-    }
-    
-    .layer-item input[type="checkbox"]:checked::after {
       display: block;
     }
 
@@ -438,15 +421,16 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1px 0;
+      padding: 1px 4px;
     }
 
     .download-button {
       display: inline-block;
       background: white;
       color: black;
-      border: 1px solid #4682B4;
-      padding: 2px 4px;
+      border: none;
+      padding: 1px 6px;
+      padding-top: 4px;
       border-radius: 4px;
       text-decoration: none;
       font-size: 12px;
@@ -458,7 +442,7 @@
       transition-duration: 0.4s;
     }
     .download-button:hover {
-      background: #4682B4;
+      background: rgba(70, 130, 180, 0.7);
       color: white;
     }
     .feature-highlight {
@@ -766,5 +750,26 @@
         transform: rotate(180deg) scale(1.2);
         transition: transform 0.5s;
       }
+      #legend-bar {
+        display: none !important;
+      }
+      .leaflet-control-scale {
+        display: none !important;
+      }
+      #toolbar {
+        bottom: 35px;
+      }
     ::-webkit-scrollbar { display: none; } /* hide scrollbar */
     }
+
+    #zoomSelectedBtn {
+      float: right;
+    }
+
+    /* Move Leaflet scale bar above the toolbar */
+.leaflet-control-scale {
+  position: absolute !important;
+  right: 550px;
+  bottom: 25px; /* Adjust so it's above your toolbar */
+  z-index: 1001;
+}

@@ -92,6 +92,7 @@
   <button class="close-btn" onclick="document.getElementById('announcement-box').style.display='none'">&times;</button>
   📢 <strong>News / Announcements</strong>
   <p>01/09/2025: Full version release</p>
+  <p>17/09/2025: New layers added. "Zoom extend" button added in the left panel. Major visual improvements implemented.</p>
   <p>⚠️ Data provided by the repository may contain errors.</p>
 </div>
 
@@ -229,6 +230,9 @@
       { name: "Wind Farms", file: "Energy/WindFarms.json" }
     ],
     "Environment": [
+      { name: "Natura 2000", file: "Environment/Natura.geojson" },
+      { name: "Relief"},
+      { name: "Rivers", file: "Environment/Rivers.json" },
       { name: "Center Sector Green Spaces", file: "Environment/AthensGreenCenter.geojson" },
       { name: "North Sector Green Spaces", file: "Environment/AthensGreenNorth.geojson" },      
       { name: "South Sector Green Spaces", file: "Environment/AthensGreenSouth.geojson" },
@@ -283,6 +287,26 @@
     searchInput.style.border = '1px solid #ccc';
     controlDiv.appendChild(searchInput);
   
+  var zoomSelectedBtn = document.createElement('button');
+  zoomSelectedBtn.id = 'zoomSelectedBtn';
+  zoomSelectedBtn.title = 'Zoom to selected layers';
+  zoomSelectedBtn.textContent = '🔎';
+  zoomSelectedBtn.style.marginLeft = '8px';
+  zoomSelectedBtn.style.padding = '2px 6px';
+  zoomSelectedBtn.style.borderRadius = '6px';
+  zoomSelectedBtn.style.border = '1px solid #ccc';
+  zoomSelectedBtn.style.background = 'white';
+  zoomSelectedBtn.style.cursor = 'pointer';
+  zoomSelectedBtn.style.transition = 'background 0.3s';
+  zoomSelectedBtn.addEventListener('mouseenter', function() {
+    zoomSelectedBtn.style.background = 'rgba(70,130,180,0.1)';
+  });
+  zoomSelectedBtn.addEventListener('mouseleave', function() {
+    zoomSelectedBtn.style.background = 'white';
+  });
+
+  controlDiv.appendChild(zoomSelectedBtn);
+  
   function updateInfoBox() {
     var infoBox = document.getElementById('layerInfoBox');
     var content = '';
@@ -323,13 +347,39 @@
       label.htmlFor = id;
       label.textContent = layerInfo.name;
 
-      var download = document.createElement('a');
-      download.href = 'data/' + layerInfo.file;
-      download.download = layerInfo.file;
-      download.innerHTML = '&#129035;';  // ⇩ arrow
-      download.className = 'download-button';
-      download.style.display = 'none';
-      download.title='Download the selected layer'
+      var download;
+      if (layerInfo.name === "Relief") {
+        download = document.createElement('button');
+        download.innerHTML = '&#129035;';
+        download.className = 'download-button';
+        download.style.display = 'none';
+        download.title = 'Download as ZIP';
+
+        download.addEventListener('click', function() {
+          var zip = new JSZip();
+          var files = [
+            { name: "relief1.json", url: "data/Environment/relief1.json" },
+            { name: "relief2.json", url: "data/Environment/relief2.json" },
+            { name: "relief3.json", url: "data/Environment/relief3.json" },
+            { name: "relief4.json", url: "data/Environment/relief4.json" }
+          ];
+          Promise.all(files.map(f =>
+            fetch(f.url).then(res => res.blob()).then(blob => zip.file(f.name, blob))
+          )).then(() => {
+            zip.generateAsync({ type: "blob" }).then(function(content) {
+              saveAs(content, "Relief_layers.zip");
+            });
+          });
+        });
+      } else {
+        download = document.createElement('a');
+        download.href = 'data/' + layerInfo.file;
+        download.download = layerInfo.file;
+        download.innerHTML = '&#129035;';  // ⇩ arrow
+        download.className = 'download-button';
+        download.style.display = 'none';
+        download.title = 'Download the selected layer';
+      }
 
       // Add to flex row container
       layerItem.appendChild(checkbox);
@@ -351,238 +401,384 @@
     activeLayerInfos[layername] = '<em>Loading info...</em>';
     updateInfoBox();
     let selectedFeature = null;
-    fetch('data/' + filename)
-    .then(res => res.json())
-    .then(data => {
-      // Use legend config if available
-      const legendConfig = legendConfigs[layername];
 
-      const geojsonLayer = L.geoJSON(data, {
-        style: function (feature) {
-          // If legend config exists, use its color for each class
-          if (legendConfig && feature.properties && legendConfig.field in feature.properties) {
-            const classValue = feature.properties[legendConfig.field];
-            const classStyle = legendConfig.classes[classValue];
-            if (classStyle) {
-              return {
-                color: classStyle.color,      // border color
-                weight: 1,
-                fillColor: classStyle.color,  // fill color
+    // Special handling for Relief layer
+    if (layername === "Relief") {
+      Promise.all([
+        fetch('data/Environment/relief1.json').then(res => res.json()),
+        fetch('data/Environment/relief2.json').then(res => res.json()),
+        fetch('data/Environment/relief3.json').then(res => res.json()),
+        fetch('data/Environment/relief4.json').then(res => res.json())
+      ]).then(([data1, data2, data3, data4]) => {
+        // Merge features
+        const merged = {
+          type: "FeatureCollection",
+          features: [
+            ...(data1.features || []),
+            ...(data2.features || []),
+            ...(data3.features || []),
+            ...(data4.features || [])
+          ]
+        };
+        // Use legend config if available
+        const legendConfig = legendConfigs[layername];
+        const geojsonLayer = L.geoJSON(merged, {
+          style: function (feature) {
+            if (legendConfig && feature.properties && legendConfig.field in feature.properties) {
+              const classValue = feature.properties[legendConfig.field];
+              const classStyle = legendConfig.classes[classValue];
+              if (classStyle) {
+                return {
+                  color: classStyle.color,
+                  weight: 1,
+                  fillColor: classStyle.color,
+                  fillOpacity: currentOpacity
+                };
+              }
+            }
+            return {
+              color: '#A9A9A9',
+              weight: 1,
+              fillColor: '#4682B4',
+              fillOpacity: currentOpacity
+            };
+          },
+          pointToLayer: function (feature, latlng) {
+            return L.circleMarker(latlng, {
+              radius: 4,
+              fillColor: '#4682B4',
+              color: '#40b3ff',
+              weight: 1,
+              opacity: currentOpacity,
+              fillOpacity: currentOpacity
+            });
+          },
+          onEachFeature: function (feature, layer) {
+            // Highlight effect on click
+            layer.on("click", function (e) {
+              // Reset previously selected feature
+              if (selectedFeature) {
+                geojsonLayer.resetStyle(selectedFeature);
+              }
+
+              selectedFeature = e.target;
+
+              // Get legend config for this layer
+              const legendConfig = legendConfigs[layername];
+              let highlightStyle = {
+                weight: 2,
                 fillOpacity: currentOpacity
               };
+
+              if (
+                legendConfig &&
+                feature.properties &&
+                legendConfig.field in feature.properties
+              ) {
+                const classValue = feature.properties[legendConfig.field];
+                const classStyle = legendConfig.classes[classValue];
+                if (classStyle) {
+                  highlightStyle.color = classStyle.color;
+                  highlightStyle.fillColor = classStyle.color;
+                } else {
+                  highlightStyle.color = "#4682B4";
+                  highlightStyle.fillColor = "#3f75a2";
+                }
+              } else {
+                highlightStyle.color = "#4682B4";
+                highlightStyle.fillColor = "#3f75a2";
+              }
+
+              e.target.setStyle(highlightStyle);
+
+              const path = e.target._path;
+              if (path) {
+                path.classList.add("feature-highlight");
+              }
+              // 👉 Move feature on top of others
+              e.target.bringToFront();
+
+              document.querySelectorAll("path.feature-highlight").forEach(el => {
+                if (el !== path) {
+                  el.classList.remove("feature-highlight");
+                }
+              });
+            });
+
+            // Info box handling
+            if (feature.properties) {
+              var popupContent = '<table>';
+              for (var key in feature.properties) {
+                var value = feature.properties[key];
+                var displayKey = key;
+
+                if (key.toLowerCase() === 'shapeleng_') {
+                  value = Number(value).toFixed(2);
+                  displayKey = 'Shape Length (km)';
+                } else if (key.toLowerCase() === 'shapearea') {
+                  value = Number(value).toFixed(2);
+                  displayKey = 'Shape Area (km²)';
+                } else if (key.toLowerCase() === 'name') {
+                  displayKey = 'Name (GR)';
+                } else if (key.toLowerCase() === 'gname') {
+                  displayKey = 'Name (GR)';
+                } else if (key.toLowerCase() === 'name_en') {
+                  displayKey = 'Name (ENG)';                
+                } else if (key.toLowerCase() === 'ename') {
+                  displayKey = 'Name (ENG)';                
+                } else if (key.toLowerCase() === 'sectionnam') {
+                  displayKey = 'Section Name';
+                } else if (key.toLowerCase() === 'metroline') {
+                  displayKey = 'Metro Line';
+                } else if (key.toLowerCase() === 'highway') {
+                  displayKey = 'Type';
+                } else if (key.toLowerCase() === 'oneway') {
+                  displayKey = 'One-Way Road';
+                } else if (key.toLowerCase() === 'surface') {
+                  displayKey = 'Surface Type';
+                } else if (key.toLowerCase() === 'fid') {
+                  displayKey = 'Feature ID';
+                } else if (key.toLowerCase() === 'objectid') {
+                  displayKey = 'Feature ID';
+                } else if (key.toLowerCase() === 'popul2011') {
+                  displayKey = 'Population';
+                } else if (key.toLowerCase() === 'wt') {
+                  displayKey = 'Wind Turbine';
+                } else if (key.toLowerCase() === 'power_anem') {
+                  displayKey = 'Power (MW)';
+                } else if (key.toLowerCase() === 'max_power') {
+                  displayKey = 'Max Power (MW)';
+                } else if (key.toLowerCase() === 'diametros_') {
+                  displayKey = 'Diameter (m)';
+                } else if (key.toLowerCase() === 'ypsos_pylo') {
+                  displayKey = 'Height (m)';
+                }
+
+                  popupContent += '<tr><th style="text-align:left; padding:5px; width: 115px; border-bottom: 1px solid #ccc;">' 
+                          + displayKey + '</th><td style="border-bottom: 1px solid #ccc;">' + value + '</td></tr>';
+              }
+              popupContent += '</table>';
+
+              layer.on("click", function (e) {
+                var infoBox = document.getElementById("infoBox");
+                infoBox.innerHTML = popupContent;
+                infoBox.style.display = "block";
+                L.DomEvent.stopPropagation(e);
+              });
             }
           }
-          // Default style
-          return {
-            color: '#699bc4',
-            weight: 1,
-            fillColor: '#4682B4',
-            fillOpacity: currentOpacity
-          };
-        },
-        pointToLayer: function (feature, latlng) {
-          // Use legend config for point color
-            if (legendConfig && feature.properties && legendConfig.field in feature.properties) {
-            const classValue = feature.properties[legendConfig.field];
-            const classStyle = legendConfig.classes[classValue];
-            if (classStyle) {
-              // For points
-              if (feature.geometry.type === "Point" || feature.geometry.type === "MultiPoint") {
+        }).addTo(map);
+
+        geojsonLayers["Relief"] = geojsonLayer;
+        //map.fitBounds(geojsonLayer.getBounds());
+      });
+
+      // Info file for Relief
+      fetch('info/Environment/Relief.txt')
+        .then(res => {
+          if (!res.ok) throw new Error('No info file');
+          return res.text();
+        })
+        .then(text => {
+          activeLayerInfos[layername] = text;
+          updateInfoBox();
+        })
+        .catch(err => {
+          activeLayerInfos[layername] = '<em>No extra info available for this layer.</em>';
+          updateInfoBox();
+        });
+
+    } else {
+      // Normal fetch for other layers
+      fetch('data/' + filename)
+        .then(res => res.json())
+        .then(data => {
+          const legendConfig = legendConfigs[layername];
+          const geojsonLayer = L.geoJSON(data, {
+            style: function (feature) {
+              if (legendConfig && feature.properties && legendConfig.field in feature.properties) {
+                const classValue = feature.properties[legendConfig.field];
+                const classStyle = legendConfig.classes[classValue];
+                if (classStyle) {
+                  return {
+                    color: classStyle.color,
+                    weight: 1,
+                    fillColor: classStyle.color,
+                    fillOpacity: currentOpacity
+                  };
+                }
+              }
+              return {
+                color: '#699bc4',
+                weight: 1,
+                fillColor: '#4682B4',
+                fillOpacity: currentOpacity
+              };
+            },
+            pointToLayer: function (feature, latlng) {
+              // ...your pointToLayer logic...
               return L.circleMarker(latlng, {
                 radius: 4,
-                fillColor: classStyle.color,
+                fillColor: '#4682B4',
                 color: '#40b3ff',
                 weight: 1,
                 opacity: currentOpacity,
                 fillOpacity: currentOpacity
               });
+            },
+            onEachFeature: function (feature, layer) {
+              // Highlight effect on click
+              layer.on("click", function (e) {
+                // Reset previously selected feature
+                if (selectedFeature) {
+                  geojsonLayer.resetStyle(selectedFeature);
+                }
+
+                selectedFeature = e.target;
+
+                // Get legend config for this layer
+                const legendConfig = legendConfigs[layername];
+                let highlightStyle = {
+                  weight: 2,
+                  fillOpacity: currentOpacity
+                };
+
+                if (
+                  legendConfig &&
+                  feature.properties &&
+                  legendConfig.field in feature.properties
+                ) {
+                  const classValue = feature.properties[legendConfig.field];
+                  const classStyle = legendConfig.classes[classValue];
+                  if (classStyle) {
+                    highlightStyle.color = classStyle.color;
+                    highlightStyle.fillColor = classStyle.color;
+                  } else {
+                    highlightStyle.color = "#4682B4";
+                    highlightStyle.fillColor = "#3f75a2";
+                  }
+                } else {
+                  highlightStyle.color = "#4682B4";
+                  highlightStyle.fillColor = "#3f75a2";
+                }
+
+                e.target.setStyle(highlightStyle);
+
+                const path = e.target._path;
+                if (path) {
+                  path.classList.add("feature-highlight");
+                }
+                // 👉 Move feature on top of others
+                e.target.bringToFront();
+
+                document.querySelectorAll("path.feature-highlight").forEach(el => {
+                  if (el !== path) {
+                    el.classList.remove("feature-highlight");
+                  }
+                });
+              });
+
+              // Info box handling
+              if (feature.properties) {
+                var popupContent = '<table>';
+                for (var key in feature.properties) {
+                  var value = feature.properties[key];
+                  var displayKey = key;
+
+                  if (key.toLowerCase() === 'shapeleng_') {
+                    value = Number(value).toFixed(2);
+                    displayKey = 'Shape Length (km)';
+                  } else if (key.toLowerCase() === 'shapearea') {
+                    value = Number(value).toFixed(2);
+                    displayKey = 'Shape Area (km²)';
+                  } else if (key.toLowerCase() === 'name') {
+                    displayKey = 'Name (GR)';
+                  } else if (key.toLowerCase() === 'gname') {
+                    displayKey = 'Name (GR)';
+                  } else if (key.toLowerCase() === 'name_en') {
+                    displayKey = 'Name (ENG)';                
+                  } else if (key.toLowerCase() === 'ename') {
+                    displayKey = 'Name (ENG)';                
+                  } else if (key.toLowerCase() === 'sectionnam') {
+                    displayKey = 'Section Name';
+                  } else if (key.toLowerCase() === 'metroline') {
+                    displayKey = 'Metro Line';
+                  } else if (key.toLowerCase() === 'highway') {
+                    displayKey = 'Type';
+                  } else if (key.toLowerCase() === 'oneway') {
+                    displayKey = 'One-Way Road';
+                  } else if (key.toLowerCase() === 'surface') {
+                    displayKey = 'Surface Type';
+                  } else if (key.toLowerCase() === 'fid') {
+                    displayKey = 'Feature ID';
+                  } else if (key.toLowerCase() === 'popul2011') {
+                    displayKey = 'Population';
+                  } else if (key.toLowerCase() === 'wt') {
+                    displayKey = 'Wind Turbine';
+                  } else if (key.toLowerCase() === 'power_anem') {
+                    displayKey = 'Power (MW)';
+                  } else if (key.toLowerCase() === 'max_power') {
+                    displayKey = 'Max Power (MW)';
+                  } else if (key.toLowerCase() === 'diametros_') {
+                    displayKey = 'Diameter (m)';
+                  } else if (key.toLowerCase() === 'ypsos_pylo') {
+                    displayKey = 'Height (m)';
+                  }
+
+                    popupContent += '<tr><th style="text-align:left; padding:5px; width: 115px; border-bottom: 1px solid #ccc;">' 
+                            + displayKey + '</th><td style="border-bottom: 1px solid #ccc;">' + value + '</td></tr>';
+                }
+                popupContent += '</table>';
+
+                layer.on("click", function (e) {
+                  var infoBox = document.getElementById("infoBox");
+                  infoBox.innerHTML = popupContent;
+                  infoBox.style.display = "block";
+                  L.DomEvent.stopPropagation(e);
+                });
               }
-              // For polygons
-              if (
-              feature.geometry.type === "Polygon" ||
-              feature.geometry.type === "MultiPolygon"
-              ) {
-              return {
-                color: classStyle.color,
-                weight: 1,
-                fillColor: classStyle.color,
-                fillOpacity: currentOpacity
-              };
-              }
             }
-            }
-          // Default style
-          return L.circleMarker(latlng, {
-            radius: 4,
-            fillColor: '#4682B4',
-            color: '#40b3ff',
-            weight: 1,
-            opacity: currentOpacity,
-            fillOpacity: currentOpacity
-          });
-        },
-        onEachFeature: function (feature, layer) {
-          // Highlight effect on click
-          layer.on("click", function (e) {
-            // Reset previously selected feature
-            if (selectedFeature) {
-              geojsonLayer.resetStyle(selectedFeature);
-            }
+          }).addTo(map);
 
-            selectedFeature = e.target;
+          geojsonLayers[filename] = geojsonLayer;
+          //map.fitBounds(geojsonLayer.getBounds());
+        });
 
-            // Get legend config for this layer
-            const legendConfig = legendConfigs[layername];
-            let highlightStyle = {
-              weight: 2,
-              fillOpacity: currentOpacity
-            };
-
-            if (
-              legendConfig &&
-              feature.properties &&
-              legendConfig.field in feature.properties
-            ) {
-              const classValue = feature.properties[legendConfig.field];
-              const classStyle = legendConfig.classes[classValue];
-              if (classStyle) {
-                highlightStyle.color = classStyle.color;
-                highlightStyle.fillColor = classStyle.color;
-              } else {
-                highlightStyle.color = "#4682B4";
-                highlightStyle.fillColor = "#3f75a2";
-              }
-            } else {
-              highlightStyle.color = "#4682B4";
-              highlightStyle.fillColor = "#3f75a2";
-            }
-
-            e.target.setStyle(highlightStyle);
-
-            const path = e.target._path;
-            if (path) {
-              path.classList.add("feature-highlight");
-            }
-            // 👉 Move feature on top of others
-            e.target.bringToFront();
-
-            document.querySelectorAll("path.feature-highlight").forEach(el => {
-              if (el !== path) {
-                el.classList.remove("feature-highlight");
-              }
-            });
-          });
-
-          // Info box handling
-          if (feature.properties) {
-            var popupContent = '<table>';
-            for (var key in feature.properties) {
-              var value = feature.properties[key];
-              var displayKey = key;
-
-              if (key.toLowerCase() === 'shapeleng_') {
-                value = Number(value).toFixed(2);
-                displayKey = 'Shape Length (km)';
-              } else if (key.toLowerCase() === 'shapearea') {
-                value = Number(value).toFixed(2);
-                displayKey = 'Shape Area (km²)';
-              } else if (key.toLowerCase() === 'name') {
-                displayKey = 'Name (GR)';
-              } else if (key.toLowerCase() === 'gname') {
-                displayKey = 'Name (GR)';
-              } else if (key.toLowerCase() === 'name_en') {
-                displayKey = 'Name (ENG)';                
-              } else if (key.toLowerCase() === 'ename') {
-                displayKey = 'Name (ENG)';                
-              } else if (key.toLowerCase() === 'sectionnam') {
-                displayKey = 'Section Name';
-              } else if (key.toLowerCase() === 'metroline') {
-                displayKey = 'Metro Line';
-              } else if (key.toLowerCase() === 'highway') {
-                displayKey = 'Type';
-              } else if (key.toLowerCase() === 'oneway') {
-                displayKey = 'One-Way Road';
-              } else if (key.toLowerCase() === 'surface') {
-                displayKey = 'Surface Type';
-              } else if (key.toLowerCase() === 'fid') {
-                displayKey = 'Feature ID';
-              } else if (key.toLowerCase() === 'popul2011') {
-                displayKey = 'Population';
-              } else if (key.toLowerCase() === 'wt') {
-                displayKey = 'Wind Turbine';
-              } else if (key.toLowerCase() === 'power_anem') {
-                displayKey = 'Power (MW)';
-              } else if (key.toLowerCase() === 'max_power') {
-                displayKey = 'Max Power (MW)';
-              } else if (key.toLowerCase() === 'diametros_') {
-                displayKey = 'Diameter (m)';
-              } else if (key.toLowerCase() === 'ypsos_pylo') {
-                displayKey = 'Height (m)';
-              }
-
-                popupContent += '<tr><th style="text-align:left; padding:5px; width: 115px; border-bottom: 1px solid #ccc;">' 
-                        + displayKey + '</th><td style="border-bottom: 1px solid #ccc;">' + value + '</td></tr>';
-            }
-            popupContent += '</table>';
-
-            layer.on("click", function (e) {
-              var infoBox = document.getElementById("infoBox");
-              infoBox.innerHTML = popupContent;
-              infoBox.style.display = "block";
-              L.DomEvent.stopPropagation(e);
-            });
-          }
-        }
-      }).addTo(map);
-
-      // ✅ Reset highlight + hide info when clicking outside
-      map.on("click", function () {
-        var infoBox = document.getElementById("infoBox");
-        infoBox.style.display = "none";
-
-        if (selectedFeature) {
-          geojsonLayer.resetStyle(selectedFeature);
-          // ❌ remove shadow class
-          const path = selectedFeature._path;
-          if (path) {
-          path.classList.remove("feature-highlight");
-          }
-          selectedFeature = null;
-        }
-      });
-
-      geojsonLayers[filename] = geojsonLayer;
-      map.fitBounds(geojsonLayer.getBounds());
-    });
-
-
-    var txtFile = filename.replace(/\.[^/.]+$/, "") + ".txt";
-    fetch('info/' + txtFile)
-      .then(res => {
-        if (!res.ok) throw new Error('No info file');
-        return res.text();
-      })
-      .then(text => {
-        activeLayerInfos[layername] = text;
-        updateInfoBox();
-      })
-      .catch(err => {
-        activeLayerInfos[layername] = '<em>No extra info available for this layer.</em>';
-        updateInfoBox();
-      });
-        
+      var txtFile = filename.replace(/\.[^/.]+$/, "") + ".txt";
+      fetch('info/' + txtFile)
+        .then(res => {
+          if (!res.ok) throw new Error('No info file');
+          return res.text();
+        })
+        .then(text => {
+          activeLayerInfos[layername] = text;
+          updateInfoBox();
+        })
+        .catch(err => {
+          activeLayerInfos[layername] = '<em>No extra info available for this layer.</em>';
+          updateInfoBox();
+        });
+    }
   } else {
     link.style.display = 'none';
-    if (geojsonLayers[filename]) {
+    // Remove layer from map
+    if (layername === "Relief") {
+      if (geojsonLayers["Relief"]) {
+        map.removeLayer(geojsonLayers["Relief"]);
+        delete geojsonLayers["Relief"];
+        // Hide infoBox and reset selectedFeature if Relief was selected
+        var infoBox = document.getElementById("infoBox");
+        infoBox.style.display = "none";
+        selectedFeature = null;
+      }
+    } else if (geojsonLayers[filename]) {
       map.removeLayer(geojsonLayers[filename]);
       delete geojsonLayers[filename];
-
       // Hide infoBox if the selected feature was from this layer
       if (selectedFeature && selectedFeature.feature && selectedFeature.feature.properties) {
-        // Check if the selected feature belongs to the removed layer
         if (
-          selectedFeature._map === undefined || // feature is no longer on the map
-          selectedFeature._leaflet_id && !geojsonLayers[filename].hasLayer(selectedFeature)
+          selectedFeature._map === undefined ||
+          (selectedFeature._leaflet_id && !geojsonLayers[filename].hasLayer(selectedFeature))
         ) {
           var infoBox = document.getElementById("infoBox");
           infoBox.style.display = "none";
@@ -834,7 +1030,7 @@ const legendConfigs = {
     field: "gridcode",
     title: "Vegetation Type",
     classes: {
-      "1": { color: "#00e600", label: "Grass, shrubs, sparse vegetation" }, //light green
+      "1": { color: "#90ee90", label: "Grass, shrubs, sparse vegetation" }, //light green
       "2": { color: "#008000", label: "Healthy trees, dense vegetation" }     //green
     }
   },
@@ -842,7 +1038,7 @@ const legendConfigs = {
     field: "gridcode",
     title: "Vegetation Type",
     classes: {
-      "1": { color: "#00e600", label: "Grass, shrubs, sparse vegetation" }, //light green
+      "1": { color: "#90ee90", label: "Grass, shrubs, sparse vegetation" }, //light green
       "2": { color: "#008000", label: "Healthy trees, dense vegetation" }     //green
     }
   },
@@ -850,7 +1046,7 @@ const legendConfigs = {
     field: "gridcode",
     title: "Vegetation Type",
     classes: {
-      "1": { color: "#00e600", label: "Grass, shrubs, sparse vegetation" }, //light green
+      "1": { color: "#90ee90", label: "Grass, shrubs, sparse vegetation" }, //light green
       "2": { color: "#008000", label: "Healthy trees, dense vegetation" }     //green
     }
   },
@@ -858,7 +1054,7 @@ const legendConfigs = {
     field: "gridcode",
     title: "Vegetation Type",
     classes: {
-      "1": { color: "#00e600", label: "Grass, shrubs, sparse vegetation" }, //light green
+      "1": { color: "#90ee90", label: "Grass, shrubs, sparse vegetation" }, //light green
       "2": { color: "#008000", label: "Healthy trees, dense vegetation" }     //green
     }
   },
@@ -866,18 +1062,27 @@ const legendConfigs = {
     field: "gridcode",
     title: "Vegetation Type",
     classes: {
-      "1": { color: "#00e600", label: "Grass, shrubs, sparse vegetation" }, //light green
+      "1": { color: "#90ee90", label: "Grass, shrubs, sparse vegetation" }, //light green
       "2": { color: "#008000", label: "Healthy trees, dense vegetation" }     //green
     },
   },
      "Wind Farms": {
     field: "Status",
-    title: "Status",
+    title: "Wind Farm Status",
     classes: {
       "Installation Licence": { color: "#87cefa", label: "Installation Licence" }, // light blue
       "Operational Licence": { color: "#90ee90", label: "Operational Licence" },   // light green
       "Production Licence": { color: "#ffd700", label: "Production Licence" },     // gold/yellow
       "Under Evaluation": { color: "#fb6a4a", label: "Under Evaluation" }          // light red
+    },
+  },
+       "Natura 2000": {
+    field: "Type",
+    title: "Natura 2000 Site Type",
+    classes: {
+      "Protected under the Habitats Directive": { color: "#87cefa", label: "Protected under the Habitats Directive" }, // light blue
+      "Protected under the Birds Directive": { color: "#90ee90", label: "Protected under the Birds Directive" },   // light green
+      "Protected under both Birds and Habitats Directives": { color: "#ffd700", label: "Protected under both Birds and Habitats Directives" },     // gold/yellow
     },
   },
     "Corine Land Cover (2018)": {
@@ -972,6 +1177,12 @@ function updateLegendBar() {
 // Hook into layer checkbox logic
 document.querySelectorAll('.layer-item input[type="checkbox"]').forEach(function(checkbox) {
   checkbox.addEventListener('change', function() {
+    const item = this.closest('.layer-item');
+    if (this.checked) {
+      item.classList.add('selected');
+    } else {
+      item.classList.remove('selected');
+    }
     const layerName = this.dataset.layername;
     if (this.checked && legendConfigs[layerName]) {
       activeLegendLayers.add(layerName);
@@ -981,6 +1192,9 @@ document.querySelectorAll('.layer-item input[type="checkbox"]').forEach(function
     updateLegendBar();
   });
 });
+
+// Add this after initializing the map
+L.control.scale({ position: 'bottomright', imperial: false }).addTo(map);
 
 // Add this after DOMContentLoaded
 document.getElementById('menuBtn').addEventListener('click', function() {
@@ -1072,6 +1286,7 @@ document.getElementById("measureBtn").addEventListener("click", function () {
   }
 });
 
+// Download tracking
 document.querySelectorAll('.download-button').forEach(function(downloadLink) {
   downloadLink.addEventListener('click', function(e) {
     if (typeof gtag === 'function') {
@@ -1084,7 +1299,54 @@ document.querySelectorAll('.download-button').forEach(function(downloadLink) {
   });
 });
 
-</script>
+document.getElementById('zoomSelectedBtn').addEventListener('click', function() {
+  // Collect bounds of all visible layers
+  var bounds = null;
+  Object.values(geojsonLayers).forEach(function(layer) {
+    if (map.hasLayer(layer)) {
+      var layerBounds = layer.getBounds();
+      if (layerBounds.isValid()) {
+        if (!bounds) {
+          bounds = layerBounds;
+        } else {
+          bounds.extend(layerBounds);
+        }
+      }
+    }
+  });
+  if (bounds && bounds.isValid()) {
+    map.fitBounds(bounds);
+  } else {
+    alert('No layers selected or visible!');
+  }
+});
 
+// Remove highlight from selected feature
+map.on('click', function () {
+  // Remove highlight from all features and reset their style
+  Object.values(geojsonLayers).forEach(function(layer) {
+    if (layer && layer.eachLayer) {
+      layer.eachLayer(function(featureLayer) {
+        // Remove highlight class if present
+        if (featureLayer._path) {
+          featureLayer._path.classList.remove("feature-highlight");
+        }
+        // Reset style if possible
+        if (layer.resetStyle) {
+          layer.resetStyle(featureLayer);
+        }
+      });
+    }
+  });
+
+  selectedFeature = null;
+
+  // Hide info box
+  var infoBox = document.getElementById("infoBox");
+  infoBox.style.display = "none";
+});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </body>
 </html>

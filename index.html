@@ -358,10 +358,10 @@
         download.addEventListener('click', function() {
           var zip = new JSZip();
           var files = [
-            { name: "relief1.json", url: "https://kmarkosgis.github.io/athens-gis-repository/data/Environment/Relief1.json" },
-            { name: "relief2.json", url: "https://kmarkosgis.github.io/athens-gis-repository/data/Environment/Relief2.json" },
-            { name: "relief3.json", url: "https://kmarkosgis.github.io/athens-gis-repository/data/Environment/Relief3.json" },
-            { name: "relief4.json", url: "https://kmarkosgis.github.io/athens-gis-repository/data/Environment/Relief4.json" }
+            { name: "relief1.json", url: "https://kmarkosgis.github.io/athens-gis-repository/data/Environment/relief1.json" },
+            { name: "relief2.json", url: "https://kmarkosgis.github.io/athens-gis-repository/data/Environment/relief2.json" },
+            { name: "relief3.json", url: "https://kmarkosgis.github.io/athens-gis-repository/data/Environment/relief3.json" },
+            { name: "relief4.json", url: "https://kmarkosgis.github.io/athens-gis-repository/data/Environment/relief4.json" }
           ];
           Promise.all(files.map(f =>
             fetch(f.url).then(res => res.blob()).then(blob => zip.file(f.name, blob))
@@ -405,10 +405,10 @@
     // Special handling for Relief layer
     if (layername === "Relief") {
       Promise.all([
-        fetch('data/Environment/relief1.json').then(res => res.json()),
-        fetch('data/Environment/relief2.json').then(res => res.json()),
-        fetch('data/Environment/relief3.json').then(res => res.json()),
-        fetch('data/Environment/relief4.json').then(res => res.json())
+        fetch('https://kmarkosgis.github.io/athens-gis-repository/data/Environment/relief1.json').then(res => res.json()),
+        fetch('https://kmarkosgis.github.io/athens-gis-repository/data/Environment/relief2.json').then(res => res.json()),
+        fetch('https://kmarkosgis.github.io/athens-gis-repository/data/Environment/relief3.json').then(res => res.json()),
+        fetch('https://kmarkosgis.github.io/athens-gis-repository/data/Environment/relief4.json').then(res => res.json())
       ]).then(([data1, data2, data3, data4]) => {
         // Merge features
         const merged = {

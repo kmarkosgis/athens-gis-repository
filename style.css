@@ -7,17 +7,17 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
     }
 
     ::-webkit-scrollbar-track {
-      background: rgba(252, 251, 246, 0.9);      /* scrollbar track color */
+      background: rgb(252, 251, 246);      /* scrollbar track color */
       border-radius: 5px;
     }
 
     ::-webkit-scrollbar-thumb {
-      background: rgba(70, 130, 180, 0.7);      /* scrollbar thumb color */
+      background: rgba(70, 130, 180,0.2);      /* scrollbar thumb color */
       border-radius: 5px;
     }
 
     ::-webkit-scrollbar-thumb:hover {
-      background: rgb(70, 130, 180);      /* darker on hover */
+      background: rgba(70, 130, 180,0.5);      /* darker on hover */
     }
 
     .logo-container {
@@ -185,7 +185,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
       left: 10px;     /* left side */
       width: 250px;   /* adjust width as needed */
       background: rgba(252, 251, 246, 0.9); /* white with 90% opacity */
-      padding: 10px;
+      padding:  0 10px 10px 10px;
       border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       overflow-y: auto;     /* makes it scrollable */
@@ -399,7 +399,11 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
     .layer-item input[type="checkbox"] {
       display: none !important;
     }
-
+    .layer-item:hover {
+      background: rgba(70, 130, 180, 0.1); 
+      border-radius: 6px;
+      transition: background 0.4s;
+    }
     /* Highlight selected layer with colored background */
     .layer-item.selected {
       background: rgba(70, 130, 180, 0.2); /* #4682B4 with 0.5 opacity */
@@ -408,10 +412,12 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
       border-radius: 6px;
       transition: background 0.4s;
     }
-
+    .layer-item.selected:hover {
+      background: rgba(70, 130, 180, 0.3); /* Darker on hover */
+    }
     /* Optional: make label full width and center vertically */
     .layer-item label {
-      width: 100%;
+      width: 80%;
       padding: 4px 6px;
       cursor: pointer;
       display: block;
@@ -458,6 +464,14 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
       padding: 6px;
       font-size: 14px;
     }
+    #searchZoomContainer {
+      position: sticky;
+      top: 0;
+      background: rgba(252, 251, 246, 0.95);
+      z-index: 2;
+      padding: 8px 0 8px 0;;
+      border-bottom: 1px solid #eee;
+    }
 
     .leaflet-control-layers {
       bottom: -75px !important; 
@@ -471,7 +485,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
     /* Custom zoom controls */
     #custom-zoom-controls {
       position: absolute;
-      bottom: 90px;
+      bottom: 115px;
       right: 10px;
       z-index: 1000;
       display: flex;
@@ -510,10 +524,10 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
     #basemap-btn {
       background: rgba(252,251,246,0.9);
       border: none;
-      border-radius: 4px;
+      border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      width: 50px;
-      height: 50px;
+      width: 80px;
+      height: 80px;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -525,19 +539,47 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
     #basemap-btn:hover {
       background: white;
     }
+    #basemap-btn:hover img {
+      transform: scale(0.95); 
+      transition-duration: 0.3s;
+    }
+    #basemap-btn:hover #basemap-label {
+      transform: scale(0.95);
+      transition: transform 0.3s;
+      margin-top: 56px;
+    }
     
     #basemap-btn img {
-      width: 35px;                  /* Increase icon size */
-      height: 35px;
+      width: auto;                  /* Increase icon size */
+      height: 75px;
+      border-radius: 7px;
       pointer-events: none;
       margin: 0;
       padding: 0;      
+    }
+    #basemap-label {
+      font-size: 11px;
+      pointer-events: none;
+      font-family: "Newsreader", serif;
+      font-weight: normal;
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+      display: block;
+      text-align: center;
+      position: absolute;
+      top: 4px;              /* Position label over the image */
+      left: 3px;
+      border-radius: 6px;
+      width:87%;
+      margin-top: 58px;
+      padding: 2.5px 2px;
+      z-index: 2;            /* Ensure label is above the image */
     }
     
     #basemap-dropdown {
       display: none;
       position: absolute;
-      bottom: 54px;
+      bottom: 85px;
       right: 0;
       background: rgba(252,251,246,0.9);
       border-radius: 8px;
@@ -570,7 +612,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
 
     #legend-bar {
       position: absolute;
-      top: 40%;
+      top: 35%;
       right: 10px;
       background: rgba(252,251,246,0.9);
       border: none;

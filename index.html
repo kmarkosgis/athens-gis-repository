@@ -77,13 +77,14 @@
 <div id="custom-basemap-switcher">
   <button id="basemap-btn" title="Change Basemap">
     <img src="images/map_layers_icon.png" alt="Basemap" style="vertical-align:middle;">
+    <span id="basemap-label">BASEMAPS</span>
   </button>
   <div id="basemap-dropdown">
     <ul>
-      <li data-basemap="positron">Carto Light</li>
-      <li data-basemap="darkMatter">Carto Dark</li>
+      <li data-basemap="positron">Light</li>
+      <li data-basemap="maptilerStreetsDark">Dark</li>
       <li data-basemap="osm">OpenStreetMap</li>
-      <li data-basemap="esriSat">Esri Satellite</li>
+      <li data-basemap="esriSat">Satellite</li>
     </ul>
   </div>
 </div>
@@ -91,8 +92,8 @@
 <div class="announcement-box" id="announcement-box">
   <button class="close-btn" onclick="document.getElementById('announcement-box').style.display='none'">&times;</button>
   📢 <strong>News / Announcements</strong>
-  <p>01/09/2025: Full version release</p>
-  <p>16/09/2025: New layers added. The "Zoom extend" button has been added to the left panel. Major visual improvements implemented.</p>
+  <p>16/09/2025: New layers added. "Zoom extend" button added in the left panel. Major visual improvements implemented.</p>
+  <p>22/09/2025: New layers added. Minor visual changes and performance improvements.</p>
   <p>⚠️ Data provided by the repository may contain errors.</p>
 </div>
 
@@ -166,12 +167,11 @@
   }).setView([37.98, 23.72], 12);
 
   var positron = L.tileLayer(
-  'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-  {
-    attribution: '&copy; <a href="https://carto.com/">CartoDB</a>',
-    subdomains: 'abcd',
-    maxZoom: 19
-  }).addTo(map);
+    'https://api.maptiler.com/maps/streets-v2-light/{z}/{x}/{y}.png?key=h5N22sL42mlhXfIBKw6A', {
+      attribution: '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 20
+    }
+  ).addTo(map);
 
   var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap'
@@ -180,20 +180,20 @@
   var esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
     attribution: 'Tiles &copy; Esri'
   });
+  
 
-  var darkMatter = L.tileLayer(
-  'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-  {
-    attribution: '&copy; <a href="https://carto.com/">CartoDB</a>',
-    subdomains: 'abcd',
-    maxZoom: 19
-  });
+  var maptilerStreetsDark = L.tileLayer(
+    'https://api.maptiler.com/maps/streets-v2-dark/{z}/{x}/{y}.png?key=h5N22sL42mlhXfIBKw6A', {
+      attribution: '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 20
+    }
+  );
 
   var baseMaps = {
-    "Carto Light BaseMap": positron,
-    "Carto Dark BaseMap": darkMatter,
-    "OpenStreetMap": osm,
-    "Esri Satellite": esriSat
+    "Light": positron,
+    "Dark": maptilerStreetsDark,
+    "Open Street Map": osm,
+    "Satellite": esriSat
   };
 
         // Add basemap switcher in top-right (or elsewhere)
@@ -239,12 +239,17 @@
       { name: "West Sector Green Spaces", file: "Environment/AthensGreenWest.geojson" },
       { name: "Piraeus Green Spaces", file: "Environment/PiraeusGreen.geojson" }
     ],
+    "Natural Disasters": [
+      { name: "Wildfires Attica 2015-2025", file: "Disasters/WildfiresAttica2015-2025.geojson" },
+      { name: "Flood Risk Zones", file: "Disasters/FloodRiskZones100T.json" }
+    ],    
     "Population and social conditions": [
       { name: "2021 Population Census", file: "Social/Population2021.json" },
       { name: "2011 Population Census", file: "Social/Population2011.json" },
     ],
     "Urban Planning": [
       { name: "Corine Land Cover (2018)", file: "UrbanPlanning/AthensCorine2018.json" },
+      { name: "Municipality of Athens Urban Plan (2012)", file: "UrbanPlanning/Athens Urban Plan 2012.geojson" }
     ],
     "Transportation Systems": [
       { name: "Metro Stations 1, 2 & 3", file: "Transportation/AthensMetro123.geojson" },
@@ -276,23 +281,30 @@
 
   var controlDiv = document.getElementById('layerControl');
   
-    var searchInput = document.createElement('input');
-    searchInput.type = 'text';
-    searchInput.id = 'layerSearch';
-    searchInput.placeholder = 'Search layers...';
-    searchInput.style.width = '80%';
-    searchInput.style.padding = '3px';
-    searchInput.style.marginBottom = '6px';
-    searchInput.style.borderRadius = '6px';
-    searchInput.style.border = '1px solid #ccc';
-    controlDiv.appendChild(searchInput);
-  
+  var searchZoomContainer = document.createElement('div');
+  searchZoomContainer.id = 'searchZoomContainer';
+  searchZoomContainer.style.display = 'flex';
+  searchZoomContainer.style.alignItems = 'center';
+  searchZoomContainer.style.gap = '8px';
+
+  var searchInput = document.createElement('input');
+  searchInput.type = 'text';
+  searchInput.id = 'layerSearch';
+  searchInput.placeholder = 'Search layers...';
+  searchInput.style.width = '80%';
+  searchInput.style.padding = '3px';
+  searchInput.style.marginBottom = '6px';
+  searchInput.style.borderRadius = '6px';
+  searchInput.style.border = '1px solid #ccc';
+  controlDiv.appendChild(searchInput);
+
   var zoomSelectedBtn = document.createElement('button');
   zoomSelectedBtn.id = 'zoomSelectedBtn';
   zoomSelectedBtn.title = 'Zoom to selected layers';
   zoomSelectedBtn.textContent = '🔎';
-  zoomSelectedBtn.style.marginLeft = '8px';
+  zoomSelectedBtn.style.marginLeft = '6px';
   zoomSelectedBtn.style.padding = '2px 6px';
+  zoomSelectedBtn.style.marginBottom = '6px';
   zoomSelectedBtn.style.borderRadius = '6px';
   zoomSelectedBtn.style.border = '1px solid #ccc';
   zoomSelectedBtn.style.background = 'white';
@@ -305,7 +317,11 @@
     zoomSelectedBtn.style.background = 'white';
   });
 
-  controlDiv.appendChild(zoomSelectedBtn);
+  searchZoomContainer.appendChild(searchInput);
+  searchZoomContainer.appendChild(zoomSelectedBtn);
+
+  // Append the container to the layers panel
+  controlDiv.appendChild(searchZoomContainer);
   
   function updateInfoBox() {
     var infoBox = document.getElementById('layerInfoBox');
@@ -358,10 +374,10 @@
         download.addEventListener('click', function() {
           var zip = new JSZip();
           var files = [
-            { name: "relief1.json", url: "https://kmarkosgis.github.io/athens-gis-repository/data/Environment/relief1.json" },
-            { name: "relief2.json", url: "https://kmarkosgis.github.io/athens-gis-repository/data/Environment/relief2.json" },
-            { name: "relief3.json", url: "https://kmarkosgis.github.io/athens-gis-repository/data/Environment/relief3.json" },
-            { name: "relief4.json", url: "https://kmarkosgis.github.io/athens-gis-repository/data/Environment/relief4.json" }
+            { name: "relief1.json", url: "data/Environment/relief1.json" },
+            { name: "relief2.json", url: "data/Environment/relief2.json" },
+            { name: "relief3.json", url: "data/Environment/relief3.json" },
+            { name: "relief4.json", url: "data/Environment/relief4.json" }
           ];
           Promise.all(files.map(f =>
             fetch(f.url).then(res => res.blob()).then(blob => zip.file(f.name, blob))
@@ -691,11 +707,21 @@
                   } else if (key.toLowerCase() === 'shapearea') {
                     value = Number(value).toFixed(2);
                     displayKey = 'Shape Area (km²)';
+                  } else if (key.toLowerCase() === 'shapeleng_m') {
+                    value = Number(value).toFixed(2);
+                    displayKey = 'Shape Length (m)';
+                  } else if (key.toLowerCase() === 'shapearea_m') {
+                    value = Number(value).toFixed(2);
+                    displayKey = 'Shape Area (m²)';
                   } else if (key.toLowerCase() === 'name') {
                     displayKey = 'Name (GR)';
                   } else if (key.toLowerCase() === 'gname') {
                     displayKey = 'Name (GR)';
+                  } else if (key.toLowerCase() === 'uses_gr') {
+                    displayKey = 'Name (GR)';
                   } else if (key.toLowerCase() === 'name_en') {
+                    displayKey = 'Name (ENG)';                
+                  } else if (key.toLowerCase() === 'uses_en') {
                     displayKey = 'Name (ENG)';                
                   } else if (key.toLowerCase() === 'ename') {
                     displayKey = 'Name (ENG)';                
@@ -711,6 +737,8 @@
                     displayKey = 'Surface Type';
                   } else if (key.toLowerCase() === 'fid') {
                     displayKey = 'Feature ID';
+                  } else if (key.toLowerCase() === 'objectid') {
+                  displayKey = 'Feature ID';
                   } else if (key.toLowerCase() === 'popul2011') {
                     displayKey = 'Population';
                   } else if (key.toLowerCase() === 'wt') {
@@ -723,10 +751,14 @@
                     displayKey = 'Diameter (m)';
                   } else if (key.toLowerCase() === 'ypsos_pylo') {
                     displayKey = 'Height (m)';
+                  } else if (key.toLowerCase() === 'initialdat') {
+                    displayKey = 'Initial Date';
+                  } else if (key.toLowerCase() === 'finaldate') {
+                    displayKey = 'Final Date';
                   }
 
                     popupContent += '<tr><th style="text-align:left; padding:5px; width: 115px; border-bottom: 1px solid #ccc;">' 
-                            + displayKey + '</th><td style="border-bottom: 1px solid #ccc;">' + value + '</td></tr>';
+                            + displayKey + '</th><td style="border-bottom: 1px solid #ccc;width: 115px;">' + value + '</td></tr>';
                 }
                 popupContent += '</table>';
 
@@ -983,7 +1015,7 @@ document.getElementById('zoom-out').addEventListener('click', function() {
 // Custom Basemap Switcher Logic
 const basemapBtn = document.getElementById('basemap-btn');
 const basemapDropdown = document.getElementById('basemap-dropdown');
-const basemapLayers = { positron, darkMatter, osm, esriSat };
+const basemapLayers = { positron, maptilerStreetsDark, osm, esriSat };
 
 basemapBtn.addEventListener('click', function(e) {
   basemapDropdown.style.display = basemapDropdown.style.display === 'block' ? 'none' : 'block';
@@ -1085,6 +1117,100 @@ const legendConfigs = {
       "Protected under both Birds and Habitats Directives": { color: "#ffd700", label: "Protected under both Birds and Habitats Directives" },     // gold/yellow
     },
   },
+  "Municipality of Athens Urban Plan (2012)": {
+    field: "uses_en",
+    title: "Athens Urban Plan (2012)",
+    classes: {
+      "A ZONE": { color: "#b3e0ff", label: "A zone" },
+      "A3 ZONE": { color: "#c299cc", label: "A3 zone" },
+      "AGRICULTURAL UNIVERSITY": { color: "#99cc99", label: "Agricultural university" },
+      "AMATEUR P.A.O. (Panathinaikos Athletic Organization)": { color: "#ccc299", label: "Amateur p.a.o. (panathinaikos athletic organization)" },
+      "ARCHAEOLOGICAL GROVE": { color: "#cc99b3", label: "Archaeological grove" },
+      "ARCHAEOLOGICAL SITE": { color: "#9999cc", label: "Archaeological site" },
+      "ARCHITECTURAL SITE ACADEMY PLAT. OFFICIAL GAZETTE 215A.A.P./11": { color: "#99ccb3", label: "Architectural site academy plat. official gazette 215a.a.p./11" },
+      "B ZONE": { color: "#b3c6d6", label: "B zone" },
+      "BIOPA (Business Park) - excluding industrial installations": { color: "#d4d6a1", label: "Biopa (business park) - excluding industrial installations" },
+      "BIOPA (Business Park) FOR SANITATION": { color: "#a1d4d6", label: "Biopa (business park) for sanitation" },
+      "BIPA (Industrial and Business Park)": { color: "#d6a1d4", label: "Bipa (industrial and business park)" },
+      "BOTANICAL GARDEN": { color: "#a1d6a1", label: "Botanical garden" },
+      "C ZONE": { color: "#d6b3c6", label: "C zone" },
+      "COMMERCIAL CENTER": { color: "#b3d6b3", label: "Commercial center" },
+      "COMMERCIAL TRIANGLE": { color: "#d6d6a1", label: "Commercial triangle" },
+      "CRAFT INDUSTRY": { color: "#b3b3b3", label: "Craft industry" },
+      "CULTURAL FUNCTIONS": { color: "#9999b3", label: "Cultural functions" },
+      "D1 ZONE": { color: "#b3d6d6", label: "D1 zone" },
+      "D2 ZONE": { color: "#d6d6b3", label: "D2 zone" },
+      "E ZONE": { color: "#b3b3cc", label: "E zone" },
+      "EDUCATION": { color: "#99cc99", label: "Education" },
+      "EXCLUSIVE RESIDENCE": { color: "#d6c6b3", label: "Exclusive residence" },
+      "EXCLUSIVE RESIDENCE - ZONE A": { color: "#c6b3d6", label: "Exclusive residence - zone a" },
+      "EXCLUSIVE RESIDENCE - ZONE B": { color: "#b3d6cc", label: "Exclusive residence - zone b" },
+      "FACING EURIPIDOU ST.": { color: "#d6ccb3", label: "Facing euripidou st." },
+      "GENERAL RESIDENCE": { color: "#4682b4", label: "General residence" },
+      "GENERAL RESIDENCE - special uses for preserved buildings facing Piraeus Street": { color: "#d6b3cc", label: "General residence - special uses for preserved buildings facing piraeus street" },
+      "GENERAL RESIDENCE 1": { color: "#b3d6cc", label: "General residence 1" },
+      "GENERAL RESIDENCE 2": { color: "#d6ccb3", label: "General residence 2" },
+      "GENERAL RESIDENCE with restrictions OFFICIAL GAZETTE 911D/04": { color: "#b3b3cc", label: "General residence with restrictions official gazette 911d/04" },
+      "GK (mild uses)": { color: "#b3e0ff", label: "Gk (mild uses)" },
+      "GREEN BELT": { color: "#99cc99", label: "Green belt" },
+      "HEALTHCARE": { color: "#cc9999", label: "Healthcare" },
+      "HLPAP (Electric Railway Company)": { color: "#9999cc", label: "Hlpap (electric railway company)" },
+      "INDUSTRIAL PARK with terms and restrictions": { color: "#c2cc99", label: "Industrial park with terms and restrictions" },
+      "ISLAMIC TEMPLE": { color: "#cc99b3", label: "Islamic temple" },
+      "KAN (Cultural Facility)": { color: "#99ccb3", label: "Kan (cultural facility)" },
+      "KX (public use)": { color: "#c299cc", label: "Kx (public use)" },
+      "LOCAL CENTER": { color: "#b3c6d6", label: "Local center" },
+      "LOCAL CENTER 1": { color: "#d6b3cc", label: "Local center 1" },
+      "LOCAL CENTER 2": { color: "#b3d6cc", label: "Local center 2" },
+      "MASS TRANSPORT FACILITIES": { color: "#d6ccb3", label: "Mass transport facilities" },
+      "MIXED USES": { color: "#b3b3cc", label: "Mixed uses" },
+      "MUNICIPAL CENTER": { color: "#abc7de", label: "Municipal center" },
+      "MUNICIPAL METROPOLITAN CENTER": { color: "#99cc99", label: "Municipal metropolitan center" },
+      "NEIGHBORHOOD LOCAL CENTER": { color: "#cc9999", label: "Neighborhood local center" },
+      "NURSERY": { color: "#9999cc", label: "Nursery" },
+      "NURSERY SCHOOL": { color: "#c2cc99", label: "Nursery school" },
+      "OFFICIAL GAZETTE 1049D’/95 & OFFICIAL GAZETTE 236A.A.P./2010": { color: "#cc99b3", label: "Official gazette 1049d’/95 & official gazette 236a.a.p./2010" },
+      "OFFICIAL GAZETTE 154A.A.P./2009 (professional workshops excluded)": { color: "#99ccb3", label: "Official gazette 154a.a.p./2009 (professional workshops excluded)" },
+      "OFFICIAL GAZETTE 161AAP_2013 DOUBLE REGENERATION": { color: "#c299cc", label: "Official gazette 161aap_2013 double regeneration" },
+      "OFFICIAL GAZETTE 2248B/19": { color: "#b3c6d6", label: "Official gazette 2248b/19" },
+      "on Areopagitou St. OFFICIAL GAZETTE 186D/1976 and 405D/1978": { color: "#d6b3cc", label: "On areopagitou st. official gazette 186d/1976 and 405d/1978" },
+      "on D. Areop. OFFICIAL GAZETTE 35B/62-OFFICIAL GAZETTE 186D/76-OFFICIAL GAZETTE 405D/78": { color: "#b3d6cc", label: "On d. areop. official gazette 35b/62-official gazette 186d/76-official gazette 405d/78" },
+      "OPEN SPACES": { color: "#d6ccb3", label: "Open spaces" },
+      "OSE (Greek Railways)": { color: "#b3b3cc", label: "Ose (greek railways)" },
+      "PANATHINAIKOS (stadium)": { color: "#b3e0ff", label: "Panathinaikos (stadium)" },
+      "PAO ATHLETIC GROUND": { color: "#99cc99", label: "Pao athletic ground" },
+      "PEDESTRIAN STREET": { color: "#cc9999", label: "Pedestrian street" },
+      "POL. CENTER with restrictions": { color: "#9999cc", label: "Pol. center with restrictions" },
+      "POL. CENTER with special uses": { color: "#c2cc99", label: "Pol. center with special uses" },
+      "PRAS-CENTER - PIRAEUS": { color: "#cc99b3", label: "Pras-center - piraeus" },
+      "PRAS (Urban Green)": { color: "#99ccb3", label: "Pras (urban green)" },
+      "PUBLIC GREEN SPACE": { color: "#c299cc", label: "Public green space" },
+      "PUBLIC SPACE": { color: "#b3c6d6", label: "Public space" },
+      "REHABILITATION CENTER": { color: "#d6b3cc", label: "Rehabilitation center" },
+      "RESIDENCE WITH EXCEPTIONS": { color: "#b3d6cc", label: "Residence with exceptions" },
+      "SOCIAL SERVICES": { color: "#d6ccb3", label: "Social services" },
+      "SOCIAL SERVICES - special uses for preserved buildings facing Piraeus Street": { color: "#b3b3cc", label: "Social services - special uses for preserved buildings facing piraeus street" },
+      "SPECIAL K.P.&P.CH. (Special Use Areas)": { color: "#b3e0ff", label: "Special k.p.&p.ch. (special use areas)" },
+      "SPECIAL USES": { color: "#99cc99", label: "Special uses" },
+      "SPORTS": { color: "#cc9999", label: "Sports" },
+      "STADIUMS": { color: "#9999cc", label: "Stadiums" },
+      "TOURISM - RECREATION": { color: "#c2cc99", label: "Tourism - recreation" },
+      "UNDERGROUND PARKING SPACE - PUBLIC GREEN": { color: "#cc99b3", label: "Underground parking space - public green" },
+      "UNION CENTER": { color: "#99ccb3", label: "Union center" },
+      "UNION CENTER - special uses for preserved buildings facing Piraeus Street": { color: "#c299cc", label: "Union center - special uses for preserved buildings facing piraeus street" },
+      "URBAN CENTER": { color: "#b3c6d6", label: "Urban center" },
+      "URBAN CENTER - special uses for preserved buildings facing Piraeus Street": { color: "#d6b3cc", label: "Urban center - special uses for preserved buildings facing piraeus street" },
+      "URBAN GREEN SPACE - OPEN SPACES": { color: "#b3d6cc", label: "Urban green space - open spaces" },
+      "URBAN GREEN SPACE - OPEN SPACES & YOUTH CENTER SPACE": { color: "#d6ccb3", label: "Urban green space - open spaces & youth center space" },
+      "USES-OFFICIAL GAZETTE 706D/85": { color: "#b3b3cc", label: "Uses-official gazette 706d/85" },
+      "VASILISSIS SOFIAS AVENUE": { color: "#b3e0ff", label: "Vasilissis sofias avenue" },
+      "WELFARE": { color: "#99cc99", label: "Welfare" },
+      "ZONE-II-A": { color: "#cc9999", label: "Zone-ii-a" },
+      "ZONE-II-PL.EXARCH. (Exarchia Square)": { color: "#9999cc", label: "Zone-ii-pl.exarch. (exarchia square)" },
+      "ZONE I": { color: "#c2cc99", label: "Zone i" },
+      "ZONE II": { color: "#cc99b3", label: "Zone ii" }
+    },
+  },
     "Corine Land Cover (2018)": {
       field: "Code_18",
       title: "Corine Land Cover (2018)",
@@ -1122,6 +1248,23 @@ const legendConfigs = {
         "512": { color: "#6baed6", label: "Συλλογές υδάτων" },                      // blue
         "521": { color: "#4292c6", label: "Παράκτιες λιµνοθάλασσες" },              // blue
         "523": { color: "#08519c", label: "Θάλασσα" }                               // deep blue
+      }
+    },
+    "Wildfires Attica 2015-2025": {
+      field: "Year",
+      title: "Wildfires Attica 2015-2025",
+      classes: {
+        "2015": { color: "#FFE6ED", label: "2015" }, // light green
+        "2016": { color: "#FFB8CD", label: "2016" }, // green
+        "2017": { color: "#FF8AAD", label: "2017" }, // dark green
+        "2018": { color: "#FF5C8D", label: "2018" }, // pale yellow
+        "2019": { color: "#FF2E6D", label: "2019" }, // light orange
+        "2020": { color: "#FF004D", label: "2020" }, // orange-red
+        "2021": { color: "#D1003F", label: "2021" }, // red
+        "2022": { color: "#A30031", label: "2022" }, // deep red
+        "2023": { color: "#800026", label: "2023" }, // very deep red
+        "2024": { color: "#470015", label: "2024" }, // very deep red
+        "2025": { color: "#1A0008", label: "2025" }  // very deep red
       }
     }
   };

@@ -35,7 +35,6 @@ var layerCategories = {
     { name: "Piraeus Green Spaces", file: "Environment/PiraeusGreen.geojson" }
   ],
   "Natural Hazards": [
-    { name: "Flood Risk Zones", file: "Disasters/FloodRiskZones100T.json" },
     { name: "Wildfires Attica 2015-2025", file: "Disasters/WildfiresAttica2015-2025.geojson" },
   ],
   "Population and social conditions": [

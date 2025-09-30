@@ -266,7 +266,7 @@ window.legendConfigs = {
       field: "amenity",
       title: "Amenity Type",
       classes: {
-        "school": { color: "#800080", label: "School" } //purple
+        "school": { color: "#FF5CFF", label: "School" } //purple
       }
     },
     "Universities": {

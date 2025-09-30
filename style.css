@@ -1,9 +1,21 @@
-body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", serif; }
-    #map { width: 100%; height: 100%; }
+body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", serif; overflow-x: hidden; }
+/* Make the map truly span the full viewport behind overlays */
+#map {
+  position: fixed; /* detach from normal flow so header/footer do not shrink width */
+  inset: 0;       /* top:0; right:0; bottom:0; left:0 */
+  width: 100%;
+  height: 100%;
+  z-index: 0;     /* overlays have higher z-indices already */
+}
     
     ::-webkit-scrollbar {
-      width: 5px;              /* width of vertical scrollbar */
-      height: 5px;             /* height of horizontal scrollbar */
+      width: 4px;              /* width of vertical scrollbar */
+      height: 4px;             /* height of horizontal scrollbar */
+    }
+    ::-webkit-scrollbar-button:start:decrement,
+    ::-webkit-scrollbar-button:end:increment {
+      height: 7px;          /* adjust gap size */
+      display: block;
     }
 
     ::-webkit-scrollbar-track {
@@ -21,7 +33,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
     }
 
     .logo-container {
-      position: absolute;
+      position: fixed;
       top: 1px;
       left: 1px;
       z-index: 2000;
@@ -117,7 +129,8 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
     header {
       position: absolute;
       top: 0;
-      width: 98.95vw;
+      /* Replace 100vw with 100% to avoid horizontal overflow caused by scrollbar width */
+      width: 100%;
       background: rgba(70, 130, 180, 0.8);
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
       color: #f5f5dc;
@@ -133,7 +146,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
     }
 
     #linkedin-btn {
-      position: absolute;
+      position: fixed;
       top: 6px;
       right: 12px;
     }
@@ -149,7 +162,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
     }
 
     .announcement-box {
-      position: absolute;
+      position: fixed;
       top: 100px; /* adjust based on your header height */
       right: 60px;
       background-color: rgba(240, 244, 255, 0.8);
@@ -179,7 +192,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
     }
 
     #layerControl {
-      position: absolute;
+      position: fixed;
       top: 50px;      /* below header */
       bottom: 220px;   /* above footer */
       left: 10px;     /* left side */
@@ -189,6 +202,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
       border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       overflow-y: auto;     /* makes it scrollable */
+      overflow-x: hidden;   /* avoid horizontal scroll due to negative margins */
       z-index: 999;
       font-size: 13px;
       font-family: "Newsreader", serif;
@@ -197,7 +211,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
 
     #layerControl h4 {
       margin: 8px 0 4px;
-      font-size: 14px;
+      font-size: 13px;
     }
 
     #layerInfoBox {
@@ -312,7 +326,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
 
 
     #search-box {
-      position: absolute;
+      position: fixed;
       top: 50px;
       right: 60px;
       width: 265px;
@@ -375,9 +389,11 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
     }
 
     #footer {
-      position: absolute;
+      position: fixed; /* fixed so it aligns with fixed #map */
+      left: 0;
+      right: 0;
       bottom: 0;
-      width: 99.7vw;
+      width: 100%;
       background: rgba(171, 199, 222, 0.6);
       color: grey;
       text-align: center;
@@ -385,14 +401,18 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
       font-size: 11px;
       font-family: "Newsreader", serif;
       font-style: normal;
-      z-index: 1000;
+      z-index: 1200; /* above map but below modals */
+      box-sizing: border-box;
     }
 
     .layer-item {
       display: flex;
+      width: 93%;
       align-items: center;
       justify-content: space-between;
+      margin-left: 4px;
       margin-bottom: 5px;
+      padding: 1px 4px;
     }
 
     /* Remove checkbox styles */
@@ -418,16 +438,9 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
     /* Optional: make label full width and center vertically */
     .layer-item label {
       width: 80%;
-      padding: 4px 6px;
+      padding: 4px 2px;
       cursor: pointer;
       display: block;
-    }
-
-    .layer-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1px 4px;
     }
 
     .download-button {
@@ -467,10 +480,25 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
     #searchZoomContainer {
       position: sticky;
       top: 0;
-      background: rgba(252, 251, 246, 0.95);
-      z-index: 2;
-      padding: 8px 0 8px 0;;
+      /* Extend to full visual width of container (counteract side padding) */
+      margin: 0 -15px 6px -10px;
+      padding: 8px 15px 8px 10px;
+      background: rgba(252, 251, 246, 1);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+      z-index: 3;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
       border-bottom: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Inputs inside header should flex nicely */
+    #searchZoomContainer input[type="text"] { flex: 1; }
+
+    @media (max-width: 600px) {
+      #searchZoomContainer { margin: 0 -8px 6px -8px; padding: 8px 8px; }
     }
 
     .leaflet-control-layers {
@@ -484,7 +512,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
 
     /* Custom zoom controls */
     #custom-zoom-controls {
-      position: absolute;
+      position: fixed;
       bottom: 115px;
       right: 10px;
       z-index: 1000;
@@ -512,7 +540,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
     }
 
     #custom-basemap-switcher {
-      position: absolute;
+      position: fixed;
       bottom: 30px;
       right: 10px;
       z-index: 1001;
@@ -609,6 +637,18 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
     #basemap-dropdown li:hover {
       background: white;
     }
+    #basemap-dropdown li.active-basemap {
+      background: #ffffff;
+      font-weight: 600;
+      position: relative;
+    }
+    #basemap-dropdown li.active-basemap:after {
+      content: '✓';
+      position: absolute;
+      right: 10px;
+      color: #2c6e99;
+      font-weight: 700;
+    }
 
     #legend-bar {
       position: absolute;
@@ -618,19 +658,19 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
       border: none;
       border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      min-width: 80px;
+      min-width: 100px;
       max-width: 200px;
       max-height: 300px;
       font-family: "Newsreader", serif;
       font-size: 14px;
-      z-index: 1100;
+      z-index: 1000;
       padding: 12px 18px;
       overflow: auto;
     }
 
     #legend-title {
       font-size: 13px;
-      margin-bottom: 8px;
+      margin-bottom: 18px;
       font-weight: bold;
       color: black;
     }
@@ -654,15 +694,15 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
       margin-right: 8px;
       border-radius: 2px;
     }
-    .legend-color {
+    #legend-color-box {
+      width: 1px;
+      height: 12px;
       display: inline-block;
-      width: 18px;
-      height: 18px;
       margin-right: 8px;
-      border-radius: 4px;
-      border: none;
+      border-radius: 2px;
       vertical-align: middle;
     }
+
     /* Pop-up animation keyframes */
     @keyframes popupFadeIn {
       0% {
@@ -692,10 +732,10 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
       header {
         padding: 12px 4px;
         font-size: 18px;
-        width: 98vw;
+        width: 100%; /* match normal flow width */
       }
       #footer {
-        width: 98vw;
+        width: 100%;
         font-size: 9px;
         background-color: rgba(255, 255, 255, 1);
       }
@@ -814,4 +854,10 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
   right: 550px;
   bottom: 25px; /* Adjust so it's above your toolbar */
   z-index: 1001;
+}
+/* Custom style for markercluster spiderfy polygon */
+.leaflet-marker-cluster-spider-leg {
+  stroke: #4682B4 !important;   /* Change to your preferred color */
+  stroke-width: 3 !important;   /* Thicker line */
+  opacity: 0.8 !important;      /* More visible */
 }

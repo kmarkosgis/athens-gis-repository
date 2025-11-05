@@ -53,6 +53,7 @@ var layerCategories = {
     { name: "Metro Stations 4", file: "Transportation/AthensMetro4.geojson" },
     { name: "Train Stations", file: "Transportation/AthensTrain.geojson" },
     { name: "Tram Stations", file: "Transportation/AthensTram.geojson" },
+    {name: "Traffic Accidents", file: "Transportation/TrAccidents2025.geojson"}
   ]
 };
 
@@ -94,21 +95,23 @@ function buildPropertyTable(feature){
     else if(k==='ypsos_pylo') d='Height (m)';
     else if(k==='initialdat') d='Initial Date';
     else if(k==='finaldate') d='Final Date';
-    rows += '<tr><th style="text-align:left; padding:5px; width:115px; border-bottom:1px solid #ccc;">'+d+'</th><td style="border-bottom:1px solid #ccc; width:115px;">'+v+'</td></tr>';
+    else if(k==='stop_id') d='Stop ID';
+    else if(k==='route_ref') d='Bus Route';
+    rows += '<tr><th style="text-align:left; padding:5px; width:115px; border-bottom:1px solid #ccc; word-wrap:break-word; max-width:115px;">'+d+'</th><td style="border-bottom:1px solid #ccc; width:115px; word-wrap:break-word; max-width:115px;">'+v+'</td></tr>';
+    }
+    return '<table style="table-layout:fixed; width:230px;">'+rows+'</table>';
   }
-  return '<table>'+rows+'</table>';
-}
 
-function ensureInfoBoxUpdate(){
-  if(typeof window.updateInfoBox==='function'){ window.updateInfoBox(); return; }
-  var infoBox = document.getElementById('layerInfoBox'); if(!infoBox) return;
-  var html='';
-  for(var k in AthensGIS.activeLayerInfos){ html+='<strong>'+k+'</strong><br>'+AthensGIS.activeLayerInfos[k]+'<hr>'; }
-  if(html){ infoBox.innerHTML=html; infoBox.style.display='block'; } else infoBox.style.display='none';
-}
+  function ensureInfoBoxUpdate(){
+    if(typeof window.updateInfoBox==='function'){ window.updateInfoBox(); return; }
+    var infoBox = document.getElementById('layerInfoBox'); if(!infoBox) return;
+    var html='';
+    for(var k in AthensGIS.activeLayerInfos){ html+='<strong>'+k+'</strong><br>'+AthensGIS.activeLayerInfos[k]+'<hr>'; }
+    if(html){ infoBox.innerHTML=html; infoBox.style.display='block'; } else infoBox.style.display='none';
+  }
 
-// 4. Factory for geojson options
-function geojsonOptions(layerName, legendConfig){
+  // 4. Factory for geojson options
+  function geojsonOptions(layerName, legendConfig){
   return {
     style: function(feature){
       // Special styling for Ground Relief layer: light grey fill and stroke
@@ -296,11 +299,13 @@ function renderLayerControl(){
     header.style.display = 'flex';
     header.style.alignItems = 'center';
     header.style.gap = '8px';
-    header.style.marginTop = '12px';
+    header.style.marginTop = '10px';
     header.style.marginBottom = '10px';
-    header.style.paddingLeft = '4px';
+    header.style.paddingLeft = '6px';
     header.style.cursor = 'pointer';
-    header.style.borderBottom = '1px solid rgba(204, 204, 204, 0.4)';
+    header.style.border = '0px solid rgba(204, 204, 204, 0.4)';
+    header.style.borderRadius = '8px';
+    header.style.boxShadow = '0 1px 4px rgba(0, 0, 0, 0.18)';
     
 
   var title = document.createElement('h4');
@@ -314,14 +319,14 @@ function renderLayerControl(){
   // Use a down arrow by default; rotate to point up when expanded
   arrow.textContent = '🢐';
   arrow.style.marginLeft = 'auto';
-  arrow.style.paddingRight = '8px';
+  arrow.style.paddingRight = '14px';
   arrow.style.transition = 'transform 0.2s ease';
   // Rotate around the right-center so the arrow hinges from the right edge
-  arrow.style.transformOrigin = '45% 55%';
+  arrow.style.transformOrigin = '25% 55%';
   arrow.style.fontSize = '1.6em';
   // Ensure vertical centering relative to header height
   arrow.style.display = 'inline-flex';
-  arrow.style.alignItems = 'center';
+  arrow.style.alignItems = 'top';
 
 
     header.appendChild(title);

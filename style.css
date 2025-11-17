@@ -1,4 +1,4 @@
-body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", serif; overflow-x: hidden; }
+body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif; overflow-x: hidden; }
 /* Make the map truly span the full viewport behind overlays */
 #map {
   position: fixed; /* detach from normal flow so header/footer do not shrink width */
@@ -66,7 +66,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
       border-radius: 8px;
       max-width: 500px;
       text-align: center;
-      font-family: "Newsreader", serif;
+      font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       font-style: normal;
       font-size: 14px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.4);
@@ -135,12 +135,12 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
       color: #f5f5dc;
       text-align: center;
-      font-weight: 500;
+      font-weight: 400;
       letter-spacing: 1px;
       text-transform: uppercase;
-      padding: 10px;
-      font-size: 21px;
-      font-family: "Newsreader", serif;
+      padding: 5px;
+      font-size: 22px;
+      font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       font-style: normal;
       z-index: 1000;
     }
@@ -163,21 +163,21 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
 
     .announcement-box {
       position: fixed;
-      top: 100px; /* adjust based on your header height */
-      right: 60px;
+      top: 50px; /* adjust based on your header height */
+      right: 35%;
       background-color: rgba(240, 244, 255, 0.9);
       color: rgb(0, 51, 102);
       border: 1px solid rgb(200, 216, 255);
-      padding: 10px 10px;
+      padding: 8px 10px;
       border-radius: 8px;
-      font-size: 13px;
-      font-family: "Newsreader", serif;
+      font-size: 12px;
+      font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       font-style: normal;
       font-weight: 400;
-      text-align: left;
+      text-align: justify;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-      max-width: 250px;
-      max-height: 180px;
+      width: 500px;
+      max-height: 70px;
       z-index: 999;
       overflow-y: auto;
     }
@@ -205,8 +205,8 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
       overflow-y: auto;     /* makes it scrollable */
       overflow-x: hidden;   /* avoid horizontal scroll due to negative margins */
       z-index: 999;
-      font-size: 13px;
-      font-family: "Newsreader", serif;
+      font-size: 12px;
+      font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       font-style: normal;
     }
 
@@ -227,7 +227,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
       padding: 10px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       font-size: 12px;
-      font-family: "Newsreader", serif;
+      font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       display: none;  /* hidden by default */
       z-index: 2000;  /* ✅ force on top! */
     }
@@ -244,7 +244,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
       padding: 10px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       font-size: 12px;
-      font-family: "Newsreader", serif;
+      font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       display: none;
       z-index: 2000;
     }
@@ -264,7 +264,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
       display: flex;
       align-items: center;
       gap: 10px;
-      font-family: "Newsreader", serif;
+      font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       font-size: 12px;
       z-index: 1000; /* keep above map */
     }
@@ -380,7 +380,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
       padding: 5px 10px;
       cursor: pointer;
       font-size: 12px;
-      font-family: "Newsreader", serif;
+      font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       font-style: normal;
       background:rgba(252, 251, 246, 0.7);      
       border-radius: 4px;
@@ -398,9 +398,9 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
       background: rgba(171, 199, 222, 0.6);
       color: grey;
       text-align: center;
-      padding: 3px;
+      padding: 2px;
       font-size: 11px;
-      font-family: "Newsreader", serif;
+      font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       font-style: normal;
       z-index: 1200; /* above map but below modals */
       box-sizing: border-box;
@@ -449,11 +449,10 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
       background: white;
       color: black;
       border: none;
-      padding: 1px 6px;
-      padding-top: 4px;
+      padding: 2px 6px;
       border-radius: 4px;
       text-decoration: none;
-      font-size: 12px;
+      font-size: 13px;
       cursor: pointer;
       line-height: 1;
       align-items: center;
@@ -587,11 +586,11 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
       padding: 0;      
     }
     #basemap-label {
-      font-size: 11px;
+      font-size: 12px;
       pointer-events: none;
-      font-family: "Newsreader", serif;
-      font-weight: normal;
-      background-color: rgba(0, 0, 0, 0.5);
+      font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
+      font-weight: 500;
+      background-color: rgba(0, 0, 0, 0.3);
       color: white;
       display: block;
       text-align: center;
@@ -599,9 +598,9 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
       top: 4px;              /* Position label over the image */
       left: 3px;
       border-radius: 6px;
-      width:87%;
-      margin-top: 58px;
-      padding: 2.5px 2px;
+      width:89%;
+      margin-top: 56px;
+      padding: 1px 1.5px;
       z-index: 2;            /* Ensure label is above the image */
     }
     
@@ -614,7 +613,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
       border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       min-width: 140px;
-      font-family: "Newsreader", serif;
+      font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       font-size: 14px;
     }
     
@@ -644,7 +643,6 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
       position: relative;
     }
     #basemap-dropdown li.active-basemap:after {
-      content: '✓';
       position: absolute;
       right: 10px;
       color: #2c6e99;
@@ -653,7 +651,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
 
     #legend-bar {
       position: fixed;
-      top: 310px;
+      top: 200px;
       right: 10px;
       background: rgba(252,251,246,0.95);
       border: none;
@@ -661,8 +659,8 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Newsreader", ser
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       min-width: 100px;
       max-width: 200px;
-      max-height: calc(96vh - 500px); /* Ensures it stops above zoom controls */
-      font-family: "Newsreader", serif;
+      max-height: calc(96vh - 400px); /* Ensures it stops above zoom controls */
+      font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       font-size: 14px;
       z-index: 1000;
       padding: 12px 18px;

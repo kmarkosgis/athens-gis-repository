@@ -24,9 +24,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <!-- EasyPrint -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-easyprint/dist/bundle.css" />
-  <script src="https://unpkg.com/leaflet-easyprint/dist/bundle.js"></script>
+  <!-- Use local copy of leaflet-easyprint (keeps behavior consistent across hosts) -->
+  <script src="JS/leaflet-easyprint.js"></script>
   <!-- jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -38,7 +37,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet">
 
   <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" crossorigin="anonymous" />
   <script>
     // Global object must be available before any module scripts
     window.AthensGIS = window.AthensGIS || {
@@ -101,9 +100,9 @@
 <div class="announcement-box" id="announcement-box">
   <button class="close-btn" id="closeAnnouncementBtn">&times;</button>
   📢 <strong>News / Announcements</strong>
-  <p>01/10/2025: New layer category added: Amenities. Major visual and performance improvements implemented.</p>
-  <p>05/11/2025: The Traffic Accidents 2025 layer was added, and the Bus Stops layer was updated. Minor visual changes improvements implemented.</p>
   <p>⚠️ Data provided by the repository may contain errors.</p>
+  <p>17/11/2025: Major visual and performance improvements implemented.</p>
+  <p>05/11/2025: The Traffic Accidents 2025 layer was added, and the Bus Stops layer was updated. Minor visual changes improvements implemented.</p>
 </div>
 
 <div id="map"></div>
@@ -155,7 +154,7 @@
       Explore the geography of the Athens Metropolitan Area with interactive maps and data. Here you’ll find layers on administrative boundaries, transportation networks, environment, energy and population statistics — all in one place.
     </p>
     <p>
-      Use the panel on the left to select the layers you want to view, adjust transparency, and download data. Click on features to see detailed information, and use the tools provided to explore Athens in more depth.
+      Use the panel on the left to select the layers you want to view, and download data. Click on features to see detailed information, and use the tools provided to explore Athens in more depth.
     </p>
     <p>
       This repository is a work in progress. More data and features will be added over time, so check back often for updates!

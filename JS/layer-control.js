@@ -126,7 +126,7 @@ function buildPropertyTable(feature){
       return { color:'#699bc4', weight:1, fillColor:'#4682B4', fillOpacity: AthensGIS.currentOpacity };
     },
     pointToLayer: function(feature, latlng){
-      return L.circleMarker(latlng,{ radius:3, fillColor:'#4682B4', color:'#40b3ff', weight:1, opacity:AthensGIS.currentOpacity, fillOpacity:AthensGIS.currentOpacity });
+      return L.circleMarker(latlng,{ radius:4, fillColor:'#4682B4', color:'#40b3ff', weight:1, opacity:AthensGIS.currentOpacity, fillOpacity:AthensGIS.currentOpacity });
     },
     onEachFeature: function(feature, layer){
       layer.on('click', function(e){
@@ -163,6 +163,68 @@ function buildPropertyTable(feature){
 }
 
 // 5. Render Layer Control UI
+// Helper: create map panes for vector ordering and build a layer (or layerGroup) that
+// places polygon geometries in a lower pane and point/line geometries in a higher pane.
+function createLayerFromGeoJSON(data, layerName, legendConfig){
+  var map = getMap();
+  if(!map) return null;
+  // Ensure panes exist
+  try{
+    if(!map.getPane('vector-bottom')){ map.createPane('vector-bottom'); map.getPane('vector-bottom').style.zIndex = 450; }
+    if(!map.getPane('vector-top')){ map.createPane('vector-top'); map.getPane('vector-top').style.zIndex = 650; }
+  }catch(e){}
+
+  var features = (data && data.features) ? data.features : [];
+  var polyFeatures = { type: 'FeatureCollection', features: features.filter(function(f){ return f && f.geometry && (f.geometry.type==='Polygon' || f.geometry.type==='MultiPolygon'); }) };
+  var vecFeatures = { type: 'FeatureCollection', features: features.filter(function(f){ return f && f.geometry && (f.geometry.type==='Point' || f.geometry.type==='MultiPoint' || f.geometry.type==='LineString' || f.geometry.type==='MultiLineString'); }) };
+
+  var layers = [];
+  var polyLayer = null, vecLayer = null;
+  if(polyFeatures.features.length){
+    var baseOpts = geojsonOptions(layerName, legendConfig);
+    var polyOpts = Object.assign({}, baseOpts);
+    // ensure pane is applied to each created feature before it's added to the map
+    var baseOnEach = baseOpts.onEachFeature;
+    polyOpts.onEachFeature = function(feature, layer){
+      try{ if(layer && layer.options) layer.options.pane = 'vector-bottom'; }catch(e){}
+      if(typeof baseOnEach === 'function') baseOnEach(feature, layer);
+    };
+    polyOpts.pane = 'vector-bottom';
+    polyLayer = L.geoJSON(polyFeatures, polyOpts);
+    layers.push(polyLayer);
+  }
+  if(vecFeatures.features.length){
+    var baseOpts2 = geojsonOptions(layerName, legendConfig);
+    var vecOpts = Object.assign({}, baseOpts2);
+    var baseOnEach2 = baseOpts2.onEachFeature;
+    vecOpts.onEachFeature = function(feature, layer){
+      try{ if(layer && layer.options) layer.options.pane = 'vector-top'; }catch(e){}
+      if(typeof baseOnEach2 === 'function') baseOnEach2(feature, layer);
+    };
+    vecOpts.pane = 'vector-top';
+    vecLayer = L.geoJSON(vecFeatures, vecOpts);
+    layers.push(vecLayer);
+  }
+
+  var group = null;
+  if(layers.length===1){
+    group = layers[0];
+    group.addTo(map);
+  } else {
+    group = L.layerGroup(layers).addTo(map);
+    // attach convenience references
+    group._polyLayer = polyLayer;
+    group._vecLayer = vecLayer;
+  }
+
+  // Add helper resetStyle to be compatible with existing code that calls resetStyle on stored layers
+  group.resetStyle = function(feature){
+    try{ if(polyLayer && typeof polyLayer.resetStyle==='function') polyLayer.resetStyle(feature); }catch(_){}
+    try{ if(vecLayer && typeof vecLayer.resetStyle==='function') vecLayer.resetStyle(feature); }catch(_){}
+  };
+
+  return group;
+}
 function renderLayerControl(){
   if(!getMap()) return setTimeout(renderLayerControl,50);
   var controlDiv = document.getElementById('layerControl'); if(!controlDiv) return;
@@ -253,11 +315,11 @@ function renderLayerControl(){
           window.updateLegendBar(layerName);
         }
         Promise.all(['relief1.json','relief2.json','relief3.json','relief4.json'].map(f=>fetch('data/Environment/'+f).then(r=>r.json())))
-          .then(parts=>{
+            .then(parts=>{
             var merged={type:'FeatureCollection', features:parts.flatMap(p=>p.features||[])};
             var lc=(window.legendConfigs||{})[layerName];
             if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName);
-            var lyr=L.geoJSON(merged, geojsonOptions(layerName, lc)).addTo(getMap());
+            var lyr=createLayerFromGeoJSON(merged, layerName, lc);
             // Keep internal key as 'Relief' for cleanup compatibility
             AthensGIS.geojsonLayers['Relief']=lyr;
           });
@@ -298,6 +360,7 @@ function renderLayerControl(){
     // Row layout so title and arrow are in the same line, arrow on the right
     header.style.display = 'flex';
     header.style.alignItems = 'center';
+    header.style.height = '30px';
     header.style.gap = '8px';
     header.style.marginTop = '10px';
     header.style.marginBottom = '10px';
@@ -378,7 +441,7 @@ function renderLayerControl(){
             Promise.all(['relief1.json','relief2.json','relief3.json','relief4.json'].map(f=>fetch('data/Environment/'+f).then(r=>r.json()))).then(parts=>{ var merged={type:'FeatureCollection', features:parts.flatMap(p=>p.features||[])}; var lc=(window.legendConfigs||{})[layerName]; if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName); var lyr=L.geoJSON(merged, geojsonOptions(layerName, lc)).addTo(getMap()); AthensGIS.geojsonLayers['Relief']=lyr; });
             fetch('info/Environment/Relief.txt').then(r=>r.ok?r.text():Promise.reject()).then(t=>{ AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(()=>{ AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
           } else if(file){
-            fetch('data/'+file).then(r=>r.json()).then(data=>{ var lc2=(window.legendConfigs||{})[layerName]; if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName); var lyr2=L.geoJSON(data, geojsonOptions(layerName, lc2)).addTo(getMap()); AthensGIS.geojsonLayers[file]=lyr2; });
+            fetch('data/'+file).then(r=>r.json()).then(data=>{ var lc2=(window.legendConfigs||{})[layerName]; if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName); var lyr2=createLayerFromGeoJSON(data, layerName, lc2); AthensGIS.geojsonLayers[file]=lyr2; });
             var txt=file.replace(/\.[^/.]+$/, '')+'.txt'; fetch('info/'+txt).then(r=>r.ok?r.text():Promise.reject()).then(t=>{ AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(()=>{ AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
           }
         } else {
@@ -391,6 +454,17 @@ function renderLayerControl(){
           // Update legend to remove this layer's entry (after state updated)
           if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName,'remove');
         }
+        // Update category header style: if any checkbox in this category is active, highlight the header
+        try{
+          var anyChecked = content.querySelectorAll('input[type=checkbox]:checked').length > 0;
+          if(anyChecked){
+            header.style.background = 'linear-gradient(90deg, rgba(64, 179, 255, 0.1), rgba(64, 179, 255, 0.4))';
+            
+          } else {
+            header.style.background = '';
+            header.style.boxShadow = '0 1px 4px rgba(0, 0, 0, 0.18)';
+          }
+        }catch(e){}
       });
     });
 

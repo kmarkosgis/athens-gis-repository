@@ -24,6 +24,11 @@
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <!-- MapLibre GL (for 3D building basemap) -->
+  <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+  <!-- MapLibre-GL Leaflet bridge -->
+  <script src="https://unpkg.com/maplibre-gl-leaflet/dist/MaplibreGLLeaflet.min.js"></script>
   <!-- Use local copy of leaflet-easyprint (keeps behavior consistent across hosts) -->
   <script src="JS/leaflet-easyprint.js"></script>
   <!-- jsPDF -->
@@ -101,8 +106,8 @@
   <button class="close-btn" id="closeAnnouncementBtn">&times;</button>
   📢 <strong>News / Announcements</strong>
   <p>⚠️ Data provided by the repository may contain errors.</p>
+  <p>05/12/2025: Municipal communities of Athens, Traffic lights, and Athens street network added. Terrain layer refresh. Minor visual and performance improvements implemented.</p>
   <p>17/11/2025: Major visual and performance improvements implemented.</p>
-  <p>05/11/2025: The Traffic Accidents 2025 layer was added, and the Bus Stops layer was updated. Minor visual changes improvements implemented.</p>
 </div>
 
 <div id="map"></div>

@@ -8,6 +8,7 @@ var layerCategories = {
     { name: "Athens North Sector", file: "Boundaries/AthensNorthSector.json" },
     { name: "Athens South Sector", file: "Boundaries/AthensSouthSector.json" },
     { name: "Athens West Sector", file: "Boundaries/AthensWestSector.json" },
+    { name: "Municipal Communities of Athens", file: "Boundaries/AthensCom.geojson" },
     { name: "West Attica", file: "Boundaries/AthensWest.json" },
     { name: "East Attica", file: "Boundaries/AthensEast.json" },
     { name: "Piraeus", file: "Boundaries/Piraeus.json" },
@@ -51,9 +52,11 @@ var layerCategories = {
     { name: "Highways", file: "Transportation/AthensHighways.json" },
     { name: "Metro Stations 1, 2 & 3", file: "Transportation/AthensMetro123.geojson" },
     { name: "Metro Stations 4", file: "Transportation/AthensMetro4.geojson" },
+    { name: "Street Network", file: "Transportation/AthStreets.geojson" },
     { name: "Train Stations", file: "Transportation/AthensTrain.geojson" },
     { name: "Tram Stations", file: "Transportation/AthensTram.geojson" },
-    {name: "Traffic Accidents", file: "Transportation/TrAccidents2025.geojson"}
+    { name: "Traffic Accidents", file: "Transportation/TrAccidents2025.geojson"},
+    { name: "Traffic Lights", file: "Transportation/TrLights.geojson" }
   ]
 };
 
@@ -77,10 +80,14 @@ function buildPropertyTable(feature){
     var d = key; var k = key.toLowerCase();
     if(k==='shapeleng_'){ v=Number(v).toFixed(2); d='Shape Length (km)'; }
     else if(k==='shapearea'){ v=Number(v).toFixed(2); d='Shape Area (km²)'; }
-    else if(k==='shapeleng_m'){ v=Number(v).toFixed(2); d='Shape Length (m)'; }
-    else if(k==='shapearea_m'){ v=Number(v).toFixed(2); d='Shape Area (m²)'; }
-    else if(['name','gname','uses_gr'].includes(k)){ d='Name (GR)'; }
-    else if(['ename','name_en','uses_en'].includes(k)){ d='Name (ENG)'; }
+    else if(['shapeleng_m','shapelengm'].includes(k)){ v=Number(v).toFixed(2); d='Shape Length (m)'; }
+    else if(['shapearea_m','shapeaream'].includes(k)){ v=Number(v).toFixed(2); d='Shape Area (m²)'; }
+    else if(['name','name_place','gname','uses_gr'].includes(k)){ d='Name (GR)'; }
+    else if(['ename','name_pl_en','name_en','uses_en'].includes(k)){ d='Name (ENG)'; }
+    else if(k==='geitonia') d='Neighborhood (GR)';
+    else if(k==='geiton_en') d='Neighborhood (ENG)';
+    else if(k==='dk') d='Municipal Community (GR)';
+    else if(k==='dk_en') d='Municipal Community (ENG)';
     else if(k==='sectionnam') d='Section Name';
     else if(k==='metroline') d='Metro Line';
     else if(k==='highway') d='Type';
@@ -100,30 +107,72 @@ function buildPropertyTable(feature){
     rows += '<tr><th style="text-align:left; padding:5px; width:115px; border-bottom:1px solid #ccc; word-wrap:break-word; max-width:115px;">'+d+'</th><td style="border-bottom:1px solid #ccc; width:115px; word-wrap:break-word; max-width:115px;">'+v+'</td></tr>';
     }
     return '<table style="table-layout:fixed; width:230px;">'+rows+'</table>';
-  }
+}
 
-  function ensureInfoBoxUpdate(){
+function ensureInfoBoxUpdate(){
     if(typeof window.updateInfoBox==='function'){ window.updateInfoBox(); return; }
     var infoBox = document.getElementById('layerInfoBox'); if(!infoBox) return;
     var html='';
     for(var k in AthensGIS.activeLayerInfos){ html+='<strong>'+k+'</strong><br>'+AthensGIS.activeLayerInfos[k]+'<hr>'; }
     if(html){ infoBox.innerHTML=html; infoBox.style.display='block'; } else infoBox.style.display='none';
-  }
+}
 
   // 4. Factory for geojson options
-  function geojsonOptions(layerName, legendConfig){
+function geojsonOptions(layerName, legendConfig){
   return {
     style: function(feature){
-      // Special styling for Ground Relief layer: light grey fill and stroke
-      if(layerName==='Ground Relief' || layerName==='Relief'){
-        return { color:'#9e9e9e', weight:1, fillColor:'#d9d9d9', fillOpacity: AthensGIS.currentOpacity };
+      var baseWeight = 1;
+      var fillOpacity = AthensGIS.currentOpacity;
+      // Special styling for Terrain/Relief: scale-aware contour visibility
+      if(layerName==='Terrain' || layerName==='Relief'){
+        var color = '#C4C4C4';
+        var fillColor = '#d9d9d9';
+        try{
+          var geomType = feature && feature.geometry && feature.geometry.type;
+          var contourRaw = feature && feature.properties && (feature.properties.Contour || feature.properties.contour || feature.properties.CONTOUR);
+          var contourVal = (typeof contourRaw !== 'undefined' && contourRaw !== null && contourRaw !== '') ? Number(contourRaw) : NaN;
+          var heavyContours = [200,400,600,800,1000,1200,1400,1600];
+
+          // approximate current map scale denominator
+          var mapObj = getMap();
+          var isLargeScale = true; // denominator < 100000
+          if(mapObj){
+            try{
+              var center = mapObj.getCenter(); var zoom = mapObj.getZoom();
+              var latRad = (center.lat || 0) * Math.PI / 180;
+              var metersPerPixel = 156543.03392 * Math.cos(latRad) / Math.pow(2, zoom);
+              var dpi = 96; var inchesPerMeter = 39.3700787;
+              var scaleDenominator = metersPerPixel * dpi * inchesPerMeter;
+              isLargeScale = (scaleDenominator > 130000);
+            }catch(e){ isLargeScale = true; }
+          }
+
+          // Line geometries: enforce heavy-only visibility at large scales
+          if(geomType === 'LineString' || geomType === 'MultiLineString'){
+            var isHeavy = heavyContours.indexOf(contourVal) !== -1;
+            if(isLargeScale){
+              // At scales larger than 1:100000 (denominator < 100000): show only heavy contours
+              if(isHeavy) return { color: color, weight: baseWeight, opacity: 1, fillOpacity: fillOpacity };
+              return { color: color, weight: baseWeight, opacity: 0, fillOpacity: 0 };
+            } else {
+              // At smaller scales (denominator >= 100000): show all contours, heavy ones emphasised
+              if(isHeavy) return { color: color, weight: baseWeight * 2, opacity: 1, fillOpacity: fillOpacity };
+              return { color: color, weight: baseWeight, opacity: 1, fillOpacity: fillOpacity };
+            }
+          }
+
+          // Non-line geometries (polygons, points): render normally
+          return { color: color, weight: baseWeight, fillColor: fillColor, fillOpacity: fillOpacity };
+        }catch(e){
+          return { color: color, weight: baseWeight, fillColor: fillColor, fillOpacity: fillOpacity };
+        }
       }
       if(legendConfig && feature.properties && legendConfig.field in feature.properties){
         var cv = feature.properties[legendConfig.field];
         var cs = legendConfig.classes[cv];
-        if(cs) return { color: cs.color, weight:1, fillColor: cs.color, fillOpacity: AthensGIS.currentOpacity };
+        if(cs) return { color: cs.color, weight: baseWeight, fillColor: cs.color, fillOpacity: AthensGIS.currentOpacity };
       }
-      return { color:'#699bc4', weight:1, fillColor:'#4682B4', fillOpacity: AthensGIS.currentOpacity };
+      return { color:'#699bc4', weight: baseWeight, fillColor:'#4682B4', fillOpacity: AthensGIS.currentOpacity };
     },
     pointToLayer: function(feature, latlng){
       return L.circleMarker(latlng,{ radius:4, fillColor:'#4682B4', color:'#40b3ff', weight:1, opacity:AthensGIS.currentOpacity, fillOpacity:AthensGIS.currentOpacity });
@@ -139,15 +188,15 @@ function buildPropertyTable(feature){
         }
         AthensGIS.selectedFeature = e.target;
         var lc = (window.legendConfigs||{})[layerName];
-        var highlight = { weight:2, fillOpacity: AthensGIS.currentOpacity };
-        // Keep Ground Relief highlight in grey tones as well
-        if(layerName==='Ground Relief' || layerName==='Relief'){
-          highlight.color = '#9e9e9e';
+        var highlight = { weight:1, fillOpacity: AthensGIS.currentOpacity };
+        // Keep Terrain highlight in grey tones as well
+        if(layerName==='Terrain' || layerName==='Relief'){
+          highlight.color = '#C4C4C4';
           highlight.fillColor = '#d9d9d9';
         } else if(lc && feature.properties && lc.field in feature.properties){
           var cv2 = feature.properties[lc.field]; var cs2 = lc.classes[cv2];
-          if(cs2){ highlight.color=cs2.color; highlight.fillColor=cs2.color; } else { highlight.color='#4682B4'; highlight.fillColor='#3f75a2'; }
-        } else { highlight.color='#4682B4'; highlight.fillColor='#3f75a2'; }
+          if(cs2){ highlight.color=cs2.color; highlight.fillColor=cs2.color; } else { highlight.color='#699bc4'; highlight.fillColor='#4682B4'; }
+        } else { highlight.color='#699bc4'; highlight.fillColor='#4682B4'; }
         e.target.setStyle(highlight);
         if(e.target._path){
           e.target._path.classList.add('feature-highlight');
@@ -157,11 +206,13 @@ function buildPropertyTable(feature){
       });
       var infoSide = document.getElementById('infoBox');
       var html = buildPropertyTable(feature);
-      layer.on('click', function(ev){ if(infoSide){ infoSide.innerHTML=html; infoSide.style.display='block'; L.DomEvent.stopPropagation(ev);} });
+      // Only attach the infoBox update for non-Relief layers
+      if(layerName!=='Terrain' && layerName!=='Relief'){
+        layer.on('click', function(ev){ if(infoSide){ infoSide.innerHTML=html; infoSide.style.display='block'; L.DomEvent.stopPropagation(ev);} });
+      }
     }
   };
 }
-
 // 5. Render Layer Control UI
 // Helper: create map panes for vector ordering and build a layer (or layerGroup) that
 // places polygon geometries in a lower pane and point/line geometries in a higher pane.
@@ -204,6 +255,49 @@ function createLayerFromGeoJSON(data, layerName, legendConfig){
     vecOpts.pane = 'vector-top';
     vecLayer = L.geoJSON(vecFeatures, vecOpts);
     layers.push(vecLayer);
+
+    // If this is the Relief/Terrain layer, create repeated contour labels along line features
+    if((layerName==='Relief' || layerName==='Terrain') && typeof turf !== 'undefined'){
+      try{
+        var labelLayer = L.layerGroup();
+        // iterate line features and place a label every 5 km
+        vecFeatures.features.forEach(function(f){
+          if(!f || !f.geometry) return;
+          var gtype = f.geometry.type;
+          if(gtype!=='LineString' && gtype!=='MultiLineString') return;
+          // contour value from properties
+          var contour = (f.properties && (f.properties.Contour || f.properties.contour || f.properties.CONTOUR)) || '';
+          // compute length in kilometers
+          var lengthKm = 0;
+          try{ lengthKm = turf.length(f, {units:'kilometers'}) || 0; }catch(e){ lengthKm = 0; }
+          if(lengthKm<=0) return;
+          // place a label every 10 km along the line (0,10,20,... km)
+          for(var d=0; d<=lengthKm; d+=15){
+            try{
+              var pt = turf.along(f, d, {units:'kilometers'});
+              if(pt && pt.geometry && pt.geometry.coordinates){
+                var c = pt.geometry.coordinates; var latlng = [c[1], c[0]];
+                // compute a small forward point to get bearing and rotate the label
+                var forwardDist = Math.min(d + 0.1, lengthKm);
+                var bearing = 0;
+                try{
+                  var nextPt = turf.along(f, forwardDist, {units:'kilometers'});
+                  if(nextPt && nextPt.geometry && nextPt.geometry.coordinates){
+                    bearing = turf.bearing(pt, nextPt) || 0;
+                  }
+                }catch(e){ bearing = 0; }
+                // transparent background, slight text-shadow for contrast, rotated to follow line direction
+                var html = '<div style="font-size:10px; color:#2c3e50; background:rgba(121, 121, 121, 0.15); padding:2px; border-radius:4px; border:none; text-shadow:0 0 3px rgba(255,255,255,0.9); transform:rotate('+bearing+'deg); transform-origin:center; display:inline-block;">'+String(contour)+'</div>';
+                var ic = L.divIcon({className:'relief-label', html:html});
+                var m = L.marker(latlng, {icon:ic, pane:'vector-top', interactive:false});
+                labelLayer.addLayer(m);
+              }
+            }catch(e){}
+          }
+        });
+        if(labelLayer.getLayers().length){ var _preparedLabelLayer = labelLayer; }
+      }catch(e){}
+    }
   }
 
   var group = null;
@@ -216,6 +310,40 @@ function createLayerFromGeoJSON(data, layerName, legendConfig){
     group._polyLayer = polyLayer;
     group._vecLayer = vecLayer;
   }
+
+  // If we prepared a label layer for Relief, attach it to the group and toggle visibility
+  try{
+    if(typeof _preparedLabelLayer !== 'undefined' && _preparedLabelLayer){
+      group._labelLayer = _preparedLabelLayer;
+      // compute whether to show labels: show when map scale is larger than 1/35000 (denominator < 35000)
+      var shouldShowReliefLabels = function(){
+        try{
+          var mapCenter = map.getCenter(); var zoom = map.getZoom();
+          var latRad = (mapCenter.lat || 0) * Math.PI / 180;
+          var metersPerPixel = 156543.03392 * Math.cos(latRad) / Math.pow(2, zoom);
+          var dpi = 96; // assumed screen DPI
+          var inchesPerMeter = 39.3700787;
+          var scaleDenominator = metersPerPixel * dpi * inchesPerMeter;
+          return scaleDenominator < 35000;
+        }catch(e){ return false; }
+      };
+
+      var updateLabelVisibility = function(){
+        try{
+          if(shouldShowReliefLabels()){
+            if(!group.hasLayer(group._labelLayer)) group.addLayer(group._labelLayer);
+          } else {
+            if(group.hasLayer(group._labelLayer)) group.removeLayer(group._labelLayer);
+          }
+        }catch(e){}
+      };
+
+      // initial sync and listeners
+      updateLabelVisibility();
+      map.on('zoomend moveend', updateLabelVisibility);
+      group._updateReliefLabelVisibility = updateLabelVisibility;
+    }
+  }catch(e){}
 
   // Add helper resetStyle to be compatible with existing code that calls resetStyle on stored layers
   group.resetStyle = function(feature){
@@ -294,8 +422,8 @@ function renderLayerControl(){
       controlDiv.appendChild(commonWrap);
     }
     var row=document.createElement('div'); row.className='layer-item';
-    var cb=document.createElement('input'); cb.type='checkbox'; cb.id=id; cb.dataset.layername='Ground Relief';
-    var label=document.createElement('label'); label.htmlFor=id; label.textContent='Ground Relief';
+    var cb=document.createElement('input'); cb.type='checkbox'; cb.id=id; cb.dataset.layername='Terrain';
+    var label=document.createElement('label'); label.htmlFor=id; label.textContent='Terrain';
     var dl=document.createElement('button'); dl.innerHTML='&#129035;'; dl.className='download-button'; dl.style.display='none'; dl.title='Download as ZIP';
     dl.addEventListener('click', function(){ var zip=new JSZip(); var files=['relief1.json','relief2.json','relief3.json','relief4.json']; Promise.all(files.map(f=>fetch('data/Environment/'+f).then(r=>r.blob()).then(b=>zip.file(f,b)))).then(()=>zip.generateAsync({type:'blob'})).then(c=>saveAs(c,'Ground_Relief_layers.zip')); });
     row.appendChild(cb); row.appendChild(label); row.appendChild(dl);
@@ -515,6 +643,29 @@ function renderLayerControl(){
 }
 
 // 6. Init
-if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', renderLayerControl); } else { renderLayerControl(); }
+// Ensure geojson styles update when the map zoom or moves (so contour visibility reacts live)
+function refreshGeoJSONStyles(){
+  var map = getMap(); if(!map) return;
+  try{
+    Object.keys(AthensGIS.geojsonLayers||{}).forEach(function(k){
+      var lyr = AthensGIS.geojsonLayers[k]; if(!lyr) return;
+      // If it's a GeoJSON/L.GeoJSON with a style function, call setStyle to re-evaluate styles
+      try{ if(typeof lyr.setStyle==='function' && lyr.options && typeof lyr.options.style==='function'){ lyr.setStyle(lyr.options.style); } }catch(e){}
+      // If group-like wrapper with internal poly/vec layers, refresh those
+      try{ if(lyr._polyLayer && typeof lyr._polyLayer.setStyle==='function' && lyr._polyLayer.options && typeof lyr._polyLayer.options.style==='function'){ lyr._polyLayer.setStyle(lyr._polyLayer.options.style); } }catch(e){}
+      try{ if(lyr._vecLayer && typeof lyr._vecLayer.setStyle==='function' && lyr._vecLayer.options && typeof lyr._vecLayer.options.style==='function'){ lyr._vecLayer.setStyle(lyr._vecLayer.options.style); } }catch(e){}
+      // For generic LayerGroups, iterate child layers and refresh any with setStyle
+      try{ if(typeof lyr.eachLayer==='function'){ lyr.eachLayer(function(s){ try{ if(s && typeof s.setStyle==='function'){ if(s.options && typeof s.options.style==='function') s.setStyle(s.options.style); else s.setStyle(s.options||{}); } }catch(e){} }); } }catch(e){}
+    });
+  }catch(e){}
+}
+
+function ensureGeoJSONStyleRefreshListener(){
+  var map = getMap(); if(!map) return;
+  if(AthensGIS._layerStyleRefresherAdded) return; AthensGIS._layerStyleRefresherAdded = true;
+  map.on('zoomend moveend', function(){ try{ refreshGeoJSONStyles(); }catch(e){} });
+}
+
+if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', function(){ renderLayerControl(); ensureGeoJSONStyleRefreshListener(); }); } else { renderLayerControl(); ensureGeoJSONStyleRefreshListener(); }
 
 // === End Layer Control Module ===

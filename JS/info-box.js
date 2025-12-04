@@ -14,6 +14,9 @@ function formatFeatureProperties(properties) {
 		} else if (key.toLowerCase() === 'shapeleng_m') {
 			value = Number(value).toFixed(2);
 			displayKey = 'Shape Length (m)';
+		} else if (key.toLowerCase() === 'shapelengm') {
+			value = Number(value).toFixed(2);
+			displayKey = 'Shape Length (m)';
 		} else if (key.toLowerCase() === 'shapearea_m') {
 			value = Number(value).toFixed(2);
 			displayKey = 'Shape Area (m²)';

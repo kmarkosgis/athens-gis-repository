@@ -1,0 +1,5 @@
+Center lines of the walkable street network in the municipality of Athens.
+
+<p>Uploaded: 15-12-2025<p/>
+<p>Contributors: K. Markos<p/>
+<p>Source: OSM<p/>

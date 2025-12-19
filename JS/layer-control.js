@@ -4,6 +4,7 @@
 // 1. Category definitions
 var layerCategories = {
   "Administrative Boundaries": [
+    { name: "Regions of Greece", file: "Boundaries/GrRegions.geojson" },
     { name: "Athens Center Sector", file: "Boundaries/AthensCenterSector.json" },
     { name: "Athens North Sector", file: "Boundaries/AthensNorthSector.json" },
     { name: "Athens South Sector", file: "Boundaries/AthensSouthSector.json" },
@@ -49,14 +50,15 @@ var layerCategories = {
   "Transportation Systems": [
     { name: "Avenues", file: "Transportation/AthensAvenues.json" },
     { name: "Bus Stops", file: "Transportation/AthensBusStops.geojson" },
-    { name: "Highways", file: "Transportation/AthensHighways.json" },
+    { name: "Highways of Greece", file: "Transportation/GreeceHighways.geojson" },
     { name: "Metro Stations 1, 2 & 3", file: "Transportation/AthensMetro123.geojson" },
     { name: "Metro Stations 4", file: "Transportation/AthensMetro4.geojson" },
     { name: "Street Network", file: "Transportation/AthStreets.geojson" },
+    { name: "Toll Stations", file: "Transportation/TollStations.geojson" },
     { name: "Train Stations", file: "Transportation/AthensTrain.geojson" },
     { name: "Tram Stations", file: "Transportation/AthensTram.geojson" },
     { name: "Traffic Accidents", file: "Transportation/TrAccidents2025.geojson"},
-    { name: "Traffic Lights", file: "Transportation/TrLights.geojson" }
+    { name: "Traffic Lights", file: "Transportation/TrLights.geojson" },
   ]
 };
 
@@ -82,8 +84,14 @@ function buildPropertyTable(feature){
     else if(k==='shapearea'){ v=Number(v).toFixed(2); d='Shape Area (km²)'; }
     else if(['shapeleng_m','shapelengm'].includes(k)){ v=Number(v).toFixed(2); d='Shape Length (m)'; }
     else if(['shapearea_m','shapeaream'].includes(k)){ v=Number(v).toFixed(2); d='Shape Area (m²)'; }
-    else if(['name','name_place','gname','uses_gr'].includes(k)){ d='Name (GR)'; }
+    else if(['name','name_el','name_place','gname','uses_gr'].includes(k)){ d='Name (GR)'; }
     else if(['ename','name_pl_en','name_en','uses_en'].includes(k)){ d='Name (ENG)'; }
+    else if(k==='bridge') d='Bridge';
+    else if(k==='tunnel') d='Tunnel';
+    else if(k==='ref') d='Route';
+    else if(k==='operator') d='Operator';
+    else if(k==='charge') d='Toll Charge';
+    else if(k==='int_ref') d='International Route';
     else if(k==='geitonia') d='Neighborhood (GR)';
     else if(k==='geiton_en') d='Neighborhood (ENG)';
     else if(k==='dk') d='Municipal Community (GR)';

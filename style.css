@@ -195,9 +195,9 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
     #layerControl {
       position: fixed;
       top: 50px;      /* below header */
-      bottom: 220px;   /* above footer */
       left: 10px;     /* left side */
       width: 250px;   /* adjust width as needed */
+      max-height: calc(95vh - 240px); /* Ensures it stops above zoom controls */
       background: rgba(252, 251, 246, 0.95); /* white with 90% opacity */
       padding:  0 10px 10px 10px;
       border-radius: 8px;

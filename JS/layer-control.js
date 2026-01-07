@@ -48,6 +48,7 @@ var layerCategories = {
     { name: "Municipality of Athens Urban Plan (2012)", file: "UrbanPlanning/Athens Urban Plan 2012.geojson" }
   ],
   "Transportation Systems": [
+    { name: "AI Cameras", file: "Transportation/AICameras.json" },
     { name: "Avenues", file: "Transportation/AthensAvenues.json" },
     { name: "Bus Stops", file: "Transportation/AthensBusStops.geojson" },
     { name: "Highways of Greece", file: "Transportation/GreeceHighways.geojson" },

@@ -54,6 +54,7 @@ var layerCategories = {
     { name: "Highways of Greece", file: "Transportation/GreeceHighways.geojson" },
     { name: "Metro Stations 1, 2 & 3", file: "Transportation/AthensMetro123.geojson" },
     { name: "Metro Stations 4", file: "Transportation/AthensMetro4.geojson" },
+    { name: "Rail Network of Greece", file: "Transportation/GreeceRail.geojson" },
     { name: "Street Network", file: "Transportation/AthStreets.geojson" },
     { name: "Toll Stations", file: "Transportation/TollStations.geojson" },
     { name: "Train Stations", file: "Transportation/AthensTrain.geojson" },

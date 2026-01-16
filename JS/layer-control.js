@@ -15,7 +15,7 @@ var layerCategories = {
     { name: "Piraeus", file: "Boundaries/Piraeus.json" },
     { name: "Islands of Attica region", file: "Boundaries/AthensIslands.json" }
   ],
-  "Amenities": [
+  "Points of Interest": [
     { name: "Banks", file: "Amenities/Banks.geojson" },
     { name: "Fuel Stations", file: "Amenities/Fuel.geojson" },
     { name: "Hospitals", file: "Amenities/Hospitals.geojson" },

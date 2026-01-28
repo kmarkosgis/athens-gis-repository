@@ -15,15 +15,6 @@ var layerCategories = {
     { name: "Piraeus", file: "Boundaries/Piraeus.json" },
     { name: "Islands of Attica region", file: "Boundaries/AthensIslands.json" }
   ],
-  "Amenities": [
-    { name: "Banks", file: "Amenities/Banks.geojson" },
-    { name: "Fuel Stations", file: "Amenities/Fuel.geojson" },
-    { name: "Hospitals", file: "Amenities/Hospitals.geojson" },
-    { name: "Pharmacies", file: "Amenities/Pharmacies.geojson" },
-    { name: "Police Stations", file: "Amenities/Police.geojson" },
-    { name: "Schools", file: "Amenities/Schools.geojson" },
-    { name: "Universities", file: "Amenities/Universities.geojson" }
-  ],
   "Energy": [ 
     { name: "Wind Farms", file: "Energy/WindFarms.json" } 
   ],
@@ -38,6 +29,15 @@ var layerCategories = {
   ],
   "Natural Hazards": [
     { name: "Wildfires Attica 2015-2025", file: "Disasters/WildfiresAttica2015-2025.geojson" },
+  ],
+    "Points of Interest": [
+    { name: "Banks", file: "Amenities/Banks.geojson" },
+    { name: "Fuel Stations", file: "Amenities/Fuel.geojson" },
+    { name: "Hospitals", file: "Amenities/Hospitals.geojson" },
+    { name: "Pharmacies", file: "Amenities/Pharmacies.geojson" },
+    { name: "Police Stations", file: "Amenities/Police.geojson" },
+    { name: "Schools", file: "Amenities/Schools.geojson" },
+    { name: "Universities", file: "Amenities/Universities.geojson" }
   ],
   "Population and social conditions": [
     { name: "2021 Population Census", file: "Social/Population2021.json" },

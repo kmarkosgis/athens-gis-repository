@@ -29,7 +29,7 @@ var layerCategories = {
   ],
   "Environment": [
     { name: "Natura 2000", file: "Environment/Natura.geojson" },
-    { name: "Rivers", file: "Environment/Rivers.json" },
+    { name: "Rivers", file: "Environment/Rivers.geojson" },
     { name: "Center Sector Green Spaces", file: "Environment/AthensGreenCenter.geojson" },
     { name: "North Sector Green Spaces", file: "Environment/AthensGreenNorth.geojson" },
     { name: "South Sector Green Spaces", file: "Environment/AthensGreenSouth.geojson" },
@@ -84,7 +84,7 @@ function buildPropertyTable(feature){
     var d = key; var k = key.toLowerCase();
     if(k==='shapeleng_'){ v=Number(v).toFixed(2); d='Shape Length (km)'; }
     else if(k==='shapearea'){ v=Number(v).toFixed(2); d='Shape Area (km²)'; }
-    else if(['shapeleng_m','shapelengm'].includes(k)){ v=Number(v).toFixed(2); d='Shape Length (m)'; }
+    else if(['shapeleng_m','shapelengm','length'].includes(k)){ v=Number(v).toFixed(2); d='Shape Length (m)'; }
     else if(['shapearea_m','shapeaream'].includes(k)){ v=Number(v).toFixed(2); d='Shape Area (m²)'; }
     else if(['name','name_el','name_place','gname','uses_gr'].includes(k)){ d='Name (GR)'; }
     else if(['ename','name_pl_en','name_en','uses_en'].includes(k)){ d='Name (ENG)'; }
@@ -114,6 +114,8 @@ function buildPropertyTable(feature){
     else if(k==='finaldate') d='Final Date';
     else if(k==='stop_id') d='Stop ID';
     else if(k==='route_ref') d='Bus Route';
+    else if(k==='rwb_id') d='River/Stream ID';
+    else if(k==='basinid_fd') d='Basin ID';
     rows += '<tr><th style="text-align:left; padding:5px; width:115px; border-bottom:1px solid #ccc; word-wrap:break-word; max-width:115px;">'+d+'</th><td style="border-bottom:1px solid #ccc; width:115px; word-wrap:break-word; max-width:115px;">'+v+'</td></tr>';
     }
     return '<table style="table-layout:fixed; width:230px;">'+rows+'</table>';

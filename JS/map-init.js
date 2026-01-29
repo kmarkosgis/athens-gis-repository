@@ -5,7 +5,7 @@
   if (window.AthensGIS) { window.AthensGIS.map = map; }
 
   var positron = L.tileLayer(
-    "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png" ,
+    "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png?api_key=ddbe6f28-1e48-473a-8155-c9669166a43e" ,
   { attribution: "© OpenMapTiles © Stadia Maps" }
   ).addTo(map);
 
@@ -19,7 +19,7 @@
   
 
   var maptilerStreetsDark = L.tileLayer(
-    "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
+    "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png?api_key=ddbe6f28-1e48-473a-8155-c9669166a43e",
   { attribution: "© OpenMapTiles © Stadia Maps" }
   );
 

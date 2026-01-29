@@ -5,10 +5,8 @@
   if (window.AthensGIS) { window.AthensGIS.map = map; }
 
   var positron = L.tileLayer(
-    'https://api.maptiler.com/maps/streets-v2-light/{z}/{x}/{y}.png?key=h5N22sL42mlhXfIBKw6A', {
-      attribution: '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 20
-    }
+    "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png" ,
+  { attribution: "© OpenMapTiles © Stadia Maps" }
   ).addTo(map);
 
   var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -21,10 +19,8 @@
   
 
   var maptilerStreetsDark = L.tileLayer(
-    'https://api.maptiler.com/maps/streets-v2-dark/{z}/{x}/{y}.png?key=h5N22sL42mlhXfIBKw6A', {
-      attribution: '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 20
-    }
+    "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
+  { attribution: "© OpenMapTiles © Stadia Maps" }
   );
 
   var baseMaps = {
@@ -138,4 +134,5 @@
     map.on('zoomend', updateDisabled);
     updateDisabled();
   })();
+
   // === End Custom Zoom Control Buttons Logic ===

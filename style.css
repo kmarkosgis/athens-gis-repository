@@ -9,30 +9,34 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
 }
     
     ::-webkit-scrollbar {
-      width: 4px;              /* width of vertical scrollbar */
+      width: 2px;              /* width of vertical scrollbar */
       height: 4px;             /* height of horizontal scrollbar */
+      margin-right: 5px;
     }
     ::-webkit-scrollbar-button:start:decrement,
     ::-webkit-scrollbar-button:end:increment {
-      height: 7px;          /* adjust gap size */
+      height: 10px;          /* adjust gap size */
       display: block;
     }
 
     ::-webkit-scrollbar-track {
-      background: rgb(252, 251, 246);      /* scrollbar track color */
+      background: transparent;      /* scrollbar track color */
       border-radius: 5px;
     }
 
     ::-webkit-scrollbar-thumb {
-      background: rgba(70, 130, 180,0.2);      /* scrollbar thumb color */
+      background: rgba(70, 130, 180,0.5);      /* scrollbar thumb color */
       border-radius: 5px;
+
     }
 
     ::-webkit-scrollbar-thumb:hover {
-      background: rgba(70, 130, 180,0.5);      /* darker on hover */
+      background: rgba(70, 130, 180,0.8);      /* darker on hover */
+
     }
 
     .logo-container {
+
       position: fixed;
       top: 1px;
       left: 1px;
@@ -61,42 +65,51 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
     
     /* Modal content box */
     #welcomeContent {
-      background-color: rgba(252, 251, 246, 0.9);
+      background-color: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(7px);
+      -webkit-backdrop-filter: blur(7px);
       padding: 30px;
-      border-radius: 8px;
+      border-radius: 14px;
       max-width: 500px;
       text-align: center;
       font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
-      font-style: normal;
+      font-weight: 400;
       font-size: 14px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.4);
     }
     
     #welcomeContent h2 {
       margin-top: 0;
+      letter-spacing: 1px;
+      font-weight: 600;
+      font-size: 23px;
     }
     
     #welcomeContent button {
       margin-top: 20px;
       padding: 8px 20px;
       background-color: white;
-      border: 1px solid #4682B4;
+      border: 2px solid transparent;
       color: black;
       font-size: 14px;
-      border-radius: 4px;
+      border-radius: 10px;
       cursor: pointer;
-      transition-duration: 0.4s;
+      transition-duration: 0.2s;
+      letter-spacing: 1px;
+      font-weight: 500;
     }
     
     #welcomeContent button:hover {
-      background-color: #4682B4;
-      color: white;
+      background: rgba(55, 65, 81, 0.85);
+      color:white
     }
     .welcome-logo {
       display: block;
       margin: 0 auto 20px auto;
-      width: 240px;
+      width: auto;
       height: 60px;
+      background:linear-gradient(to bottom, rgba(55, 65, 81, 0.6), rgba(55, 65, 81, 0.8));
+      
     }
     #welcomeContent input{
       position: relative;
@@ -109,9 +122,10 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
       position: fixed;
       top: 50px;
       right: 10px;
-      border: none;
-      background: rgb(252, 251, 246);
-      height: 35px;
+      border: 2px solid transparent;
+      background: rgb(255, 255, 255);
+      height: 45px;
+      width: 45px;
       color: black;
       font-size: 20px;
       text-align: center;
@@ -119,11 +133,11 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
       border-radius: 100%;
       cursor: pointer;
       z-index: 1100;
-      transition-duration: 0.4s;
+      transition-duration: 0.2s;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
     #openWelcome:hover {
-      background-color: white;
+      border: 2px solid rgba(55, 65, 81, 0.85);
     }
 
     header {
@@ -131,28 +145,27 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
       top: 0;
       /* Replace 100vw with 100% to avoid horizontal overflow caused by scrollbar width */
       width: 100%;
-      background: rgba(70, 130, 180, 0.8);
+      background: rgba(55, 65, 81, 0.7);
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
-      color: #f5f5dc;
+      color: rgb(246, 247, 245);
+      backdrop-filter: blur(7px);
+      -webkit-backdrop-filter: blur(7px);
       text-align: center;
       font-weight: 400;
-      letter-spacing: 1px;
+      letter-spacing: 2px;
       text-transform: uppercase;
-      padding: 5px;
-      font-size: 22px;
+      padding: 4px 1px 7px 1px;
+      font-size: 24px;
       font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       font-style: normal;
       z-index: 1000;
+      
     }
 
     #linkedin-btn {
       position: fixed;
       top: 6px;
       right: 12px;
-    }
-
-    #linkedin-btn:hover {
-      background: #4682B4;
     }
 
     #linkedin-btn img {
@@ -164,161 +177,277 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
     .announcement-box {
       position: fixed;
       top: 50px; /* adjust based on your header height */
-      right: 35%;
-      background-color: rgba(240, 244, 255, 0.9);
-      color: rgb(0, 51, 102);
-      border: 1px solid rgb(200, 216, 255);
-      padding: 8px 10px;
-      border-radius: 8px;
+      right: 39%;
+      background-color: rgba(246, 247, 245 ,0.8);
+      backdrop-filter: blur(7px);
+      -webkit-backdrop-filter: blur(7px);
+      color: #1F2937;
+      border: 0px solid transparent;
+      padding: 0px 26px 4px 26px;
+      border-radius: 14px;
       font-size: 12px;
       font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       font-style: normal;
-      font-weight: 400;
+      font-weight: 350;
       text-align: justify;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-      width: 500px;
-      max-height: 70px;
+      width: 400px;
+      height: auto;
       z-index: 999;
       overflow-y: auto;
+      overflow-x: hidden;
+    }
+    .announcement-box h3{    
+      position: -webkit-sticky;
+      position: sticky;
+      top: 10px;
+      z-index: 12;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      text-align: center;
+      margin: 0 -14px 20px -14px;
+      padding: 6px 10px;
+      background: rgba(55, 65, 81, 0.85);
+      color: rgb(255, 255, 255);
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      text-align: center;
+      letter-spacing: 2px;
+    }
+    /* Make the date labels inside announcements slightly heavier (500) */
+    .announcement-box strong {
+      font-weight: 500;
     }
     .close-btn {
       position: absolute;
-      top: 6px;
-      right: 6px;
+      top: 4px;
+      right: 8px;
       background: transparent;
-      color: grey;
+      color: #F5F7FA;
       border: none;
       font-size: 20px;
       cursor: pointer;
+      z-index: 15;
     }
 
     #layerControl {
       position: fixed;
       top: 50px;      /* below header */
       left: 10px;     /* left side */
-      width: 250px;   /* adjust width as needed */
-      max-height: calc(95vh - 240px); /* Ensures it stops above zoom controls */
-      background: rgba(252, 251, 246, 0.95); /* white with 90% opacity */
+      width: 300px;   /* adjust width as needed */
+      bottom: 195px;   /* above footer */
+      background: rgba(255, 255, 255, 0.95); 
       padding:  0 10px 10px 10px;
-      border-radius: 8px;
+      border-radius: 14px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      backdrop-filter: blur(7px);
+      -webkit-backdrop-filter: blur(7px);
       overflow-y: auto;     /* makes it scrollable */
       overflow-x: hidden;   /* avoid horizontal scroll due to negative margins */
       z-index: 999;
-      font-size: 12px;
+      font-size: 14px;
       font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
-      font-style: normal;
-    }
-
-    #layerControl h4 {
-      margin: 8px 0 4px;
-      font-size: 13px;
     }
 
     #layerInfoBox {
       position: fixed;
       bottom: 30px;   /* above footer */
-      left: 10px;
-      width: 250px;
-      height: 160px;
+      right: 10px;
+      width: 325px;
+      max-height: 270px;
       overflow-y: auto;
-      background: rgba(252, 251, 246, 0.95);
-      border-radius: 8px;
-      padding: 10px;
+      overflow-x: hidden;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(7px);
+      -webkit-backdrop-filter: blur(7px);
+      border-radius: 14px;
+      padding: 0px 10px 0px 10px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      font-size: 12px;
+      font-size: 14px;
       font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       display: none;  /* hidden by default */
-      z-index: 2000;  /* ✅ force on top! */
+      z-index: 20;  /* ✅ force on top! */
+    }
+     #layerInfoBox h1 {
+      position: -webkit-sticky;
+      position: sticky;
+      top: 40px; /* user requested top: 0 */
+      height:20px;
+      line-height: 30px;
+      margin: 0 -8px 0px -8px;
+      padding: 0 10px;
+      background: white;
+      border-radius: 0;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      z-index: 2; /* keep below the h4 which has z-index:10 */
+    }
+
+    #layerInfoBox h4 {
+      position: -webkit-sticky;
+      position: sticky;
+      top: 10px;
+      margin-top: -10px;
+      margin-bottom: 10px;
+      padding: 6px 10px;
+      background:linear-gradient(rgba(55, 65, 81, 0.85), rgba(55, 65, 81, 0.85)), white;;
+      color: rgb(255, 255, 255);
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      text-align: center;
+      letter-spacing: 2px;
+      z-index: 3;
     }
 
     #infoBox {
       position: fixed;
-      bottom: 30px;
-      left: 290px;
-      width: 250px;
-      height: 160px;
+      bottom: 310px;
+      right: 10px;
+      width: 325px;
+      height: auto;
       overflow-y: auto;
-      background: rgba(252, 251, 246, 0.95);
-      border-radius: 8px;
-      padding: 10px;
+      overflow-x: hidden;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(7px);
+      -webkit-backdrop-filter: blur(7px);
+      border-radius: 14px;
+      padding: 0px 10px 10px 10px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      font-size: 12px;
+      font-size: 14px;
       font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       display: none;
-      z-index: 2000;
+      z-index: 10;
     }
-
-    /* Toolbar styling */
+    /* Keep the header visible when scrolling the info content */
+    #infoBox h3 {
+      margin-top: 10px;
+      margin-bottom: 10px;
+      padding: 6px 10px;
+      background: rgba(55, 65, 81, 0.85);
+      color: rgb(255, 255, 255);
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      text-align: center;
+      letter-spacing: 2px;
+      z-index: 3;
+    }
+    #infoBox #infoContent {
+      padding-top: 6px; /* small gap below sticky header */
+      padding-left: 4px;
+    }    
+    
+    /* Toolbar styling: 3 rows (h1 | opacity row | buttons row) */
     #toolbar {
       position: fixed;
       bottom: 30px; /* adjust to sit above footer */
-      right: 100px;
-      height: 20px;
-      background: rgba(252, 251, 246, 0.95);
+      left: 10px;  /* adjust based on your layout */
+      width: 300px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(7px);
+      -webkit-backdrop-filter: blur(7px);
       border: none;
-      border-radius: 9999px;
-      padding: 8px;
-      padding-left: 6px;
+      border-radius: 14px;
+      padding: 8px 10px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      display: flex;
+      display: grid;
+      grid-template-rows: auto auto auto; /* title, opacity controls, buttons */
+      grid-template-columns: 1fr 1fr 80px; /* label | range | value */
+      gap: 14px;
       align-items: center;
-      gap: 10px;
       font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
-      font-size: 12px;
-      z-index: 1000; /* keep above map */
+      font-size: 14px;
+      z-index: 1; /* keep above map */
+      letter-spacing: 1px;
     }
 
-    #opacityRange {
-      width: 100px;
-      height: 5px;
-      color: #4682B4;
-      cursor: pointer;
-    }    
+    /* Title / header row */
+    #toolbar h1 {
+      grid-column: 1 / -1;
+      grid-row: 1;
+      margin: 0;
+      padding: 6px 10px;
+      background: rgba(55, 65, 81, 0.85);
+      color: rgb(255, 255, 255);
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      text-align: center;
+      letter-spacing: 2px;
+    }
 
-    #measureBtn {
-      background-color: rgba(252, 251, 246, 0.9);
+    /* Opacity controls on second row: label | range | value */
+    #toolbar label { grid-column: 1; grid-row: 2; justify-self: end; margin-right: 18px;font-weight: 500; }
+    #opacityRange   { grid-column: 2; grid-row: 2; width: 100%; height: 6px; cursor: pointer; }
+    #opacityValueMax { grid-column: 3; grid-row: 2; justify-self: start; width: 56px; text-align: center; }
+
+    /* Buttons on third row */
+    #measureBtn     { grid-row: 3; grid-column: 1; justify-self: start; }
+    #exportBtn      { grid-row: 3; grid-column: 2; justify-self: start; }
+    #zoomSelectedBtn{ grid-row: 3; grid-column: 3; justify-self: end; }
+
+    /* Keep button styling but ensure they're grid items */
+    #measureBtn, #exportBtn, #zoomSelectedBtn {
+      background-color: rgba(255, 255, 255, 0.95);
       color: black;
       font-size: 14px;
-      padding: 4px 15px;
+      padding: 10px 20px;
+      margin-left: 5px;
+      margin-right: 5px;
       border-radius: 9999px;
-      border: 1px solid rgba(171, 199, 222, 0.3);
+      border: 2px solid rgba(171, 199, 222, 0.3);
       cursor: pointer;
-      transition-duration: 0.4s;
-      font-family: "Newsreader", serif;
-      font-style: normal;
+      transition-duration: 0.2s;
     }
-    #measureBtn:hover {
-      background-color: rgba(171, 199, 222, 0.2);
-      color: white;
-    }
-    #measureBtn img {
-      height: 18px; /* Adjust size as needed */
-      width: auto;
-      vertical-align: middle;
-    }
-
     #exportBtn {
-      background-color: rgba(252, 251, 246, 0.9);
-      color: black;
-      font-size: 14px;
-      padding: 5px 15px;
-      border-radius: 9999px;
-      border: 1px solid rgba(171, 199, 222, 0.3);
-      cursor: pointer;
-      transition-duration: 0.4s;
-      font-family: "Newsreader", serif;
-      font-style: normal;
+      margin-left: 10px;
+
+    }
+    #measureBtn:hover, #exportBtn:hover, #zoomSelectedBtn:hover {
+      border: 2px solid rgba(55, 65, 81, 0.85);
     }
 
-    #exportBtn:hover {
-      background-color: rgba(171, 199, 222, 0.2);
-      color: white;
+    #measureBtn img, #exportBtn img, #zoomSelectedBtn img { height: 18px; width: auto; vertical-align: middle; }
+
+    /* Draw one rounded border around the opacity controls (second row)
+       using a pseudo-element so HTML doesn't need editing. */
+    #toolbar::before {
+      content: "";
+      grid-row: 2;
+      grid-column: 1 / -1;
+      justify-self: stretch;
+      align-self: center;
+      z-index: 0; /* behind controls */
+      border: 2px solid rgba(171, 199, 222, 0.3);
+      border-radius: 10px;
+
+      box-sizing: border-box;
+      padding: 16px; /* gives breathing room inside the border */
     }
-    #exportBtn img {
-      height: 16px; /* Adjust size as needed */
-      width: auto;
-      vertical-align: middle;
+
+    /* Ensure the actual controls render above the border */
+    #toolbar label,
+    #opacityRange,
+    #opacityValueMax { position: relative; z-index: 1; }
+
+    @media (max-width: 600px) {
+      #toolbar {
+        right: 80px;
+        left: auto;
+        width: auto;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        padding: 6px;
+      }
+      #toolbar h1 { grid-column: 1 / -1; font-size: 14px; }
+      #toolbar label { display: none; }
+      #opacityRange { grid-column: 1 / -1; width: 140px; justify-self: center; }
+      #opacityValueMax { grid-column: auto; font-size: 12px; }
+      #measureBtn, #exportBtn, #zoomSelectedBtn { grid-row: 3; grid-column: auto; justify-self: center; }
     }
 
       /* Hide zoom controls when exporting */
@@ -330,12 +459,12 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
       position: fixed;
       top: 50px;
       right: 60px;
-      width: 265px;
-      height: 27px;
+      width: 280px;
+      height: 30px;
       z-index: 1000;
       border: none;
-      background: rgba(252, 251, 246, 0.9);
-      padding: 4px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 7px;
       border-radius: 9999px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
@@ -343,24 +472,26 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
     #search-box input {
       width: 225px;
       height: 25px;
-      border: none;
+      border: 1px solid #ccc;
       font-size: 14px;
       border-radius: 9999px;
-      padding-left: 10px;
+      padding-left: 12px;
     }
 
     #search-box button{
-      border: none;
-      font-size: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 13px;
       background: rgba(252, 251, 246, 0.9);
-      padding: 2px;
+      padding: 4px;
+      margin-left: 3px;
       border-radius: 100%;
       cursor: pointer;
-      transition-duration: 0.4s;
+      transition-duration: 0.2s;
     }
 
     #search-box button:hover{
       background-color: white;
+      border: 1px solid rgba(58, 124, 165, 1);
     }
     #search-box ul {
       position: absolute;
@@ -408,64 +539,96 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
 
     .layer-item {
       display: flex;
-      width: 93%;
+      width: 91%;
       align-items: center;
       justify-content: space-between;
-      margin-left: 4px;
+      margin-left: 40px;
       margin-bottom: 5px;
-      padding: 1px 4px;
+      padding: 3px 6px;
+      border: 2px solid transparent;
+      border-radius: 10px;
+      transition: border 0.2s, max-height 0.4s ease, padding 0.4s ease;
+      flex-direction: column; /* stack vertically: download above label */
+      align-items: flex-start; /* left-justify both */
+      gap: 4px;
+      margin-left:6px;
+      max-height: 25px; /* collapsed height */
+      overflow: hidden; /* required for smooth max-height transition */
     }
 
     /* Remove checkbox styles */
     .layer-item input[type="checkbox"] {
       display: none !important;
     }
+
     .layer-item:hover {
-      background: rgba(70, 130, 180, 0.1); 
-      border-radius: 6px;
-      transition: background 0.4s;
+      border: 2px solid rgba(55, 65, 81, 0.2);
+      border-radius: 12px;
+      transition: border 0.2s;
     }
+
     /* Highlight selected layer with colored background */
     .layer-item.selected {
-      background: rgba(70, 130, 180, 0.2); /* #4682B4 with 0.5 opacity */
+      border: 2px solid rgba(55, 65, 81, 0.85);
+      background: white;
+      border-radius: 12px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       color: black;
-      border-radius: 6px;
-      transition: background 0.4s;
+      max-height: 500px; /* expand when selected */
+      padding: 5px 6px; /* smoother expanded spacing */
+      overflow: hidden;
+      transition: border 0.2s, max-height 0.4s, padding 0.3s ;
     }
     .layer-item.selected:hover {
-      background: rgba(70, 130, 180, 0.3); /* Darker on hover */
+      border: 2px solid rgba(55, 65, 81, 0.6);
     }
-    /* Optional: make label full width and center vertically */
+
     .layer-item label {
-      width: 80%;
+      width: 100%;
       padding: 4px 2px;
       cursor: pointer;
       display: block;
+      order: 1; 
     }
 
     .download-button {
-      display: inline-block;
+      order: 2;
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-start;
       background: white;
       color: black;
-      border: none;
-      padding: 2px 6px;
-      border-radius: 4px;
+      border: 1px solid rgba(55, 65, 81, 0.85);
+      padding: 4px 8px;
+      border-radius: 8px;
       text-decoration: none;
-      font-size: 13px;
+      font-size: 11px;
       cursor: pointer;
       line-height: 1;
-      align-items: center;
+      letter-spacing: 0.5px;
       vertical-align: middle;
       flex-shrink: 0;
-      transition-duration: 0.4s;
+      margin-left: 0; /* ensure left alignment */
+      transition: 0.4s;
+      opacity: 0;
+      pointer-events: none; /* avoid clicks when hidden */
+      will-change: opacity, transform;
     }
     .download-button:hover {
-      background: rgba(70, 130, 180, 0.7);
+      background-color: rgba(55, 65, 81, 0.85);
+      border: 1px solid transparent;
       color: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    /* Reveal download button when layer is selected */
+    .layer-item.selected .download-button {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
     }
     .feature-highlight {
-    filter: drop-shadow(1px 1px 5px rgba(0, 0, 0, 0.7));
+    filter: drop-shadow(1px 1px 5px rgba(0, 0, 0, 0.9));
     }
 
     #layer-search-container {
@@ -483,11 +646,11 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
       /* Extend to full visual width of container (counteract side padding) */
       margin: 0 -15px 6px -10px;
       padding: 8px 15px 8px 10px;
-      background: rgba(252, 251, 246, 1);
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+      background: rgba(255, 255, 255, 1);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
       z-index: 3;
-      border-top-left-radius: 8px;
-      border-top-right-radius: 8px;
+      border-top-left-radius: 14px;
+      border-top-right-radius: 14px;
       border-bottom: 1px solid #eee;
       display: flex;
       align-items: center;
@@ -513,8 +676,8 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
     /* Custom zoom controls */
     #custom-zoom-controls {
       position: fixed;
-      bottom: 115px;
-      right: 10px;
+      top: 50px;
+      left:  340px;
       z-index: 1000;
       display: flex;
       flex-direction: column;
@@ -522,27 +685,27 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
     }
 
     #custom-zoom-controls button {
-      background: rgba(252, 251, 246, 0.9);
-      height: 35px;
-      width: 35px;
-      border: none;
+      background: rgba(255, 255, 255, 1);
+      height: 45px;
+      width: 45px;
+      border: 3px solid transparent;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       color: black;
-      border-radius: 100%;
+      border-radius: 14px;
       cursor: pointer;
-      transition-duration: 0.4s;
+      transition-duration: 0.2s;
       font-family: "Newsreader", serif;
-      font-size: 30px;
+      font-size: 35px;
     }
 
     #custom-zoom-controls button:hover {
-      background: white;
+      border: 2px solid rgba(55, 65, 81, 0.85);
     }
 
     #custom-basemap-switcher {
       position: fixed;
-      bottom: 30px;
-      right: 10px;
+      top: 50px;
+      left: 395px;
       z-index: 1001;
       display: flex;
       flex-direction: column;
@@ -550,67 +713,50 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
     }
     
     #basemap-btn {
-      background: rgba(252,251,246,0.9);
+      background: rgba(55, 65, 81, 0.85);
       border: none;
-      border-radius: 8px;
+      border-radius: 14px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      width: 80px;
-      height: 80px;
+      width: 110px;
+      height: 45px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       transition-duration: 0.4s;
-      padding: 0;
+      padding:2px;
+      backdrop-filter: blur(7px);
+      -webkit-backdrop-filter: blur(7px);
     }
     
     #basemap-btn:hover {
       background: white;
     }
-    #basemap-btn:hover img {
-      transform: scale(0.95); 
-      transition-duration: 0.3s;
-    }
     #basemap-btn:hover #basemap-label {
-      transform: scale(0.95);
-      transition: transform 0.3s;
-      margin-top: 56px;
+      color: rgba(17, 24, 39, 1);
     }
     
-    #basemap-btn img {
-      width: auto;                  /* Increase icon size */
-      height: 75px;
-      border-radius: 7px;
-      pointer-events: none;
-      margin: 0;
-      padding: 0;      
-    }
     #basemap-label {
-      font-size: 12px;
+      font-size: 16px;
       pointer-events: none;
       font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       font-weight: 500;
-      background-color: rgba(0, 0, 0, 0.3);
       color: white;
       display: block;
       text-align: center;
       position: absolute;
-      top: 4px;              /* Position label over the image */
-      left: 3px;
-      border-radius: 6px;
-      width:89%;
-      margin-top: 56px;
-      padding: 1px 1.5px;
+      width:100%;
+      margin-left: 1px;
       z-index: 2;            /* Ensure label is above the image */
     }
     
     #basemap-dropdown {
       display: none;
       position: absolute;
-      bottom: 85px;
-      right: 0;
-      background: rgba(252,251,246,0.9);
-      border-radius: 8px;
+      top: 50px;
+      left: 0px;
+      background: rgba(255,255,255,1);
+      border-radius: 14px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       min-width: 140px;
       font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
@@ -619,87 +765,134 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
     
     #basemap-dropdown ul {
       list-style: none;
-      margin: 0;
-      padding: 6px 0;
+      margin: 2px;
+      padding: 2px;
+      
     }
     
     #basemap-dropdown li {
-      padding: 8px 18px;
+      padding: 10px 20px;
       cursor: pointer;
-      border-bottom: 1px solid #eee;
-      transition: background 0.2s;
+      border: 1px solid transparent;
+      transition: border 0.2s;
+      border-radius: 12px;
+      margin: 3px;
     }
     
     #basemap-dropdown li:last-child {
       border-bottom: none;
+      border-bottom: 1px solid transparent;
+      
     }
     
     #basemap-dropdown li:hover {
-      background: white;
+      border: 1px solid rgba(55, 65, 81, 0.85);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
     }
     #basemap-dropdown li.active-basemap {
-      background: #ffffff;
-      font-weight: 600;
+      border: 2px solid rgba(55, 65, 81, 0.85);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+      font-weight: 500;
       position: relative;
     }
     #basemap-dropdown li.active-basemap:after {
       position: absolute;
       right: 10px;
-      color: #2c6e99;
+      color: rgba(17, 24, 39, 1);
       font-weight: 700;
     }
 
     #legend-bar {
       position: fixed;
-      top: 200px;
+      top: 105px;
       right: 10px;
-      background: rgba(252,251,246,0.95);
+      background: rgba(255, 255, 255, 0.95);
       border: none;
-      border-radius: 8px;
+      border-radius: 14px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      min-width: 100px;
-      max-width: 200px;
-      max-height: calc(96vh - 400px); /* Ensures it stops above zoom controls */
+      backdrop-filter: blur(7px);
+      -webkit-backdrop-filter: blur(7px);
+      min-width: 130px;
+      max-width: 310px;
+      max-height: 240px;
       font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       font-size: 14px;
-      z-index: 1000;
-      padding: 12px 18px;
-      overflow: auto;
+      font-weight: 500;
+      z-index: 1 ;
+      padding: 0px 18px 12px 18px;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
 
-    #legend-title {
-      font-size: 13px;
-      margin-bottom: 18px;
-      font-weight: bold;
-      color: black;
+    /* Additional sticky sub-header inside legend-bar.
+       It sits visually underneath the h4 (h4 has higher z-index)
+       and provides a white strip of fixed height. */
+    #legend-bar h1 {
+      position: -webkit-sticky;
+      position: sticky;
+      top: 0; /* user requested top: 0 */
+      height: 10px;
+      line-height: 30px;
+      margin: 0 -8px 0px -8px;
+      padding: 0 10px;
+      background: white;
+      border-radius: 0;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      z-index: 2; /* keep below the h4 which has z-index:10 */
     }
+
+    #legend-bar h4 {
+      position: -webkit-sticky;
+      position: sticky;
+      top: 10px;
+      margin: 0px -8px 10px -8px;
+      padding: 6px 10px;
+      /* Layer a solid white backing under the semi-opaque header so
+         scrolling list items are hidden behind it */
+      background: linear-gradient(rgba(55, 65, 81, 0.85), rgba(55, 65, 81, 0.85)), white;
+      color: rgb(255, 255, 255);
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      text-align: center;
+      letter-spacing: 2px;
+      z-index: 10;
+    }
+
 
     #legend-list {
       list-style-type: none;
       padding: 0;
       margin: 0; 
-      font-size: 13px;
       color: black;
+      letter-spacing: 0.5px;
     }
 
     #legend-list li {
-      margin-bottom: 10px;
+      font-weight: 400;
+      margin-bottom: 16px;
+      
     }
 
     #legend-list span {
       display: inline-block;
-      width: 12px;
-      height: 12px;
-      margin-right: 8px;
-      border-radius: 2px;
+      width: 18px;
+      height: 18px;
+      margin-right: 10px;
+      border-radius: 4px;
+      vertical-align: bottom;
+      box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
     }
+
     #legend-color-box {
       width: 1px;
       height: 12px;
       display: inline-block;
       margin-right: 8px;
-      border-radius: 2px;
-      vertical-align: middle;
+      border-radius: 4px;
+      vertical-align: bottom;
     }
 
     /* Pop-up animation keyframes */
@@ -725,6 +918,9 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
     }
     
     @media (max-width: 600px) {
+      #map{
+        overflow: hidden;
+      }
       .logo-container {
         display: none;
       }
@@ -732,6 +928,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
         padding: 12px 4px;
         font-size: 18px;
         width: 100%; /* match normal flow width */
+        z-index: 8000;
       }
       #footer {
         width: 100%;
@@ -739,7 +936,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
         background-color: rgba(255, 255, 255, 1);
       }
       .announcement-box {
-        width: 60vw;
+        display: none !important;
       }
       #layerInfoBox {
         display: none !important;
@@ -763,13 +960,13 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
         top: 100px;
         left: 3vw;
         width: 90vw;
-        height: 70vh;
+        height: 50vh;
         background: rgba(252,251,246,1);
         z-index: 2000;
         box-shadow: 0 2px 12px rgba(0,0,0,0.25);
         overflow-y: auto;
         border-radius: 8px;
-        padding: 8px 8px;
+        padding: 0px 8px 8px 8px;
         font-size: 18px;
       }
       #openWelcome {
@@ -777,7 +974,19 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
       }
       #menuBtn {
         display: block !important;
-        left: 3vw;
+        position:fixed;
+        left: 2vw;
+        top:1vw;
+        height: 35px;
+        width: 35px;
+        z-index:9000;
+        background: transparent;
+        color:white;
+        border:none;
+        border-radius:none;
+        font-size:24px;
+        box-shadow: none;
+        padding: 1px;
       }
       .download-button {
         width: 30px;

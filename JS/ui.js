@@ -15,6 +15,66 @@ document.getElementById('menuBtn').addEventListener('click', function() {
 	}
 });
 
+// Ensure consistent vertical gaps between floating boxes:
+// - `infoBox` bottom border is always 10px above top of `layerInfoBox`
+// - `legend-bar` bottom is always 10px above top of `infoBox`
+function updateFloatingBoxSpacing() {
+	try {
+		const layer = document.getElementById('layerInfoBox');
+		const info = document.getElementById('infoBox');
+		const legend = document.getElementById('legend-bar');
+		if (!layer || !info || !legend) return;
+
+		const layerCS = getComputedStyle(layer);
+		const layerBottom = parseFloat(layerCS.bottom) || 30; // px
+		const layerHeight = layer.offsetHeight;
+
+		// Position infoBox so its bottom border sits 10px above layerInfoBox top
+		const infoBottomPx = Math.max(10, layerHeight + layerBottom + 10);
+		info.style.bottom = infoBottomPx + 'px';
+
+		// Now compute infoBox top coordinate
+		const infoCS = getComputedStyle(info);
+		const infoBottom = parseFloat(infoCS.bottom) || infoBottomPx;
+		const infoHeight = info.offsetHeight;
+		const infoTop = window.innerHeight - infoHeight - infoBottom;
+
+		// Compute available vertical space for legend-bar: keep its bottom 10px above infoBox top
+		const legendCS = getComputedStyle(legend);
+		const legendTop = parseFloat(legendCS.top) || 120;
+		let available = infoTop - 10 - legendTop;
+		// account for legend padding so content doesn't overflow its rounded corners
+		const legendPaddingTop = parseFloat(legendCS.paddingTop) || 0;
+		const legendPaddingBottom = parseFloat(legendCS.paddingBottom) || 0;
+		let maxHeight = Math.max(60, available - legendPaddingTop - legendPaddingBottom);
+		// Fallback to previously-used max (in case calculation yields absurd values)
+		if (!isFinite(maxHeight) || maxHeight < 60) maxHeight = 60;
+		legend.style.maxHeight = maxHeight + 'px';
+	} catch (e) {
+		// fail silently
+		console.warn('updateFloatingBoxSpacing error', e);
+	}
+}
+
+// Run on load and on resize / content changes
+document.addEventListener('DOMContentLoaded', updateFloatingBoxSpacing);
+window.addEventListener('resize', updateFloatingBoxSpacing);
+
+// Observe size changes of the boxes and update spacing accordingly
+if (window.ResizeObserver) {
+	const ro = new ResizeObserver(updateFloatingBoxSpacing);
+	const layerEl = document.getElementById('layerInfoBox');
+	const infoEl = document.getElementById('infoBox');
+	const legendEl = document.getElementById('legend-bar');
+	if (layerEl) ro.observe(layerEl);
+	if (infoEl) ro.observe(infoEl);
+	if (legendEl) ro.observe(legendEl);
+}
+
+// Also re-run when DOM mutations may change heights (e.g., content injected)
+const docObserver = new MutationObserver(updateFloatingBoxSpacing);
+docObserver.observe(document.body, { childList: true, subtree: true, attributes: false });
+
 // Hide layerControl when clicking outside (mobile)
 document.addEventListener('click', function(e) {
 	var layerControl = document.getElementById('layerControl');

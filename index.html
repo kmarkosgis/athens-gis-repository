@@ -66,17 +66,17 @@
 
 <body>
 
-<button id="menuBtn" title="Show Layers" style="position:fixed;top:50px;height: 35px;width: 35px;z-index:2001;background: rgba(252,251,246,0.95);color:black;border:none;border-radius:9999px;font-size:16px;display:none;box-shadow: 0 2px 12px rgba(0,0,0,0.25);">
+<button id="menuBtn" title="Show Layers" style="display:none;"">
   <span id="menuIcon" style="transition: all 0.5s;">☰</span>
 </button>
 
 <div class="logo-container">
-  <img src="images/4.png" alt="Athens GIS Logo" class="logo">
+  <img src="images/41.png" alt="Athens GIS Logo" class="logo">
 </div>
 
 <header>
   Athens GIS Repository
-  <a href="https://www.linkedin.com/company/athens-gis-repo/" id="linkedin-btn" title="Visit my LinkedIn">
+  <a href="https://www.linkedin.com/company/athens-gis-repo/" id="linkedin-btn" title="LinkedIn Page">
     <img src="images/linkedin_icon.png" alt="LinkedIn">
   </a>
 </header>
@@ -89,13 +89,12 @@
 <!-- Custom Basemap Switcher Button -->
 <div id="custom-basemap-switcher">
   <button id="basemap-btn" title="Change Basemap">
-    <img src="images/map_layers_icon.png" alt="Basemap" style="vertical-align:middle;">
     <span id="basemap-label">BASEMAPS</span>
   </button>
   <div id="basemap-dropdown">
     <ul>
-      <li data-basemap="positron">Light</li>
-      <li data-basemap="maptilerStreetsDark">Dark</li>
+      <li data-basemap="positron">Light Basemap</li>
+      <li data-basemap="maptilerStreetsDark">Dark Basemap</li>
       <li data-basemap="osm">OpenStreetMap</li>
       <li data-basemap="esriSat">Satellite</li>
     </ul>
@@ -103,32 +102,40 @@
 </div>
 
 <div class="announcement-box" id="announcement-box">
-  <button class="close-btn" id="closeAnnouncementBtn">&times;</button>
-  📢 <strong>News / Announcements</strong>
+  <h3>NEWS - ANNOUNCEMENTS<button class="close-btn" id="closeAnnouncementBtn">&times;</button></h3>
   <p>⚠️ Data provided by the repository may contain errors.</p>
-  <p>28/01/2026: Rivers and Streams (Environment) layer update.</p>
-  <p>16/01/2026: New layer added: Rail Network (Transportation Systems).</p>
-  <p>07/01/2026: New layer added: AI Cameras (Transportation Systems).</p>
+  <p><strong>05/02/2026:</strong> Major UI refresh and performance improvements.</p>
+  <p><strong>28/01/2026:</strong> Rivers and Streams (Environment) layer update.</p>
+  <p><strong>16/01/2026:</strong> New layer added: Rail Network (Transportation Systems).</p>
 </div>
 
 <div id="map"></div>
 
-<div id="layerInfoBox"></div>
+<div id="layerInfoBox">
+  <h1></h1>
+  <h4>LAYER INFORMATION</h4>
+
+  <div id="layerInfoContent"></div>
+</div>
 
 <div id="layerControl">
   <!-- Categories and checkboxes will be generated here -->
 </div>
 
-<div id="infoBox"></div>
+<div id="infoBox" style="display:none;">
+  <h3 >ATTRIBUTES</h3>
+  <div id="infoContent" style="padding-top:0px;"></div>
+</div>
 
 <!-- Toolbar container -->
 <div id="toolbar">
+  <h1>TOOLBAR</h1>
+  <label for="opacityRange">Opacity:</label>
+  <span id="opacityValueMax">100%</span>
+  <input type="range" id="opacityRange" min="0" max="1" step="0.05" value="1">
   <button id="measureBtn" title="Measure distance"><img src="images/length.png" alt="Measure"></button>
   <button id="exportBtn" title="Export the current map view"><img src="images/import-export.png" alt="Export"> </button>
-  <label for="opacityRange">Layer Transparency:</label>
-  <span id="opacityValueMin">0%</span>
-  <input type="range" id="opacityRange" min="0" max="1" step="0.05" value="1">
-  <span id="opacityValueMax">100%</span>
+  <button id="zoomSelectedBtn" title="Zoom to selected layers"><img src="images/extend.png" alt="Zoom Selected"></button>
 </div>
 
 <div id="measure-msg" style="display:none;position:fixed;top:50px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.95);padding:8px 18px;border-radius:8px;z-index:3000;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
@@ -142,8 +149,8 @@
 </div>
 
 <div id="legend-bar" style="display:none;">
-  <strong>Legend</strong>
-  <h4 id="legend-title"></h4>
+  <h1></h1>
+  <h4 id="legend-title">LEGEND</h4>
   <ul id="legend-list"></ul>
 </div>
 
@@ -155,9 +162,9 @@
 <div id="welcomeModal">
   <div id="welcomeContent">
     <h2>Welcome to Athens GIS Repository</h2>    
-    <img src="images/3.png" alt="Logo" class="welcome-logo">
+    <img src="images/4.png" alt="Logo" class="welcome-logo">
     <p>
-      Explore the geography of the Athens Metropolitan Area with interactive maps and data. Here you’ll find layers on administrative boundaries, transportation networks, environment, energy and population statistics — all in one place.
+      Explore the geography of the Athens Metropolitan Area with interactive maps and data. Here you’ll find layers on administrative boundaries, transportation networks, environment, natural hazards, POIs, energy and population statistics, all in one place.
     </p>
     <p>
       Use the panel on the left to select the layers you want to view, and download data. Click on features to see detailed information, and use the tools provided to explore Athens in more depth.
@@ -165,7 +172,7 @@
     <p>
       This repository is a work in progress. More data and features will be added over time, so check back often for updates!
     </p>
-    <p><strong>Have fun exploring Athens!</strong></p>
+    <p>Have fun exploring Athens!</p>
     <button id="closeWelcome">OK</button>
   </div>
 </div>
@@ -197,5 +204,36 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
+</script>
+<script>
+  // Google Analytics download tracking (event name: "dowload")
+  document.addEventListener('click', function(e) {
+    var el = e.target.closest('a, button');
+    if (!el) return;
+    var href = el.getAttribute('href') || '';
+    var isDownload = el.hasAttribute('download') || el.dataset.download !== undefined || el.classList.contains('download-btn') || (/\.(geojson|json|zip|pdf|csv|kml|kmz)$/i).test(href) || el.id === 'exportBtn';
+    if (isDownload) {
+      var label = href || el.id || (el.textContent || '').trim().slice(0, 100);
+      if (typeof gtag === 'function') {
+        try {
+          gtag('event', 'dowload', {
+            'event_category': 'Download',
+            'event_label': label,
+            'transport_type': 'beacon'
+          });
+        } catch (err) { }
+      }
+    }
+  });
+
+  // Explicit export button tracking (in case export triggers programmatic downloads)
+  var exportBtn = document.getElementById('exportBtn');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', function() {
+      if (typeof gtag === 'function') {
+        try { gtag('event', 'dowload', { 'event_category': 'Download', 'event_label': 'exportBtn', 'transport_type': 'beacon' }); } catch (e) { }
+      }
+    });
+  }
 </script>
 </html>

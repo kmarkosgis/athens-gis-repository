@@ -37,14 +37,16 @@
   var sizeMenu = document.createElement('ul');
   sizeMenu.id = 'exportSizeMenu';
   sizeMenu.style.position = 'absolute';
-  sizeMenu.style.minWidth = '60px';
-  sizeMenu.style.padding = '2px';
-  sizeMenu.style.margin = '0';
+  sizeMenu.style.minWidth = '70px';
+  sizeMenu.style.minHeight = '80px';
+  sizeMenu.style.padding = '4px';
+  sizeMenu.style.marginTop = '-1px';
+  sizeMenu.style.gap = '2px';
   sizeMenu.style.listStyle = 'none';
-  sizeMenu.style.background = 'rgba(252,251,246,0.9)';
+  sizeMenu.style.background = 'rgba(255,255,255,1)';
   sizeMenu.style.border = '0px solid';
   sizeMenu.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
-  sizeMenu.style.borderRadius = '8px';
+  sizeMenu.style.borderRadius = '14px';
   sizeMenu.style.zIndex = '9999';
   sizeMenu.style.display = 'none';
   sizeMenu.style.flexDirection = 'column';
@@ -57,12 +59,13 @@
   // Helper to add an item. Accepts either a string label or an object {id, label, icon, title}
   function addMenuItem(itemDef){
     var li = document.createElement('li');
-    li.style.padding = '0px 0px';
+    li.style.padding = '0px';
     li.style.cursor = 'pointer';
-    li.style.borderRadius = '6px';
-    li.style.transition = 'background 0.2s';
-    li.onmouseenter = function(){ li.style.background = 'white'; };
-    li.onmouseleave = function(){ li.style.background = 'transparent'; };
+    li.style.border = '2px solid rgba(255,255,255,0.1)';
+    li.style.borderRadius = '12px';
+    li.style.transition = 'border 0.2s';
+    li.onmouseenter = function(){ li.style.border = '2px solid rgba(55, 65, 81, 0.85)'; li.style.boxShadow = '0 1px 4px rgba(0,0,0,0.3)'; };
+    li.onmouseleave = function(){ li.style.border = '2px solid rgba(255,255,255,0.1)'; li.style.boxShadow = 'none';};
 
     if(typeof itemDef === 'string'){
       li.textContent = itemDef;
@@ -73,7 +76,7 @@
         li.style.display = 'flex';
         li.style.alignItems = 'center';
         li.style.justifyContent = 'center';
-        li.style.padding = '6px';
+        li.style.padding = '10px';
         li.innerHTML = itemDef.icon;
       } else {
         li.textContent = itemDef.label || '';

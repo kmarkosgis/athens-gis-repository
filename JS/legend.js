@@ -1,24 +1,23 @@
 // Legend configuration: choose layers, field, and styles
 window.legendConfigs = {
 // Update the legend bar for a given layer name
-
-  "Metro Stations 1, 2 & 3": {
+  "Metro Stations of Lines 1, 2 & 3": {
     field: "metroline",
     title: "Metro Lines",
     classes: {
-      "1": { color: "#008000",label:"1" },  //green
-      "2": { color: "#ff0000",label:"2"  },  //red
-      "3": { color: "#0000ff",label:"3" }   //blue
+      "1": { color: "#008000",label:"Line 1" },  //green
+      "2": { color: "#ff0000",label:"Line 2"  },  //red
+      "3": { color: "#0000ff",label:"Line 3" }   //blue
     }
   },
-  "Metro Stations 4": {
+  "Metro Stations of Line 4": {
     field: "STOP",
     title: "Metro Lines",
     classes: {
-      "4": { color: "#ffff00", label: "4" } //yellow
+      "4": { color: "#ffff00", label: "Line 4" } //yellow
     }
   },
-  "Center Sector Green Spaces": {
+  "Vegetation Index (Center Sector)": {
     field: "gridcode",
     title: "Vegetation Type",
     classes: {
@@ -26,7 +25,7 @@ window.legendConfigs = {
       "2": { color: "#008000", label: "Healthy trees, dense vegetation" }     //green
     }
   },
-    "South Sector Green Spaces": {
+    "Vegetation Index (South Sector)": {
     field: "gridcode",
     title: "Vegetation Type",
     classes: {
@@ -34,7 +33,7 @@ window.legendConfigs = {
       "2": { color: "#008000", label: "Healthy trees, dense vegetation" }     //green
     }
   },
-    "North Sector Green Spaces": {
+    "Vegetation Index (North Sector)": {
     field: "gridcode",
     title: "Vegetation Type",
     classes: {
@@ -42,7 +41,7 @@ window.legendConfigs = {
       "2": { color: "#008000", label: "Healthy trees, dense vegetation" }     //green
     }
   },
-    "West Sector Green Spaces": {
+    "Vegetation Index (West Sector)": {
     field: "gridcode",
     title: "Vegetation Type",
     classes: {
@@ -50,7 +49,7 @@ window.legendConfigs = {
       "2": { color: "#008000", label: "Healthy trees, dense vegetation" }     //green
     }
   },
-    "Piraeus Green Spaces": {
+    "Vegetation Index (Piraeus)": {
     field: "gridcode",
     title: "Vegetation Type",
     classes: {
@@ -68,7 +67,7 @@ window.legendConfigs = {
       "Under Evaluation": { color: "#fb6a4a", label: "Under Evaluation" }          // light red
     },
   },
-       "Natura 2000": {
+       "Natura 2000 sites": {
     field: "Type",
     title: "Natura 2000 Site Type",
     classes: {
@@ -275,7 +274,8 @@ window.legendConfigs = {
       classes: {
         "university": { color: "#b3b3b3ff", label: "University" } //grey
       }
-    }
+    },
+    
   };
 
 // Active legend set
@@ -320,8 +320,9 @@ window.updateLegendBar = function(layerName, action){
     var g = groups[title];
     if(!g || g.order.length===0) return;
     var titleLi=document.createElement('li');
-    titleLi.innerHTML='<strong>'+ title +'</strong>';
+    titleLi.innerHTML=title ;
     titleLi.style.marginTop='8px';
+    titleLi.style.fontWeight='500';
     legendList.appendChild(titleLi);
     g.order.forEach(function(key){
       var item = g.items[key];

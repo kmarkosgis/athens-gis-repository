@@ -275,7 +275,27 @@ window.legendConfigs = {
         "university": { color: "#b3b3b3ff", label: "University" } //grey
       }
     },
-    
+    "Earthquakes Attica 2006-2026": {
+      field: "mag",
+      title: "Earthquake Magnitude",
+      classes: {
+        "2.5-3.5": { color: "#b8b7c5", label: "Magnitude 2.5-3.5", radius: 4 }, //green
+        "3.5-4.5": { color: "#0f72a3", label: "Magnitude 3.5-4.5", radius: 6 }, //yellow
+        "4.5-5.5": { color: "#16496e", label: "Magnitude 4.5-5.5", radius: 8 }, //orange
+        "5.5-6.5": { color: "#172938", label: "Magnitude 5.5-6.5", radius: 10 }, //red
+        "6.5+": { color: "#000000", label: "Magnitude 6.5+", radius: 12 } //dark red
+      }
+    },
+    "Seismic Hazard Zones": {
+      field: "Zone",
+      title: "Seismic Hazard Zones",
+      order: ["3", "2", "1"], 
+      classes: {
+        "1": { color: "rgba(255, 255, 178, 0.7)", label: "Zone 1 (0.16 g)" }, // pale yellow
+        "2": { color: "rgba(254, 204, 92, 0.7)", label: "Zone 2 (0.24 g)" }, // light orange
+        "3": { color: "rgba(253, 60, 60, 0.6)", label: "Zone 3 (0.36 g)" } // orange-red
+      }
+    }
   };
 
 // Active legend set
@@ -294,6 +314,19 @@ window.updateLegendBar = function(layerName, action){
   legendList.innerHTML='';
   if(activeLegendLayers.size===0){ legendBar.style.display='none'; return; }
   legendBar.style.display='block';
+
+  // Compute sticky offset for group titles based on legend header height
+  (function updateLegendGroupStickyTop(){
+    var legendTitle = document.getElementById('legend-title');
+    if(!legendTitle || !legendBar) return;
+    var titleStyle = window.getComputedStyle ? getComputedStyle(legendTitle) : null;
+    var topVal = titleStyle ? parseFloat(titleStyle.top) : 0;
+    if(!Number.isFinite(topVal)) topVal = 0;
+    var titleHeight = legendTitle.getBoundingClientRect().height || legendTitle.offsetHeight || 0;
+    var gap = 6;
+    var stickTop = Math.max(0, Math.round(topVal + titleHeight + gap));
+    legendBar.style.setProperty('--legend-group-sticky-top', stickTop + 'px');
+  })();
 
   // 1) Group active configs by common title (cfg.title or layer name)
   var titleOrder = []; // preserve insertion order of titles encountered
@@ -320,9 +353,8 @@ window.updateLegendBar = function(layerName, action){
     var g = groups[title];
     if(!g || g.order.length===0) return;
     var titleLi=document.createElement('li');
-    titleLi.innerHTML=title ;
-    titleLi.style.marginTop='8px';
-    titleLi.style.fontWeight='500';
+    titleLi.className='legend-group-title';
+    titleLi.textContent=title;
     legendList.appendChild(titleLi);
     g.order.forEach(function(key){
       var item = g.items[key];

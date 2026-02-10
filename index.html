@@ -104,9 +104,9 @@
 <div class="announcement-box" id="announcement-box">
   <h3>NEWS - ANNOUNCEMENTS<button class="close-btn" id="closeAnnouncementBtn">&times;</button></h3>
   <p>⚠️ Data provided by the repository may contain errors.</p>
+  <p><strong>11/02/2026:</strong> Earthquakes and Seismic hazards zones added (Natural Hazards). Minor visual fixes.</p>
   <p><strong>05/02/2026:</strong> Major UI refresh and performance improvements.</p>
   <p><strong>28/01/2026:</strong> Rivers and Streams (Environment) layer update.</p>
-  <p><strong>16/01/2026:</strong> New layer added: Rail Network (Transportation Systems).</p>
 </div>
 
 <div id="map"></div>
@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <script>
-  // Google Analytics download tracking (event name: "dowload")
+  // Google Analytics download tracking (event name: "download")
   document.addEventListener('click', function(e) {
     var el = e.target.closest('a, button');
     if (!el) return;
@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var label = href || el.id || (el.textContent || '').trim().slice(0, 100);
       if (typeof gtag === 'function') {
         try {
-          gtag('event', 'dowload', {
+          gtag('event', 'download', {
             'event_category': 'Download',
             'event_label': label,
             'transport_type': 'beacon'
@@ -231,7 +231,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (exportBtn) {
     exportBtn.addEventListener('click', function() {
       if (typeof gtag === 'function') {
-        try { gtag('event', 'dowload', { 'event_category': 'Download', 'event_label': 'exportBtn', 'transport_type': 'beacon' }); } catch (e) { }
+        try { gtag('event', 'download', { 'event_category': 'Download', 'event_label': 'exportBtn', 'transport_type': 'beacon' }); } catch (e) { }
       }
     });
   }

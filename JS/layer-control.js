@@ -29,6 +29,8 @@ var layerCategories = {
   ],
   "Natural Hazards": [
     { name: "Wildfires Attica 2015-2025", file: "Disasters/WildfiresAttica2015-2025.geojson" },
+    { name: "Earthquakes Attica 2006-2026", file: "Disasters/EarthquakesAttica2006-2026.json" },
+    { name: "Seismic Hazard Zones", file: "Disasters/SeismicZones.json" }
   ],
     "Points of Interest": [
     { name: "Banks", file: "Amenities/Banks.geojson" },
@@ -74,6 +76,33 @@ AthensGIS.currentOpacity = AthensGIS.currentOpacity || 1;
 
 function getMap(){ return AthensGIS.map; }
 
+// Resolve a legend class by exact match or numeric range (e.g. "2.5-3.5", "6.5+").
+function getLegendClassForValue(legendConfig, value){
+  if(!legendConfig || !legendConfig.classes) return null;
+  var classes = legendConfig.classes;
+  if(Object.prototype.hasOwnProperty.call(classes, value)) return classes[value];
+  var num = Number(value);
+  if(!Number.isFinite(num)) return null;
+  for(var key in classes){
+    if(!Object.prototype.hasOwnProperty.call(classes, key)) continue;
+    var style = classes[key];
+    if(!style) continue;
+    var rangeMatch = key.match(/^\s*(-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)\s*$/);
+    if(rangeMatch){
+      var min = parseFloat(rangeMatch[1]);
+      var max = parseFloat(rangeMatch[2]);
+      if(num >= min && num <= max) return style;
+      continue;
+    }
+    var lowerMatch = key.match(/^\s*(-?\d+(?:\.\d+)?)\s*\+\s*$/);
+    if(lowerMatch){
+      var lower = parseFloat(lowerMatch[1]);
+      if(num >= lower) return style;
+    }
+  }
+  return null;
+}
+
 // 3. Helper to build property table
 function buildPropertyTable(feature){
   if(!feature || !feature.properties) return '';
@@ -116,6 +145,8 @@ function buildPropertyTable(feature){
     else if(k==='route_ref') d='Bus Route';
     else if(k==='rwb_id') d='River/Stream ID';
     else if(k==='basinid_fd') d='Basin ID';
+    else if(k==='mag') {v=Number(v).toFixed(1); d='Magnitude';}
+    else if(k==='place') d='Place';
     rows += '<tr><th style="text-align:left; padding:5px; font-weight:500; width:150px; border-bottom:1px solid #ccc; word-wrap:break-word; max-width:160px;">'+d+'</th><td style="border-bottom:1px solid #ccc; width:140px; word-wrap:break-word; max-width:140px;">'+v+'</td></tr>';
     }
     return '<table style="table-layout:fixed; width:270px;">'+rows+'</table>';
@@ -239,13 +270,24 @@ function geojsonOptions(layerName, legendConfig){
       }
       if(legendConfig && feature.properties && legendConfig.field in feature.properties){
         var cv = feature.properties[legendConfig.field];
-        var cs = legendConfig.classes[cv];
+        var cs = getLegendClassForValue(legendConfig, cv);
         if(cs) return { color: cs.color, weight: baseWeight, fillColor: cs.color, fillOpacity: AthensGIS.currentOpacity };
       }
       return { color:'#55647C', weight: baseWeight, fillColor:'#8392AA', fillOpacity: AthensGIS.currentOpacity };
     },
     pointToLayer: function(feature, latlng){
-      return L.circleMarker(latlng,{ radius:4, fillColor:'#8392AA', color:'#55647C', weight:1, opacity:AthensGIS.currentOpacity, fillOpacity:AthensGIS.currentOpacity });
+      var radius = 4;
+      var fillColor = '#8392AA';
+      var color = '#55647C';
+      if(legendConfig && feature.properties && legendConfig.field in feature.properties){
+        var cvp = feature.properties[legendConfig.field];
+        var csp = getLegendClassForValue(legendConfig, cvp);
+        if(csp){
+          if(Number.isFinite(csp.radius)) radius = csp.radius;
+          if(csp.color){ fillColor = csp.color; color = csp.color; }
+        }
+      }
+      return L.circleMarker(latlng,{ radius: radius, fillColor: fillColor, color: color, weight:1, opacity:AthensGIS.currentOpacity, fillOpacity:AthensGIS.currentOpacity });
     },
     onEachFeature: function(feature, layer){
       layer.on('click', function(e){
@@ -264,7 +306,7 @@ function geojsonOptions(layerName, legendConfig){
           highlight.color = '#C4C4C4';
           highlight.fillColor = '#d9d9d9';
         } else if(lc && feature.properties && lc.field in feature.properties){
-          var cv2 = feature.properties[lc.field]; var cs2 = lc.classes[cv2];
+          var cv2 = feature.properties[lc.field]; var cs2 = getLegendClassForValue(lc, cv2);
           if(cs2){ highlight.color=cs2.color; highlight.fillColor=cs2.color; } else { highlight.color='#55647C'; highlight.fillColor='#8392AA'; }
         } else { highlight.color='#55647C'; highlight.fillColor='#8392AA'; }
         e.target.setStyle(highlight);

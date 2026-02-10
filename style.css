@@ -806,7 +806,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
       position: fixed;
       top: 105px;
       right: 10px;
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(255, 255, 255, 1);
       border: none;
       border-radius: 14px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
@@ -833,7 +833,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
       top: 0; /* user requested top: 0 */
       height: 10px;
       line-height: 30px;
-      margin: 0 -8px 0px -8px;
+      margin: 0 -8px -10px -8px;
       padding: 0 10px;
       background: white;
       border-radius: 0;
@@ -847,7 +847,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
       position: -webkit-sticky;
       position: sticky;
       top: 10px;
-      margin: 0px -8px 10px -8px;
+      margin: 0px -8px 8px -8px;
       padding: 6px 10px;
       /* Layer a solid white backing under the semi-opaque header so
          scrolling list items are hidden behind it */
@@ -870,10 +870,21 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
       letter-spacing: 0.5px;
     }
 
+    #legend-list .legend-group-title {
+      position: -webkit-sticky;
+      position: sticky;
+      top: 40px;
+      z-index: 2;
+      font-weight: 500;
+      margin: 0px 0 20px 0;
+      padding: 10px 8px;
+      background: rgba(255, 255, 255, 1);
+      border-bottom: 0.5px solid #ccc;
+    }
+
     #legend-list li {
       font-weight: 400;
       margin-bottom: 16px;
-      
     }
 
     #legend-list span {

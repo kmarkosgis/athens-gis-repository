@@ -30,7 +30,7 @@ var layerCategories = {
   "Natural Hazards": [
     { name: "Wildfires Attica 2015-2025", file: "Disasters/WildfiresAttica2015-2025.geojson" },
     { name: "Earthquakes Attica 2006-2026", file: "Disasters/EarthquakesAttica2006-2026.json" },
-    { name: "Seismic Hazard Zones", file: "Disasters/SeismicZones.json" }
+    { name: "Seismic Hazard Zones", file: "Disasters/Seismiczones.json" }
   ],
     "Points of Interest": [
     { name: "Banks", file: "Amenities/Banks.geojson" },
@@ -818,3 +818,4 @@ function ensureGeoJSONStyleRefreshListener(){
 if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', function(){ renderLayerControl(); ensureGeoJSONStyleRefreshListener(); }); } else { renderLayerControl(); ensureGeoJSONStyleRefreshListener(); }
 
 // === End Layer Control Module ===
+

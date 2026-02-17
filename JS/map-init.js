@@ -4,6 +4,14 @@
   }).setView([37.98, 23.72], 12);
   if (window.AthensGIS) { window.AthensGIS.map = map; }
 
+  // Keep Leaflet canvas aligned with mobile viewport changes.
+  window.addEventListener('resize', function () {
+    map.invalidateSize();
+  });
+  window.addEventListener('orientationchange', function () {
+    setTimeout(function () { map.invalidateSize(); }, 150);
+  });
+
   var positron = L.tileLayer(
     "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png?api_key=ddbe6f28-1e48-473a-8155-c9669166a43e" ,
   { attribution: "© OpenMapTiles © Stadia Maps" }
@@ -134,5 +142,4 @@
     map.on('zoomend', updateDisabled);
     updateDisabled();
   })();
-
   // === End Custom Zoom Control Buttons Logic ===

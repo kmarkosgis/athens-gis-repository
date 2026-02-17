@@ -1,10 +1,13 @@
-body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif; overflow-x: hidden; }
+body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif; overflow: hidden; }
 /* Make the map truly span the full viewport behind overlays */
 #map {
   position: fixed; /* detach from normal flow so header/footer do not shrink width */
   inset: 0;       /* top:0; right:0; bottom:0; left:0 */
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-width: 100vw;
+  max-height: 100dvh;
   z-index: 0;     /* overlays have higher z-indices already */
 }
     
@@ -948,6 +951,10 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
     
     @media (max-width: 850px) {
       #map {
+        width: 100vw;
+        height: 100dvh;
+        max-width: 100vw;
+        max-height: 100dvh;
         overflow: hidden;
       }
       .logo-container,
@@ -957,7 +964,14 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
       .leaflet-control-scale {
         display: none !important;
       }
+
+      #welcomeContent {
+        
+        margin-left: 10px;
+        margin-right: 10px;
+      }
       header {
+        box-sizing: border-box;
         width: 100%;
         padding: 6px 30px 10px 10px;
         font-size:20px;
@@ -967,14 +981,14 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
       #linkedin-btn {
       position: fixed;
       top: 6px;
-      right: 44px;
+      right: 10px;
     }
       #menuBtn {
         display: block !important;
         position: fixed;
         left: 5px;
-        top: 1px;
-        height: 40px;
+        top: 2px;
+        height: 38px;
         width: 40px;
         z-index: 9000;
         background: rgba(55, 65, 81, 0.3);
@@ -1037,7 +1051,9 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
       }
       #toolbar {
         left: 10px;
-        width: 350px;
+        
+        width: calc(100vw - 35px);
+        max-width: 320px;
         bottom: 28px;
         padding: 6px 8px;
         gap: 6px;

@@ -59,7 +59,7 @@ var layerCategories = {
       { name: "Fuel Stations", file: "Amenities/Fuel.geojson" },
     ],
     "Education": [
-      { name: "Schools", file: "Amenities/Schools.json" },
+      { name: "Schools", file: "Amenities/Schools.geojson" },
       { name: "Universities", file: "Amenities/Universities.geojson" }
     ],
     "Healthcare": [
@@ -118,19 +118,42 @@ function encodePathSegments(path){
     .join('/');
 }
 
+function normalizeAssetBase(base){
+  var raw = String(base || '').trim();
+  if(!raw) return '';
+  raw = raw.replace(/\\/g, '/');
+  // Keep same-origin absolute URLs but convert them to path-only form.
+  try{
+    var parsed = new URL(raw, window.location.href);
+    if(parsed.origin === window.location.origin){
+      raw = parsed.pathname;
+    }
+  }catch(e){}
+  // Force relative paths so GitHub project pages keep the repo prefix.
+  raw = raw.replace(/^\/+/, '');
+  raw = raw.replace(/\/+$/, '');
+  return raw;
+}
+
 function getAssetBaseCandidates(kind){
   var defaults = kind === 'data' ? ['data', 'Data'] : ['info', 'Info'];
   var cfg = AthensGIS && AthensGIS.assetBasePaths && AthensGIS.assetBasePaths[kind];
-  if(!Array.isArray(cfg) || !cfg.length) return defaults;
-  var values = cfg.filter(Boolean).map(function(v){ return String(v); });
-  defaults.forEach(function(def){
-    if(values.indexOf(def) === -1) values.push(def);
-  });
-  return values;
+  var values = defaults.slice();
+  if(Array.isArray(cfg) && cfg.length){
+    cfg.forEach(function(v){
+      var normalized = normalizeAssetBase(v);
+      if(!normalized) return;
+      var exists = values.some(function(existing){
+        return String(existing).toLowerCase() === normalized.toLowerCase();
+      });
+      if(!exists) values.push(normalized);
+    });
+  }
+  return values.map(normalizeAssetBase).filter(Boolean);
 }
 
 function buildAssetUrl(kind, relativePath, base){
-  var root = String(base || (kind === 'data' ? 'data' : 'info')).replace(/\/+$/, '');
+  var root = normalizeAssetBase(base || (kind === 'data' ? 'data' : 'info'));
   return root + '/' + encodePathSegments(relativePath);
 }
 

@@ -1,6 +1,6 @@
-Schools' locations in the region of Attica.
+Schools' locations in the Attica region.
 
-<p>Uploaded: 01-10-2025<p/>
+<p>Uploaded: 17-02-2026<p/>
 <p>Contributors: K. Markos<p/>
-<p>Source: OSM<p/>
+<p>Source: National School Network - Record of School Units<p/>
  

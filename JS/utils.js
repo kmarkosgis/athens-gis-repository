@@ -52,28 +52,33 @@ function updateLayerOpacity() {
 })();
 
 // Remove highlight from selected feature and hide info box
-map.on('click', function () {
-	// Remove highlight from all features and reset their style
-	Object.values(geojsonLayers).forEach(function(layer) {
-		if (layer && layer.eachLayer) {
-			layer.eachLayer(function(featureLayer) {
-				// Remove highlight class if present
-				if (featureLayer._path) {
-					featureLayer._path.classList.remove("feature-highlight");
-				}
-				// Reset style if possible
-				if (layer.resetStyle) {
-					layer.resetStyle(featureLayer);
-				}
-			});
-		}
+(function bindClearSelectionOnMapClick(){
+	var ag = window.AthensGIS || (window.AthensGIS = {});
+	var mapRef = ag.map || (typeof window.map !== 'undefined' ? window.map : null);
+	if(!mapRef || typeof mapRef.on !== 'function') return;
+
+	mapRef.on('click', function () {
+		// Remove highlight from all features and reset their style
+		Object.keys(ag.geojsonLayers || {}).forEach(function(key){
+			var layer = ag.geojsonLayers[key];
+			if (layer && layer.eachLayer) {
+				layer.eachLayer(function(featureLayer) {
+					// Remove highlight class if present
+					if (featureLayer._path) {
+						featureLayer._path.classList.remove("feature-highlight");
+					}
+					// Reset style if possible
+					if (layer.resetStyle) {
+						try { layer.resetStyle(featureLayer); } catch(_){}
+					}
+				});
+			}
+		});
+
+		ag.selectedFeature = null;
+
+		// Hide info box
+		var infoBox = document.getElementById("infoBox");
+		if (infoBox) infoBox.style.display = "none";
 	});
-
-	if (typeof selectedFeature !== 'undefined') {
-		selectedFeature = null;
-	}
-
-	// Hide info box
-	var infoBox = document.getElementById("infoBox");
-	if (infoBox) infoBox.style.display = "none";
-});
+})();

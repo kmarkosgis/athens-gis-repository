@@ -3,67 +3,102 @@
 
 // 1. Category definitions
 var layerCategories = {
-  "Administrative Boundaries": [
-    { name: "Regions of Greece", file: "Boundaries/GrRegions.geojson" },
-    { name: "Athens Center Sector", file: "Boundaries/AthensCenterSector.json" },
-    { name: "Athens North Sector", file: "Boundaries/AthensNorthSector.json" },
-    { name: "Athens South Sector", file: "Boundaries/AthensSouthSector.json" },
-    { name: "Athens West Sector", file: "Boundaries/AthensWestSector.json" },
-    { name: "East Attica", file: "Boundaries/AthensEast.json" },
-    { name: "Islands of Attica region", file: "Boundaries/AthensIslands.json" },
-    { name: "Piraeus", file: "Boundaries/Piraeus.json" },
-    { name: "West Attica", file: "Boundaries/AthensWest.json" },
-    { name: "Municipal Communities of Athens", file: "Boundaries/AthensCom.geojson" }    
-  ],
-  "Energy": [ 
-    { name: "Wind Farms", file: "Energy/WindFarms.json" } 
-  ],
-  "Environment": [
-    { name: "Natura 2000 sites", file: "Environment/Natura.geojson" },
-    { name: "Rivers and Streams", file: "Environment/Rivers.geojson" },
-    { name: "Vegetation Index (Center Sector)", file: "Environment/AthensGreenCenter.geojson" },
-    { name: "Vegetation Index (North Sector)", file: "Environment/AthensGreenNorth.geojson" },
-    { name: "Vegetation Index (South Sector)", file: "Environment/AthensGreenSouth.geojson" },
-    { name: "Vegetation Index (West Sector)", file: "Environment/AthensGreenWest.geojson" },
-    { name: "Vegetation Index (Piraeus)", file: "Environment/PiraeusGreen.geojson" }
-  ],
-  "Natural Hazards": [
-    { name: "Wildfires Attica 2015-2025", file: "Disasters/WildfiresAttica2015-2025.geojson" },
-    { name: "Earthquakes Attica 2006-2026", file: "Disasters/EarthquakesAttica2006-2026.json" },
-    { name: "Seismic Hazard Zones", file: "Disasters/Seismiczones.json" }
-  ],
-    "Points of Interest": [
-    { name: "Banks", file: "Amenities/Banks.geojson" },
-    { name: "Fuel Stations", file: "Amenities/Fuel.geojson" },
-    { name: "Hospitals", file: "Amenities/Hospitals.geojson" },
-    { name: "Pharmacies", file: "Amenities/Pharmacies.geojson" },
-    { name: "Police Stations", file: "Amenities/Police.geojson" },
-    { name: "Schools", file: "Amenities/Schools.geojson" },
-    { name: "Universities", file: "Amenities/Universities.geojson" }
-  ],
-  "Population and social conditions": [
-    { name: "2021 Population Census", file: "Social/Population2021.json" },
-    { name: "2011 Population Census", file: "Social/Population2011.json" }
-  ],
-  "Urban Planning": [
-    { name: "Corine Land Cover (2018)", file: "UrbanPlanning/AthensCorine2018.json" },
-    { name: "Municipality of Athens Urban Plan (2012)", file: "UrbanPlanning/Athens Urban Plan 2012.geojson" }
-  ],
-  "Transportation Systems": [
-    { name: "AI Traffic Cameras", file: "Transportation/AICameras.json" },
-    { name: "Avenues", file: "Transportation/AthensAvenues.json" },
-    { name: "OASA Bus Stops", file: "Transportation/AthensBusStops.geojson" },
-    { name: "Highways (Greece)", file: "Transportation/GreeceHighways.geojson" },
-    { name: "Metro Stations of Lines 1, 2 & 3", file: "Transportation/AthensMetro123.geojson" },
-    { name: "Metro Stations of Line 4", file: "Transportation/AthensMetro4.geojson" },
-    { name: "Rail Network (Greece)", file: "Transportation/GreeceRail.geojson" },
-    { name: "Street Network Mun. of Athens", file: "Transportation/AthStreets.geojson" },
-    { name: "Toll Stations", file: "Transportation/TollStations.geojson" },
-    { name: "Train Stations", file: "Transportation/AthensTrain.geojson" },
-    { name: "Tram Stations", file: "Transportation/AthensTram.geojson" },
-    { name: "Traffic Accidents", file: "Transportation/TrAccidents2025.geojson"},
-    { name: "Traffic Lights", file: "Transportation/TrLights.geojson" },
-  ]
+  "Administrative Boundaries": {
+    "_items": [
+      { name: "Regions of Greece", file: "Boundaries/GrRegions.geojson" }
+    ],
+    "Regional Units of Attica": [
+      { name: "Cental Sector", file: "Boundaries/AthensCenterSector.json" },
+      { name: "North Sector", file: "Boundaries/AthensNorthSector.json" },
+      { name: "South Sector", file: "Boundaries/AthensSouthSector.json" },
+      { name: "West Sector", file: "Boundaries/AthensWestSector.json" },
+      { name: "East Attica", file: "Boundaries/AthensEast.json" },
+      { name: "Islands of Attica", file: "Boundaries/AthensIslands.json" },
+      { name: "Piraeus", file: "Boundaries/Piraeus.json" },
+      { name: "West Attica", file: "Boundaries/AthensWest.json" },
+    ],
+    "Municipalities": [
+      { name: "Municipal Communities of Athens", file: "Boundaries/AthensCom.geojson" }
+    ]    
+    },
+  "Energy": {
+    "Wind": [
+      { name: "Wind Farms", file: "Energy/WindFarms.json" }
+    ]
+  },
+  "Environment": {
+    "Hydrology": [
+      { name: "Rivers and Streams", file: "Environment/Rivers.geojson" },
+    ],
+    "Protection Zones": [
+      { name: "Natura 2000 sites", file: "Environment/Natura.geojson" },
+    ],
+    "Vegetation": [
+      { name: "Vegetation Index (Center Sector)", file: "Environment/AthensGreenCenter.geojson" },
+      { name: "Vegetation Index (North Sector)", file: "Environment/AthensGreenNorth.geojson" },
+      { name: "Vegetation Index (South Sector)", file: "Environment/AthensGreenSouth.geojson" },
+      { name: "Vegetation Index (West Sector)", file: "Environment/AthensGreenWest.geojson" },
+      { name: "Vegetation Index (Piraeus)", file: "Environment/PiraeusGreen.geojson" }
+    ]
+  },
+  "Natural Hazards": {
+    "Wildfires": [
+      { name: "Wildfires Attica 2015-2025", file: "Disasters/WildfiresAttica2015-2025.geojson" },
+    ],
+      "Earthquakes": [
+        { name: "Earthquakes Attica 2006-2026", file: "Disasters/EarthquakesAttica2006-2026.json" },
+        { name: "Seismic Hazard Zones", file: "Disasters/Seismiczones.json" }
+      ]
+  },
+  "Points of Interest": {
+    "City Services": [
+      { name: "Banks", file: "Amenities/Banks.geojson" },
+      { name: "Police Stations", file: "Amenities/Police.geojson" },
+    ],
+    "Commerce": [
+      { name: "Fuel Stations", file: "Amenities/Fuel.geojson" },
+    ],
+    "Education": [
+      { name: "Schools", file: "Amenities/Schools.json" },
+      { name: "Universities", file: "Amenities/Universities.geojson" }
+    ],
+    "Healthcare": [
+      { name: "Hospitals", file: "Amenities/Hospitals.geojson" },
+      { name: "Pharmacies", file: "Amenities/Pharmacies.geojson" },
+    ],
+  },
+  "Population and social conditions": {
+    "Population Census": [
+      { name: "2021 Population Census", file: "Social/Population2021.json" },
+      { name: "2011 Population Census", file: "Social/Population2011.json" }
+    ]
+  },
+  "Urban Planning": {
+    "Land Uses": [
+      { name: "Corine Land Cover (2018)", file: "UrbanPlanning/AthensCorine2018.json" },
+      { name: "Municipality of Athens Urban Plan (2012)", file: "UrbanPlanning/Athens Urban Plan 2012.geojson" }
+    ]
+  },
+  "Transportation Systems": {
+    "Road Transport": [
+      { name: "AI Traffic Cameras", file: "Transportation/AICameras.json" },
+      { name: "Avenues", file: "Transportation/AthensAvenues.json" },
+      { name: "OASA Bus Stops", file: "Transportation/AthensBusStops.geojson" },
+      { name: "Highways (Greece)", file: "Transportation/GreeceHighways.geojson" },
+      { name: "Street Network Mun. of Athens", file: "Transportation/AthStreets.geojson" },
+      { name: "Toll Stations", file: "Transportation/TollStations.geojson" },
+      { name: "Traffic Accidents 2023-2025", file: "Transportation/TrAccidents.json" },
+      { name: "Traffic Lights", file: "Transportation/TrLights.geojson" }
+    ],
+    "Rail Transport": [
+      { name: "Stations of Metro Lines 1, 2 and 3", file: "Transportation/AthensMetro123.geojson" },
+      { name: "Stations of Metro Line 4", file: "Transportation/AthensMetro4.geojson" },
+      { name: "Metro Lines 1, 2 and 3", file: "Transportation/AthensMetroNet.geojson" },
+      { name: "Rail Network (Greece)", file: "Transportation/GreeceRail.geojson" },
+      { name: "Train Stations", file: "Transportation/AthensTrain.geojson" },
+      { name: "Tram Stations", file: "Transportation/AthensTram.geojson" }
+    ]
+  }
 };
 
 // 2. Global state wiring
@@ -107,16 +142,28 @@ function getLegendClassForValue(legendConfig, value){
 function buildPropertyTable(feature){
   if(!feature || !feature.properties) return '';
   var rows='';
+  var keyAliases = {
+    'Κωδι_1': 'Code',
+    'Επιπέ': 'Education Level',
+    'Τύπος': 'Type',
+    'Ονομα': 'Name (GR)',
+    'Νομός': 'Regional Unit (GR)',
+    'Δήμος': 'Municipality (GR)'
+  };
   for(var key in feature.properties){
     if(!Object.prototype.hasOwnProperty.call(feature.properties,key)) continue;
     var v = feature.properties[key];
-    var d = key; var k = key.toLowerCase();
+    var k = String(key || '').toLowerCase();
+    var d = key;
+    if(Object.prototype.hasOwnProperty.call(keyAliases, key)) d = keyAliases[key];
+    else if(Object.prototype.hasOwnProperty.call(keyAliases, k)) d = keyAliases[k];
+
     if(k==='shapeleng_'){ v=Number(v).toFixed(2); d='Shape Length (km)'; }
     else if(k==='shapearea'){ v=Number(v).toFixed(2); d='Shape Area (km²)'; }
     else if(['shapeleng_m','shapelengm','length'].includes(k)){ v=Number(v).toFixed(2); d='Shape Length (m)'; }
     else if(['shapearea_m','shapeaream'].includes(k)){ v=Number(v).toFixed(2); d='Shape Area (m²)'; }
     else if(['name','name_el','name_place','gname','uses_gr'].includes(k)){ d='Name (GR)'; }
-    else if(['ename','name_pl_en','name_en','uses_en'].includes(k)){ d='Name (ENG)'; }
+    else if(['ename','name_pl_en','name_en','uses_en','name:en'].includes(k)){ d='Name (ENG)'; }
     else if(k==='bridge') d='Bridge';
     else if(k==='tunnel') d='Tunnel';
     else if(k==='ref') d='Route';
@@ -132,7 +179,7 @@ function buildPropertyTable(feature){
     else if(k==='highway') d='Type';
     else if(k==='oneway') d='One-Way Road';
     else if(k==='surface') d='Surface Type';
-    else if(k==='fid' || k==='objectid') d='Feature ID';
+    else if(k==='fid' || k==='objectid'|| k==='full_id') d='Feature ID';
     else if(k==='popul2011') d='Population';
     else if(k==='wt') d='Wind Turbine';
     else if(k==='power_anem') d='Power (MW)';
@@ -147,11 +194,11 @@ function buildPropertyTable(feature){
     else if(k==='basinid_fd') d='Basin ID';
     else if(k==='mag') {v=Number(v).toFixed(1); d='Magnitude';}
     else if(k==='place') d='Place';
-    rows += '<tr><th style="text-align:left; padding:5px; font-weight:500; width:150px; border-bottom:1px solid #ccc; word-wrap:break-word; max-width:160px;">'+d+'</th><td style="border-bottom:1px solid #ccc; width:140px; word-wrap:break-word; max-width:140px;">'+v+'</td></tr>';
-    }
-    return '<table style="table-layout:fixed; width:270px;">'+rows+'</table>';
+    else if(k==='amenity') d='Amenity';
+    rows += '<tr><th>'+d+'</th><td>'+v+'</td></tr>';
+  }
+  return '<table class="feature-properties-table">'+rows+'</table>';
 }
-
 function ensureInfoBoxUpdate(){
   var infoBox = document.getElementById('layerInfoBox'); if(!infoBox) return;
   var contentEl = document.getElementById('layerInfoContent'); if(!contentEl) contentEl = infoBox;
@@ -222,16 +269,20 @@ function ensureInfoBoxUpdate(){
 function geojsonOptions(layerName, legendConfig){
   return {
     style: function(feature){
-      var baseWeight =2;
+      var baseWeight =1;
       var fillOpacity = AthensGIS.currentOpacity;
       // Special styling for Terrain/Relief: scale-aware contour visibility
       if(layerName==='Terrain' || layerName==='Relief'){
-        var color = '#C4C4C4';
-        var fillColor = '#d9d9d9';
         try{
           var geomType = feature && feature.geometry && feature.geometry.type;
           var contourRaw = feature && feature.properties && (feature.properties.Contour || feature.properties.contour || feature.properties.CONTOUR);
           var contourVal = (typeof contourRaw !== 'undefined' && contourRaw !== null && contourRaw !== '') ? Number(contourRaw) : NaN;
+          var terrainLegend = legendConfig || ((window.legendConfigs||{}).Terrain || null);
+          if((typeof contourRaw === 'undefined' || contourRaw === null || contourRaw === '') && terrainLegend && terrainLegend.field && feature && feature.properties){
+            contourRaw = feature.properties[terrainLegend.field];
+          }
+          var contourStyle = getLegendClassForValue(terrainLegend, contourRaw);
+          var contourColor = contourStyle && contourStyle.color ? contourStyle.color : null;
           var heavyContours = [200,400,600,800,1000,1200,1400,1600];
 
           // approximate current map scale denominator
@@ -253,19 +304,33 @@ function geojsonOptions(layerName, legendConfig){
             var isHeavy = heavyContours.indexOf(contourVal) !== -1;
             if(isLargeScale){
               // At scales larger than 1:100000 (denominator < 100000): show only heavy contours
-              if(isHeavy) return { color: color, weight: baseWeight, opacity: 1, fillOpacity: fillOpacity };
-              return { color: color, weight: baseWeight, opacity: 0, fillOpacity: 0 };
+              if(isHeavy){
+                var heavyStyle = { weight: baseWeight, opacity: 1, fillOpacity: fillOpacity };
+                if(contourColor){ heavyStyle.color = contourColor; }
+                return heavyStyle;
+              }
+              var hiddenStyle = { weight: baseWeight, opacity: 0, fillOpacity: 0 };
+              if(contourColor){ hiddenStyle.color = contourColor; }
+              return hiddenStyle;
             } else {
               // At smaller scales (denominator >= 100000): show all contours, heavy ones emphasised
-              if(isHeavy) return { color: color, weight: baseWeight * 2, opacity: 1, fillOpacity: fillOpacity };
-              return { color: color, weight: baseWeight, opacity: 1, fillOpacity: fillOpacity };
+              if(isHeavy){
+                var emphStyle = { weight: baseWeight * 2, opacity: 1, fillOpacity: fillOpacity };
+                if(contourColor){ emphStyle.color = contourColor; }
+                return emphStyle;
+              }
+              var normalStyle = { weight: baseWeight, opacity: 1, fillOpacity: fillOpacity };
+              if(contourColor){ normalStyle.color = contourColor; }
+              return normalStyle;
             }
           }
 
           // Non-line geometries (polygons, points): render normally
-          return { color: color, weight: baseWeight, fillColor: fillColor, fillOpacity: fillOpacity };
+          var terrainStyle = { weight: baseWeight, fillOpacity: fillOpacity };
+          if(contourColor){ terrainStyle.color = contourColor; terrainStyle.fillColor = contourColor; }
+          return terrainStyle;
         }catch(e){
-          return { color: color, weight: baseWeight, fillColor: fillColor, fillOpacity: fillOpacity };
+          return { weight: baseWeight, fillOpacity: fillOpacity };
         }
       }
       if(legendConfig && feature.properties && legendConfig.field in feature.properties){
@@ -300,13 +365,14 @@ function geojsonOptions(layerName, legendConfig){
         }
         AthensGIS.selectedFeature = e.target;
         var lc = (window.legendConfigs||{})[layerName];
+        if(!lc && (layerName==='Terrain' || layerName==='Relief')) lc = (window.legendConfigs||{}).Terrain;
         var highlight = { weight: 2, fillOpacity: AthensGIS.currentOpacity };
-        // Keep Terrain highlight in grey tones as well
-        if(layerName==='Terrain' || layerName==='Relief'){
-          highlight.color = '#C4C4C4';
-          highlight.fillColor = '#d9d9d9';
-        } else if(lc && feature.properties && lc.field in feature.properties){
-          var cv2 = feature.properties[lc.field]; var cs2 = getLegendClassForValue(lc, cv2);
+        if(lc && feature.properties){
+          var cv2 = (lc.field && lc.field in feature.properties) ? feature.properties[lc.field] : undefined;
+          if((typeof cv2 === 'undefined' || cv2 === null || cv2 === '') && (layerName==='Terrain' || layerName==='Relief')){
+            cv2 = feature.properties.Contour || feature.properties.contour || feature.properties.CONTOUR;
+          }
+          var cs2 = getLegendClassForValue(lc, cv2);
           if(cs2){ highlight.color=cs2.color; highlight.fillColor=cs2.color; } else { highlight.color='#55647C'; highlight.fillColor='#8392AA'; }
         } else { highlight.color='#55647C'; highlight.fillColor='#8392AA'; }
         e.target.setStyle(highlight);
@@ -332,13 +398,44 @@ function geojsonOptions(layerName, legendConfig){
 function createLayerFromGeoJSON(data, layerName, legendConfig){
   var map = getMap();
   if(!map) return null;
+  function hasValidCoordinates(type, coordinates){
+    function isPosition(pos){
+      if(!Array.isArray(pos) || pos.length < 2) return false;
+      var lon = Number(pos[0]);
+      var lat = Number(pos[1]);
+      return Number.isFinite(lon) && Number.isFinite(lat) && lon >= -180 && lon <= 180 && lat >= -90 && lat <= 90;
+    }
+    if(!type) return false;
+    if(type === 'Point') return isPosition(coordinates);
+    if(type === 'MultiPoint' || type === 'LineString'){
+      return Array.isArray(coordinates) && coordinates.length > 0 && coordinates.every(isPosition);
+    }
+    if(type === 'MultiLineString' || type === 'Polygon'){
+      return Array.isArray(coordinates) && coordinates.length > 0 &&
+        coordinates.every(function(segment){
+          return Array.isArray(segment) && segment.length > 0 && segment.every(isPosition);
+        });
+    }
+    if(type === 'MultiPolygon'){
+      return Array.isArray(coordinates) && coordinates.length > 0 &&
+        coordinates.every(function(polygon){
+          return Array.isArray(polygon) && polygon.length > 0 &&
+            polygon.every(function(ring){
+              return Array.isArray(ring) && ring.length > 0 && ring.every(isPosition);
+            });
+        });
+    }
+    return false;
+  }
   // Ensure panes exist
   try{
     if(!map.getPane('vector-bottom')){ map.createPane('vector-bottom'); map.getPane('vector-bottom').style.zIndex = 450; }
     if(!map.getPane('vector-top')){ map.createPane('vector-top'); map.getPane('vector-top').style.zIndex = 650; }
   }catch(e){}
 
-  var features = (data && data.features) ? data.features : [];
+  var features = (data && data.features) ? data.features.filter(function(f){
+    return f && f.geometry && hasValidCoordinates(f.geometry.type, f.geometry.coordinates);
+  }) : [];
   var polyFeatures = { type: 'FeatureCollection', features: features.filter(function(f){ return f && f.geometry && (f.geometry.type==='Polygon' || f.geometry.type==='MultiPolygon'); }) };
   var vecFeatures = { type: 'FeatureCollection', features: features.filter(function(f){ return f && f.geometry && (f.geometry.type==='Point' || f.geometry.type==='MultiPoint' || f.geometry.type==='LineString' || f.geometry.type==='MultiLineString'); }) };
 
@@ -390,17 +487,8 @@ function createLayerFromGeoJSON(data, layerName, legendConfig){
               var pt = turf.along(f, d, {units:'kilometers'});
               if(pt && pt.geometry && pt.geometry.coordinates){
                 var c = pt.geometry.coordinates; var latlng = [c[1], c[0]];
-                // compute a small forward point to get bearing and rotate the label
-                var forwardDist = Math.min(d + 0.1, lengthKm);
-                var bearing = 0;
-                try{
-                  var nextPt = turf.along(f, forwardDist, {units:'kilometers'});
-                  if(nextPt && nextPt.geometry && nextPt.geometry.coordinates){
-                    bearing = turf.bearing(pt, nextPt) || 0;
-                  }
-                }catch(e){ bearing = 0; }
-                // transparent background, slight text-shadow for contrast, rotated to follow line direction
-                var html = '<div style="font-size:10px; color:#2c3e50; background:rgba(121, 121, 121, 0.15); padding:2px; border-radius:4px; border:none; text-shadow:0 0 3px rgba(255,255,255,0.9); transform:rotate('+bearing+'deg); transform-origin:center; display:inline-block;">'+String(contour)+'</div>';
+                // Keep contour labels horizontal for readability.
+                var html = '<div style="font-size:10px; color:white; background:rgba(55, 65, 81, 0.75); padding:2px 4px; border-radius:6px; border:none; z-index:9999; letter-spacing:0.5px; font-weight:500; display:inline-block;">'+String(contour)+'</div>';
                 var ic = L.divIcon({className:'relief-label', html:html});
                 var m = L.marker(latlng, {icon:ic, pane:'vector-top', interactive:false});
                 labelLayer.addLayer(m);
@@ -556,12 +644,11 @@ function renderLayerControl(){
         if(typeof window.updateLegendBar==='function' && (window.legendConfigs||{})[layerName]){
           window.updateLegendBar(layerName);
         }
-        Promise.all(['relief1.json','relief2.json','relief3.json','relief4.json'].map(f=>fetch('data/Environment/'+f).then(r=>r.json())))
-            .then(parts=>{
-            var merged={type:'FeatureCollection', features:parts.flatMap(p=>p.features||[])};
+        fetch('data/Environment/relief.json').then(r=>r.json())
+            .then(data=>{
             var lc=(window.legendConfigs||{})[layerName];
             if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName);
-            var lyr=createLayerFromGeoJSON(merged, layerName, lc);
+            var lyr=createLayerFromGeoJSON(data, layerName, lc);
             // Keep internal key as 'Relief' for cleanup compatibility
             AthensGIS.geojsonLayers['Relief']=lyr;
           });
@@ -587,6 +674,121 @@ function renderLayerControl(){
     _results.style.display='none';
     _results.style.margin='4px 0 6px';
     controlDiv.appendChild(_results);
+  }
+
+  function slugify(text){
+    return String(text || '')
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9\-]/g, '');
+  }
+
+   function normalizeSubcategories(catData){
+    if(Array.isArray(catData)) return { "General": catData };
+    if(!catData || typeof catData !== 'object') return {};
+    return Object.keys(catData).reduce(function(acc, key){
+      if(key === '_items') return acc;
+      acc[key] = catData[key];
+      return acc;
+    }, {});
+  }
+
+  function getCategoryItems(catData){
+    if(!catData || typeof catData !== 'object' || Array.isArray(catData)) return [];
+    return Array.isArray(catData._items) ? catData._items : [];
+  }
+
+  function countCheckedByDataset(key, value){
+    return Array.from(controlDiv.querySelectorAll('.layer-item')).reduce(function(acc, r){
+      try{
+        if(r.dataset && r.dataset[key] === value){
+          var cbx = r.querySelector('input[type=checkbox]');
+          if(cbx && cbx.checked) return acc + 1;
+        }
+      }catch(e){}
+      return acc;
+    }, 0);
+  }
+
+  function updateCountBadge(countSpan, count, arrowEl){
+    if(!countSpan) return;
+    if(count > 0){
+      countSpan.textContent = count;
+      countSpan.style.display = 'inline-flex';
+      if(arrowEl) arrowEl.style.marginLeft = '2px';
+    } else {
+      countSpan.textContent = '';
+      countSpan.style.display = 'none';
+      if(arrowEl) arrowEl.style.marginLeft = 'auto';
+    }
+  }
+
+  function trackLayerDownload(info, categoryName, subcategoryName){
+    if(!info || !window.posthog || typeof window.posthog.capture !== 'function') return;
+    var props = {
+      layer_name: info.name,
+      layer_file: info.file || 'Relief_layers.zip',
+      download_type: info.name === 'Relief' ? 'zip' : 'file'
+    };
+    if(categoryName) props.category = categoryName;
+    if(subcategoryName) props.subcategory = subcategoryName;
+    try{ window.posthog.capture('layer_download', props); }catch(e){}
+  }
+
+  function createLayerRow(info, parentEl, categoryContent, countSpan, arrowEl, subcategoryContent, categoryName, subcategoryName){
+    if(!info || !parentEl || !categoryContent) return;
+    var id=info.name.replace(/\s+/g,'_');
+    var row=document.createElement('div'); row.className='layer-item';
+    var cb=document.createElement('input'); cb.type='checkbox'; cb.id=id; cb.dataset.layername=info.name; if(info.file) cb.dataset.filename=info.file;
+    var label=document.createElement('label'); label.htmlFor=id; label.textContent=info.name;
+    var dl = null;
+    if(info.name!=='Relief'){
+      dl=document.createElement('a'); dl.href='data/'+info.file; dl.download=info.file; dl.innerHTML='DOWNLOAD'; dl.className='download-button'; dl.style.display='none'; dl.title='Download the selected layer';
+      dl.addEventListener('click', function(){ trackLayerDownload(info, categoryName, subcategoryName); });
+    }
+    row.appendChild(cb); row.appendChild(label); if(dl) row.appendChild(dl); parentEl.appendChild(row);
+    // Tag original parents for flat-search restore and counting
+    row.dataset.parentId = parentEl.id;
+    row.dataset.categoryId = categoryContent.id;
+    if(subcategoryContent && subcategoryContent.id){
+      row.dataset.subcategoryId = subcategoryContent.id;
+    }
+    if(categoryName) row.dataset.categoryName = categoryName;
+    if(subcategoryName) row.dataset.subcategoryName = subcategoryName;
+    cb.addEventListener('change', function(){
+      var layerName=this.dataset.layername; var file=this.dataset.filename; var dEl=this.parentElement.querySelector('.download-button');
+      if(this.checked){
+        // Visually mark row as selected so .layer-item.selected CSS applies
+        row.classList.add('selected');
+        if(dEl) dEl.style.display='inline-block';
+        AthensGIS.activeLayerInfos[layerName]='<em>Loading info...</em>'; ensureInfoBoxUpdate();
+        // Trigger legend update immediately (so user sees legend without waiting for fetch)
+        if(typeof window.updateLegendBar==='function' && (window.legendConfigs||{})[layerName]){
+          window.updateLegendBar(layerName);
+        }
+        if(layerName==='Relief'){
+          Promise.all(['relief1.json','relief2.json','relief3.json','relief4.json'].map(f=>fetch('data/Environment/'+f).then(r=>r.json()))).then(parts=>{ var merged={type:'FeatureCollection', features:parts.flatMap(p=>p.features||[])}; var lc=(window.legendConfigs||{})[layerName]; if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName); var lyr=L.geoJSON(merged, geojsonOptions(layerName, lc)).addTo(getMap()); AthensGIS.geojsonLayers['Relief']=lyr; });
+          fetch('info/Environment/Relief.txt').then(r=>r.ok?r.text():Promise.reject()).then(t=>{ AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(()=>{ AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
+        } else if(file){
+          fetch('data/'+file).then(r=>r.json()).then(data=>{ var lc2=(window.legendConfigs||{})[layerName]; if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName); var lyr2=createLayerFromGeoJSON(data, layerName, lc2); AthensGIS.geojsonLayers[file]=lyr2; });
+          var txt=file.replace(/\.[^/.]+$/, '')+'.txt'; fetch('info/'+txt).then(r=>r.ok?r.text():Promise.reject()).then(t=>{ AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(()=>{ AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
+        }
+      } else {
+        // Remove selected visual style
+        row.classList.remove('selected');
+        if(dEl) dEl.style.display='none';
+        if(layerName==='Relief'){ if(AthensGIS.geojsonLayers['Relief']){ getMap().removeLayer(AthensGIS.geojsonLayers['Relief']); delete AthensGIS.geojsonLayers['Relief']; } }
+        else if(file && AthensGIS.geojsonLayers[file]){ getMap().removeLayer(AthensGIS.geojsonLayers[file]); delete AthensGIS.geojsonLayers[file]; }
+        delete AthensGIS.activeLayerInfos[layerName]; ensureInfoBoxUpdate(); var infoDiv=document.getElementById('infoBox'); if(infoDiv) infoDiv.style.display='none';
+        // Update legend to remove this layer's entry (after state updated)
+        if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName,'remove');
+      }
+      // Update category header count badge: show number of active layers in this category
+      try{
+        var catCount = countCheckedByDataset('categoryId', categoryContent.id);
+        updateCountBadge(countSpan, catCount, arrowEl);
+      }catch(e){}
+    });
   }
 
   Object.keys(layerCategories).forEach(function(cat){
@@ -660,89 +862,137 @@ function renderLayerControl(){
     header.appendChild(arrow);
 
     // Content container (collapsed by default)
-  var content = document.createElement('div');
+    var content = document.createElement('div');
     content.className = 'category-content';
-  // Start collapsed: hidden, with smooth transition on expand/collapse
-  content.style.display = 'none';
-  content.style.overflow = 'hidden';
-  content.style.maxHeight = '0';
-  content.style.opacity = '0';
-  content.style.transition = 'max-height 0.3s ease, opacity 0.2s ease';
-  // Accessibility wiring
-  var contentId = 'cat-content-' + cat.replace(/\s+/g,'-').toLowerCase();
-  content.id = contentId;
-  header.setAttribute('aria-controls', contentId);
-  header.setAttribute('aria-expanded', 'false');
+    // Start collapsed: hidden, with smooth transition on expand/collapse
+    content.style.display = 'none';
+    content.style.overflow = 'hidden';
+    content.style.maxHeight = '0';
+    content.style.opacity = '0';
+    content.style.transition = 'max-height 0.3s ease, opacity 0.2s ease';
+    // Accessibility wiring
+    var contentId = 'cat-content-' + slugify(cat);
+    content.id = contentId;
+    header.setAttribute('aria-controls', contentId);
+    header.setAttribute('aria-expanded', 'false');
 
-    // Build rows into content
-    layerCategories[cat].forEach(function(info){
-      var id=info.name.replace(/\s+/g,'_');
-  var row=document.createElement('div'); row.className='layer-item';
-      var cb=document.createElement('input'); cb.type='checkbox'; cb.id=id; cb.dataset.layername=info.name; if(info.file) cb.dataset.filename=info.file;
-      var label=document.createElement('label'); label.htmlFor=id; label.textContent=info.name;
-      var dl;
-      if(info.name==='Relief'){
-        dl=document.createElement('button'); dl.innerHTML='DOWNLOAD'; dl.className='download-button'; dl.style.display='none'; dl.title='Download as ZIP';
-        dl.addEventListener('click', function(){ var zip=new JSZip(); var files=['relief1.json','relief2.json','relief3.json','relief4.json']; Promise.all(files.map(f=>fetch('data/Environment/'+f).then(r=>r.blob()).then(b=>zip.file(f,b)))).then(()=>zip.generateAsync({type:'blob'})).then(c=>saveAs(c,'Relief_layers.zip')); });
-      } else {
-        dl=document.createElement('a'); dl.href='data/'+info.file; dl.download=info.file; dl.innerHTML='DOWNLOAD'; dl.className='download-button'; dl.style.display='none'; dl.title='Download the selected layer';
-      }
-  row.appendChild(cb); row.appendChild(label); row.appendChild(dl); content.appendChild(row);
-  // Tag original parent for flat-search restore
-  row.dataset.parentId = content.id;
-      cb.addEventListener('change', function(){
-        var layerName=this.dataset.layername; var file=this.dataset.filename; var dEl=this.parentElement.querySelector('.download-button');
-        if(this.checked){
-          // Visually mark row as selected so .layer-item.selected CSS applies
-          row.classList.add('selected');
-          if(dEl) dEl.style.display='inline-block';
-          AthensGIS.activeLayerInfos[layerName]='<em>Loading info...</em>'; ensureInfoBoxUpdate();
-          // Trigger legend update immediately (so user sees legend without waiting for fetch)
-          if(typeof window.updateLegendBar==='function' && (window.legendConfigs||{})[layerName]){
-            window.updateLegendBar(layerName);
-          }
-          if(layerName==='Relief'){
-            Promise.all(['relief1.json','relief2.json','relief3.json','relief4.json'].map(f=>fetch('data/Environment/'+f).then(r=>r.json()))).then(parts=>{ var merged={type:'FeatureCollection', features:parts.flatMap(p=>p.features||[])}; var lc=(window.legendConfigs||{})[layerName]; if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName); var lyr=L.geoJSON(merged, geojsonOptions(layerName, lc)).addTo(getMap()); AthensGIS.geojsonLayers['Relief']=lyr; });
-            fetch('info/Environment/Relief.txt').then(r=>r.ok?r.text():Promise.reject()).then(t=>{ AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(()=>{ AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
-          } else if(file){
-            fetch('data/'+file).then(r=>r.json()).then(data=>{ var lc2=(window.legendConfigs||{})[layerName]; if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName); var lyr2=createLayerFromGeoJSON(data, layerName, lc2); AthensGIS.geojsonLayers[file]=lyr2; });
-            var txt=file.replace(/\.[^/.]+$/, '')+'.txt'; fetch('info/'+txt).then(r=>r.ok?r.text():Promise.reject()).then(t=>{ AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(()=>{ AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
-          }
-        } else {
-          // Remove selected visual style
-          row.classList.remove('selected');
-          if(dEl) dEl.style.display='none';
-          if(layerName==='Relief'){ if(AthensGIS.geojsonLayers['Relief']){ getMap().removeLayer(AthensGIS.geojsonLayers['Relief']); delete AthensGIS.geojsonLayers['Relief']; } }
-          else if(file && AthensGIS.geojsonLayers[file]){ getMap().removeLayer(AthensGIS.geojsonLayers[file]); delete AthensGIS.geojsonLayers[file]; }
-          delete AthensGIS.activeLayerInfos[layerName]; ensureInfoBoxUpdate(); var infoDiv=document.getElementById('infoBox'); if(infoDiv) infoDiv.style.display='none';
-          // Update legend to remove this layer's entry (after state updated)
-          if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName,'remove');
-        }
-        // Update category header count badge: show number of active layers in this category
-        try{
-          // Count checked boxes for this category by using each row's stored parentId.
-          // This ensures selections made while rows are moved into the flat search results
-          // still contribute to the category badge.
-          var checkedCount = Array.from(controlDiv.querySelectorAll('.layer-item')).reduce(function(acc, r){
-            try{
-              if(r.dataset && r.dataset.parentId === content.id){
-                var cbx = r.querySelector('input[type=checkbox]');
-                if(cbx && cbx.checked) return acc + 1;
-              }
-            }catch(e){}
-            return acc;
-          }, 0);
-          if(checkedCount > 0){
-            countSpan.textContent = checkedCount;
-            countSpan.style.display = 'inline-flex';
-            arrow.style.marginLeft = '2px';
-          } else {
-            countSpan.textContent = '';
-            countSpan.style.display = 'none';
-            arrow.style.marginLeft = 'auto';
-          }
-        }catch(e){}
+    var catData = layerCategories[cat];
+    var rootItems = getCategoryItems(catData);
+    if(rootItems.length){
+      rootItems.forEach(function(info){
+        createLayerRow(info, content, content, countSpan, arrow, null, cat, null);
       });
+    }
+
+    var subcategories = normalizeSubcategories(catData);
+    Object.keys(subcategories).forEach(function(subcat){
+      // Subcategory wrapper
+      var subSection = document.createElement('div');
+      subSection.className = 'subcategory-section';
+
+      // Subcategory header
+      var subHeader = document.createElement('div');
+      subHeader.className = 'subcategory-header';
+      subHeader.tabIndex = 0;
+      subHeader.setAttribute('role','button');
+      subHeader.style.display = 'flex';
+      subHeader.style.alignItems = 'center';
+      subHeader.style.width = '95%';
+      subHeader.style.height = '26px';
+      subHeader.style.gap = '8px';
+      subHeader.style.marginTop = '6px';
+      subHeader.style.marginBottom = '8px';
+      subHeader.style.marginLeft = '2px';  
+      subHeader.style.paddingLeft = '10px';
+      subHeader.style.cursor = 'pointer';
+      subHeader.style.border = '0px solid rgba(204, 204, 204, 0.4)';
+      subHeader.style.background = 'rgba(255, 255, 255, 1)';
+      subHeader.style.borderRadius = '10px';
+      subHeader.style.boxShadow = '0 1px 4px rgba(0, 0, 0, 0.1)';
+      
+
+      var subTitle = document.createElement('h5');
+      subTitle.textContent = subcat;
+      subTitle.style.fontSize = '13px';
+      subTitle.style.fontWeight = '500';
+      subTitle.style.margin = '2px 0';
+
+      var subArrow = document.createElement('span');
+      subArrow.className = 'subcategory-arrow';
+      subArrow.setAttribute('aria-hidden','true');
+      subArrow.textContent = arrow.textContent;
+      subArrow.style.marginLeft = 'auto';
+      subArrow.style.paddingRight = '12px';
+      subArrow.style.transition = 'transform 0.2s ease';
+      subArrow.style.transformOrigin = '20% 55%';
+      subArrow.style.fontSize = '1.05em';
+      subArrow.style.rotate = '-90deg';
+      subArrow.style.display = 'inline-flex';
+      subArrow.style.alignItems = 'top';
+
+      subHeader.appendChild(subTitle);
+      subHeader.appendChild(subArrow);
+
+      // Subcategory content (collapsed by default)
+      var subContent = document.createElement('div');
+      subContent.className = 'subcategory-content';
+      subContent.style.display = 'none';
+      subContent.style.overflow = 'hidden';
+      subContent.style.maxHeight = '0';
+      subContent.style.opacity = '0';
+      subContent.style.transition = 'max-height 0.3s ease, opacity 0.2s ease';
+      var subContentId = 'subcat-content-' + slugify(cat) + '-' + slugify(subcat);
+      subContent.id = subContentId;
+      subHeader.setAttribute('aria-controls', subContentId);
+      subHeader.setAttribute('aria-expanded', 'false');
+
+      // Build rows into subcategory content
+      (subcategories[subcat] || []).forEach(function(info){
+        createLayerRow(info, subContent, content, countSpan, arrow, subContent, cat, subcat);
+      });
+
+      function setSubOpen(open){
+        if(open){
+          subContent.style.display = 'block';
+          void subContent.offsetHeight;
+          subContent.style.maxHeight = subContent.scrollHeight + '1px';
+          subContent.style.opacity = '1';
+          subHeader.classList.add('open');
+          subArrow.style.transform = 'rotate(180deg)';
+          subHeader.setAttribute('aria-expanded','true');
+          subContent.setAttribute('aria-hidden','false');
+          var onSubExpandEnd = function(e){
+            if(e.propertyName === 'max-height'){
+              subContent.style.maxHeight = 'none';
+              subContent.removeEventListener('transitionend', onSubExpandEnd);
+            }
+          };
+          subContent.addEventListener('transitionend', onSubExpandEnd);
+        } else {
+          subContent.style.maxHeight = subContent.scrollHeight + 'px';
+          subContent.style.opacity = '1';
+          void subContent.offsetHeight;
+          subContent.style.maxHeight = '0';
+          subContent.style.opacity = '0';
+          subHeader.classList.remove('open');
+          subArrow.style.transform = 'rotate(0deg)';
+          subHeader.setAttribute('aria-expanded','false');
+          subContent.setAttribute('aria-hidden','true');
+          var onSubEnd = function(e){
+            if(e.propertyName === 'max-height'){
+              subContent.style.display = 'none';
+              subContent.removeEventListener('transitionend', onSubEnd);
+            }
+          };
+          subContent.addEventListener('transitionend', onSubEnd);
+        }
+      }
+      subHeader.addEventListener('click', function(){ setSubOpen(subContent.style.display==='none'); });
+      subHeader.addEventListener('keydown', function(e){ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); setSubOpen(subContent.style.display==='none'); } });
+
+      subSection.appendChild(subHeader);
+      subSection.appendChild(subContent);
+      content.appendChild(subSection);
     });
 
     // Toggle logic
@@ -759,6 +1009,13 @@ function renderLayerControl(){
         arrow.style.transform = 'rotate(180deg)';
         header.setAttribute('aria-expanded','true');
         content.setAttribute('aria-hidden','false');
+        var onExpandEnd = function(e){
+          if(e.propertyName === 'max-height'){
+            content.style.maxHeight = 'none';
+            content.removeEventListener('transitionend', onExpandEnd);
+          }
+        };
+        content.addEventListener('transitionend', onExpandEnd);
       } else {
         // Animate from current height to 0, then hide display after transition
         content.style.maxHeight = content.scrollHeight + 'px';
@@ -818,4 +1075,3 @@ function ensureGeoJSONStyleRefreshListener(){
 if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', function(){ renderLayerControl(); ensureGeoJSONStyleRefreshListener(); }); } else { renderLayerControl(); ensureGeoJSONStyleRefreshListener(); }
 
 // === End Layer Control Module ===
-

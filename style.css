@@ -340,6 +340,38 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
       padding-top: 6px; /* small gap below sticky header */
       padding-left: 4px;
     }    
+
+    /* Shared styling for feature property tables shown in info panels */
+    #infoContent .feature-properties-table,
+    #layerInfoContent .feature-properties-table {
+      width: 100%;
+      table-layout: fixed;
+      border-collapse: collapse;
+      margin: 0;
+    }
+    #infoContent .feature-properties-table th,
+    #infoContent .feature-properties-table td,
+    #layerInfoContent .feature-properties-table th,
+    #layerInfoContent .feature-properties-table td {
+      border-bottom: 1px solid #ccc;
+      padding: 5px 6px;
+      vertical-align: top;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      box-sizing: border-box;
+    }
+    #infoContent .feature-properties-table th,
+    #layerInfoContent .feature-properties-table th {
+      width: 42%;
+      text-align: left;
+      font-weight: 500;
+    }
+    #infoContent .feature-properties-table td,
+    #layerInfoContent .feature-properties-table td {
+      width: 58%;
+      font-weight: 400;
+    }
     
     /* Toolbar styling: 3 rows (h1 | opacity row | buttons row) */
     #toolbar {
@@ -433,22 +465,6 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
     #toolbar label,
     #opacityRange,
     #opacityValueMax { position: relative; z-index: 1; }
-
-    @media (max-width: 600px) {
-      #toolbar {
-        right: 80px;
-        left: auto;
-        width: auto;
-        grid-template-columns: 1fr 1fr;
-        gap: 6px;
-        padding: 6px;
-      }
-      #toolbar h1 { grid-column: 1 / -1; font-size: 14px; }
-      #toolbar label { display: none; }
-      #opacityRange { grid-column: 1 / -1; width: 140px; justify-self: center; }
-      #opacityValueMax { grid-column: auto; font-size: 12px; }
-      #measureBtn, #exportBtn, #zoomSelectedBtn { grid-row: 3; grid-column: auto; justify-self: center; }
-    }
 
       /* Hide zoom controls when exporting */
     .leaflet-control-container { display: block; }
@@ -660,9 +676,6 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
     /* Inputs inside header should flex nicely */
     #searchZoomContainer input[type="text"] { flex: 1; }
 
-    @media (max-width: 600px) {
-      #searchZoomContainer { margin: 0 -8px 6px -8px; padding: 8px 8px; }
-    }
 
     .leaflet-control-layers {
       bottom: -75px !important; 
@@ -927,140 +940,216 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: "Avenir Next", Av
     #welcomeContent {
       animation: popupFadeIn 0.3s cubic-bezier(.25,.8,.25,1);
     }
-    
-    @media (max-width: 600px) {
-      #map{
-        overflow: hidden;
-      }
-      .logo-container {
+    @media (max-width: 1024px) {
+      .announcement-box {
         display: none;
       }
+    }
+    
+    @media (max-width: 850px) {
+      #map {
+        overflow: hidden;
+      }
+      .logo-container,
+      .announcement-box,
+      #legend-bar,
+      #search-box,
+      .leaflet-control-scale {
+        display: none !important;
+      }
       header {
-        padding: 12px 4px;
-        font-size: 18px;
-        width: 100%; /* match normal flow width */
+        width: 100%;
+        padding: 6px 30px 10px 10px;
+        font-size:20px;
+        letter-spacing: 1px;
         z-index: 8000;
       }
-      #footer {
-        width: 100%;
-        font-size: 9px;
-        background-color: rgba(255, 255, 255, 1);
+      #linkedin-btn {
+      position: fixed;
+      top: 6px;
+      right: 44px;
+    }
+      #menuBtn {
+        display: block !important;
+        position: fixed;
+        left: 5px;
+        top: 1px;
+        height: 40px;
+        width: 40px;
+        z-index: 9000;
+        background: rgba(55, 65, 81, 0.3);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 30px;
+        padding: 0;
+        line-height: 1;
       }
-      .announcement-box {
-        display: none !important;
+      #openWelcome {
+        top: 56px;
+        right: 8px;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        font-size: 18px;
+        z-index: 3001;
+      }
+      #layerControl {
+        display: none;
+        position: fixed;
+        top: 102px;
+        left: 10px;
+        right: 10px;
+        width: auto;
+        bottom: 92px;
+        height: auto;
+        background: rgba(252,251,246,0.98);
+        z-index: 3500;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+        overflow-y: auto;
+        border-radius: 12px;
+        padding: 0 8px 8px 8px;
+        font-size: 14px;
       }
       #layerInfoBox {
         display: none !important;
       }
       #infoBox {
-        z-index: 3000; /* ensure it's on top */
         left: 10px;
-        width: 90vw;
-        font-size: 14px;
-        background: rgba(252,251,246,1);
+        right: 10px;
+        width: auto;
+        bottom: 96px;
+        max-height: 35vh;
+        z-index: 3000;
+        font-size: 13px;
+        background: rgba(252,251,246,0.98);
       }
-      #infobox-value {
-        width: 200px;
+      #infoContent .feature-properties-table th,
+      #infoContent .feature-properties-table td {
+        font-size: 12px;
+        padding: 6px 4px;
       }
-      #legend-bar {
-        top:100px;
+      #infoContent .feature-properties-table th {
+        width: 40%;
       }
-      #layerControl {
-        display: none;
-        position: fixed;
-        top: 100px;
-        left: 3vw;
-        width: 90vw;
-        height: 50vh;
-        background: rgba(252,251,246,1);
-        z-index: 2000;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.25);
-        overflow-y: auto;
-        border-radius: 8px;
-        padding: 0px 8px 8px 8px;
-        font-size: 18px;
-      }
-      #openWelcome {
-        right: 3vw;
-      }
-      #menuBtn {
-        display: block !important;
-        position:fixed;
-        left: 2vw;
-        top:1vw;
-        height: 35px;
-        width: 35px;
-        z-index:9000;
-        background: transparent;
-        color:white;
-        border:none;
-        border-radius:none;
-        font-size:24px;
-        box-shadow: none;
-        padding: 1px;
-      }
-      .download-button {
-        width: 30px;
-        padding-left: 20px;
-      }
-      #search-box {
-        right:13vw;
-        width: 180px;
-      }
-      #search-box input {
-        width: 144px;
-        padding-left: 4px;
-      }
-      #welcomeContent {
-        width: 75vw;
-        font-size: 16px;
+      #infoContent .feature-properties-table td {
+        width: 60%;
       }
       #toolbar {
-        right: 80px;
-        bottom: 40px;
-        gap: 3px;
+        left: 10px;
+        width: 350px;
+        bottom: 28px;
+        padding: 6px 8px;
+        gap: 6px;
+        grid-template-columns: 1fr auto auto auto auto;
+        grid-template-rows: auto;
+        align-items: center;
+        z-index: 2001;
       }
+      #toolbar::before,
+      #toolbar h1,
       #toolbar label {
         display: none;
       }
       #opacityRange {
-        width: 60px;
+        grid-column: 1;
+        grid-row: 1;
+        width: 100%;
       }
-      #opacityValueMin, #opacityValueMax {
+      #opacityValueMax {
+        grid-column: 2;
+        grid-row: 1;
+        width: 42px;
+        font-size: 11px;
+        justify-self: center;
+      }
+      #measureBtn,
+      #exportBtn,
+      #zoomSelectedBtn {
+        grid-row: 1;
+        justify-self: center;
+        width: 38px;
+        height: 38px;
+        padding: 0;
+        margin: 0;
+        border-radius: 9999px;
+        border: 2px solid rgba(171, 199, 222, 0.45);
+      }
+      #measureBtn {
+        grid-column: 3;
+      }
+      #exportBtn {
+        grid-column: 4;
+      }
+      #zoomSelectedBtn {
+        grid-column: 5;
+        float: none;
+      }
+      #measureBtn img,
+      #exportBtn img,
+      #zoomSelectedBtn img {
+        height: 16px;
+      }
+      #custom-zoom-controls {
+        top: auto;
+        left: auto;
+        right: 10px;
+        bottom: 132px;
+        gap: 4px;
+        z-index: 2002;
+      }
+      #custom-zoom-controls button {
+        height: 38px;
+        width: 38px;
+        border-radius: 10px;
+        font-size: 28px;
+      }
+      #custom-basemap-switcher {
+        top: auto;
+        left: auto;
+        right: 10px;
+        bottom: 84px;
+        align-items: flex-end;
+        z-index: 2002;
+      }
+      #basemap-btn {
+        width: 94px;
+        height: 38px;
+        border-radius: 10px;
+      }
+      #basemap-label {
         font-size: 12px;
+        letter-spacing: 0.5px;
       }
-      .download-button {
-        width: 50px;
-        height: 10px;
-        padding-left: 5px;
-        font-size: 10px !important;
-        align-items: center;
-        justify-content: center;
-
+      #basemap-dropdown {
+        top: auto;
+        left: auto;
+        right: 0;
+        bottom: 44px;
+        min-width: 120px;
+        max-height: 45vh;
+        overflow-y: auto;
       }
-      .download-button::after {
-        content: "Download";
-        font-size: 10px;
+      #welcomeContent {
+        width: calc(100vw - 24px);
+        max-width: 420px;
+        padding: 20px 14px;
+        font-size: 15px;
       }
-      .download-button {
-        /* Hide the arrow in mobile */
-        font-size: 0 !important;
+      #footer {
+        width: 100%;
+        font-size: 9px;
+        background-color: rgba(255, 255, 255, 0.95);
+        padding: 3px 2px;
       }
-            /* Add to your style.css */
+      
       #menuIcon.animated {
         transform: rotate(180deg) scale(1.2);
         transition: transform 0.5s;
       }
-      #legend-bar {
-        display: none !important;
+      ::-webkit-scrollbar {
+        display: none;
       }
-      .leaflet-control-scale {
-        display: none !important;
-      }
-      #toolbar {
-        bottom: 35px;
-      }
-    ::-webkit-scrollbar { display: none; } /* hide scrollbar */
     }
 
     #zoomSelectedBtn {

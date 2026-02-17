@@ -1,91 +1,107 @@
 
 // Info box formatting function for all layers
 function formatFeatureProperties(properties) {
-	var popupContent = '<table>';
+	var popupContent = '<table class="feature-properties-table">';
+	var keyAliases = {
+		'ΞΟ‰Ξ΄ΞΉ_1': 'Code',
+		'Ξ•Ο€ΞΉΟ€Ξ­': 'Education Level',
+		'Ξ¤ΟΟ€ΞΏΟ‚': 'Type',
+		'ΞΞ½ΞΏΞΌΞ±': 'Name (GR)',
+		'ΞΞΏΞΌΟΟ‚': 'Regional Unit (GR)',
+		'Ξ”Ξ®ΞΌΞΏΟ‚': 'Municipality (GR)',
+		'κωδικός_1': 'Code',
+		'επίπεδο': 'Education Level',
+		'τύπος': 'Type',
+		'ονομα': 'Name (GR)',
+		'όνομα': 'Name (GR)',
+		'νομός': 'Regional Unit (GR)',
+		'δήμος': 'Municipality (GR)'
+	};
 	for (var key in properties) {
 		var value = properties[key];
+		var lowerKey = String(key || '').toLowerCase();
 		var displayKey = key;
-		if (key.toLowerCase() === 'shapeleng_') {
+		if (Object.prototype.hasOwnProperty.call(keyAliases, key)) displayKey = keyAliases[key];
+		else if (Object.prototype.hasOwnProperty.call(keyAliases, lowerKey)) displayKey = keyAliases[lowerKey];
+		else if (lowerKey === 'shapeleng_') {
 			value = Number(value).toFixed(2);
 			displayKey = 'Shape Length (km)';
-		} else if (key.toLowerCase() === 'shapearea') {
+		} else if (lowerKey === 'shapearea') {
 			value = Number(value).toFixed(2);
 			displayKey = 'Shape Area (kmΒ²)';
-		} else if (key.toLowerCase() === 'shapeleng_m') {
+		} else if (lowerKey === 'shapeleng_m' || lowerKey === 'shapelengm') {
 			value = Number(value).toFixed(2);
 			displayKey = 'Shape Length (m)';
-		} else if (key.toLowerCase() === 'shapelengm') {
-			value = Number(value).toFixed(2);
-			displayKey = 'Shape Length (m)';
-		} else if (key.toLowerCase() === 'shapearea_m') {
+		} else if (lowerKey === 'shapearea_m') {
 			value = Number(value).toFixed(2);
 			displayKey = 'Shape Area (mΒ²)';
-		} else if (key.toLowerCase() === 'name') {
+		} else if (lowerKey === 'name' || lowerKey === 'gname' || lowerKey === 'uses_gr') {
 			displayKey = 'Name (GR)';
-		} else if (key.toLowerCase() === 'gname') {
-			displayKey = 'Name (GR)';
-		} else if (key.toLowerCase() === 'uses_gr') {
-			displayKey = 'Name (GR)';
-		} else if (key.toLowerCase() === 'name_en') {
+		} else if (lowerKey === 'name_en' || lowerKey === 'uses_en' || lowerKey === 'ename' || lowerKey === 'name:en') {
 			displayKey = 'Name (ENG)';
-		} else if (key.toLowerCase() === 'uses_en') {
-			displayKey = 'Name (ENG)';
-		} else if (key.toLowerCase() === 'ename') {
-			displayKey = 'Name (ENG)';
-		} else if (key.toLowerCase() === 'sectionnam') {
+		} else if (lowerKey === 'sectionnam') {
 			displayKey = 'Section Name';
-		} else if (key.toLowerCase() === 'metroline') {
+		} else if (lowerKey === 'metroline') {
 			displayKey = 'Metro Line';
-		} else if (key.toLowerCase() === 'highway') {
+		} else if (lowerKey === 'highway') {
 			displayKey = 'Type';
-		} else if (key.toLowerCase() === 'oneway') {
+		} else if (lowerKey === 'oneway') {
 			displayKey = 'One-Way Road';
-		} else if (key.toLowerCase() === 'surface') {
+		} else if (lowerKey === 'surface') {
 			displayKey = 'Surface Type';
-		} else if (key.toLowerCase() === 'fid') {
+		} else if (lowerKey === 'fid' || lowerKey === 'objectid') {
 			displayKey = 'Feature ID';
-		} else if (key.toLowerCase() === 'objectid') {
-			displayKey = 'Feature ID';
-		} else if (key.toLowerCase() === 'popul2011') {
+		} else if (lowerKey === 'popul2011') {
 			displayKey = 'Population';
-		} else if (key.toLowerCase() === 'wt') {
+		} else if (lowerKey === 'wt') {
 			displayKey = 'Wind Turbine';
-		} else if (key.toLowerCase() === 'power_anem') {
+		} else if (lowerKey === 'power_anem') {
 			displayKey = 'Power (MW)';
-		} else if (key.toLowerCase() === 'max_power') {
+		} else if (lowerKey === 'max_power') {
 			displayKey = 'Max Power (MW)';
-		} else if (key.toLowerCase() === 'diametros_') {
+		} else if (lowerKey === 'diametros_') {
 			displayKey = 'Diameter (m)';
-		} else if (key.toLowerCase() === 'ypsos_pylo') {
+		} else if (lowerKey === 'ypsos_pylo') {
 			displayKey = 'Height (m)';
-		} else if (key.toLowerCase() === 'initialdat') {
+		} else if (lowerKey === 'initialdat') {
 			displayKey = 'Initial Date';
-		} else if (key.toLowerCase() === 'finaldate') {
+		} else if (lowerKey === 'finaldate') {
 			displayKey = 'Final Date';
 		}
-		popupContent += '<tr><th style="text-align:left; padding:5px; width: 115px; border-bottom: 1px solid #ccc;">'
-			+ displayKey + '</th><td style="border-bottom: 1px solid #ccc;width: 115px;">' + value + '</td></tr>';
+		popupContent += '<tr><th>' + displayKey + '</th><td>' + value + '</td></tr>';
 	}
 	popupContent += '</table>';
 	return popupContent;
 }
-
-// Expose globally for other modules
 window.formatFeatureProperties = formatFeatureProperties;
 
 // Provide a global updateInfoBox function for cross-module use
+// Delegate update of the layer info UI to the newer tabbed implementation
 window.updateInfoBox = function() {
+	// If the tabbed ensureInfoBoxUpdate exists, use it
+	if (typeof ensureInfoBoxUpdate === 'function') {
+		try { ensureInfoBoxUpdate(); return; } catch (e) { /* fallthrough to fallback */ }
+	}
+
+	// Fallback: simple concatenation (kept for backwards compatibility)
 	var infoBox = document.getElementById('layerInfoBox');
 	var AthensGIS = window.AthensGIS || {};
 	var activeLayerInfos = AthensGIS.activeLayerInfos || {};
 	var content = '';
 	for (var key in activeLayerInfos) {
+		if (!Object.prototype.hasOwnProperty.call(activeLayerInfos, key)) continue;
 		content += '<strong>' + key + '</strong><br>' + activeLayerInfos[key] + '<hr>';
 	}
 	if (content) {
-		infoBox.innerHTML = content;
-		infoBox.style.display = 'block';
+		// Ensure the expected content container exists
+		var contentEl = document.getElementById('layerInfoContent');
+		if (contentEl) {
+			contentEl.innerHTML = content;
+		} else if (infoBox) {
+			infoBox.innerHTML = content;
+		}
+		if (infoBox) infoBox.style.display = 'block';
 	} else {
-		infoBox.style.display = 'none';
+		if (infoBox) infoBox.style.display = 'none';
 	}
 };

@@ -1,7 +1,7 @@
 // Legend configuration: choose layers, field, and styles
 window.legendConfigs = {
 // Update the legend bar for a given layer name
-  "Metro Stations of Lines 1, 2 & 3": {
+  "Stations of Metro Lines 1, 2 and 3": {
     field: "metroline",
     title: "Metro Lines",
     classes: {
@@ -10,11 +10,20 @@ window.legendConfigs = {
       "3": { color: "#0000ff",label:"Line 3" }   //blue
     }
   },
-  "Metro Stations of Line 4": {
+  "Stations of Metro Line 4": {
     field: "STOP",
     title: "Metro Lines",
     classes: {
       "4": { color: "#ffff00", label: "Line 4" } //yellow
+    }
+  },
+  "Metro Lines 1, 2 and 3": {
+    field: "ref",
+    title: "Metro Lines",
+    classes: {
+      "Μ1": { color: "#008000",label:"Line 1" },  //green
+      "Μ2": { color: "#ff0000",label:"Line 2"  },  //red
+      "Μ3": { color: "#0000ff",label:"Line 3" }   //blue
     }
   },
   "Vegetation Index (Center Sector)": {
@@ -262,10 +271,13 @@ window.legendConfigs = {
       }
     },
     "Schools": {
-      field: "amenity",
-      title: "Amenity Type",
+      field: "Επιπέ",
+      title: "Education Level",
       classes: {
-        "school": { color: "#FF5CFF", label: "School" } //purple
+        "ΠΡΩΤΟΒΑΘΜΙΑ": { color: "#16496e", label: "Primary" },
+        "ΔΕΥΤΕΡΟΒΑΘΜΙΑ": { color: "#0f72a3", label: "Secondary" },
+        "ΜΕΤΑΔΕΥΤΕΡΟΒΑΘΜΙΑ": { color: "#a5a4b1", label: "Post Secondary" },
+        "ΑΝΕΞ. ΒΑΘΜΙΔΑΣ": { color: "#b8b7c5", label: "Independent Level" },        
       }
     },
     "Universities": {
@@ -294,6 +306,27 @@ window.legendConfigs = {
         "1": { color: "rgba(255, 255, 178, 0.7)", label: "Zone 1 (0.16 g)" }, // pale yellow
         "2": { color: "rgba(254, 204, 92, 0.7)", label: "Zone 2 (0.24 g)" }, // light orange
         "3": { color: "rgba(253, 60, 60, 0.6)", label: "Zone 3 (0.36 g)" } // orange-red
+      }
+    },
+    "Traffic Accidents 2023-2025": {
+      field: "Cause",
+      title: "Traffic Accidents - Cause of collision",
+      classes: {
+        "Pedestrian": { color: "#FF0000", label: "Pedestrian" },
+        "Driver": { color: "#0f72a3", label: "Driver" },
+        "Pending trial": { color: "#cfced6", label: "Pending Trial" }
+      }
+    },
+    "Terrain": {
+      field: "Contour",
+      title: "Terrain (50m Contour Lines)",
+      classes: {
+        "50-400": { color: "#C4C4C4", label: "50-400m" }, 
+        "400-600": { color: "#A9A9A9", label: "400-600m" }, 
+        "600-800": { color: "#969696", label: "600-800m" }, 
+        "800-1000": { color: "#808080", label: "800-1000m" }, 
+        "1000-1200": { color: "#696969", label: "1000-1200m" }, 
+        "1200+": { color: "#525252", label: "1200m+" } 
       }
     }
   };

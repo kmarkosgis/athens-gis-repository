@@ -80,8 +80,8 @@ document.addEventListener('click', function(e) {
 	var layerControl = document.getElementById('layerControl');
 	var menuBtn = document.getElementById('menuBtn');
 	var menuIcon = document.getElementById('menuIcon');
-	if (window.innerWidth <= 600 && layerControl.style.display === 'block') {
-		if (!layerControl.contains(e.target) && e.target !== menuBtn) {
+	if (window.innerWidth <= 768 && layerControl.style.display === 'block') {
+		if (!layerControl.contains(e.target) && !menuBtn.contains(e.target)) {
 			layerControl.style.display = 'none';
 			menuIcon.textContent = '☰';
 			menuIcon.classList.remove('animated');
@@ -119,3 +119,4 @@ document.addEventListener("DOMContentLoaded", function () {
 		}
 	});
 });
+

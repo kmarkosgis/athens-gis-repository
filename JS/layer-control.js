@@ -135,6 +135,16 @@ function normalizeAssetBase(base){
   return raw;
 }
 
+function getAppDirectoryPath(){
+  var path = window.location.pathname || '/';
+  if(path.endsWith('/')) return path;
+  var lastSegment = path.split('/').pop() || '';
+  if(lastSegment.indexOf('.') !== -1){
+    return path.slice(0, path.lastIndexOf('/') + 1) || '/';
+  }
+  return path + '/';
+}
+
 function getAssetBaseCandidates(kind){
   var defaults = kind === 'data' ? ['data', 'Data'] : ['info', 'Info'];
   var cfg = AthensGIS && AthensGIS.assetBasePaths && AthensGIS.assetBasePaths[kind];
@@ -154,7 +164,9 @@ function getAssetBaseCandidates(kind){
 
 function buildAssetUrl(kind, relativePath, base){
   var root = normalizeAssetBase(base || (kind === 'data' ? 'data' : 'info'));
-  return root + '/' + encodePathSegments(relativePath);
+  var appDir = getAppDirectoryPath();
+  var runtimeBase = window.location.origin + appDir;
+  return new URL(root + '/' + encodePathSegments(relativePath), runtimeBase).toString();
 }
 
 function fetchAssetWithFallback(kind, relativePath, parser){

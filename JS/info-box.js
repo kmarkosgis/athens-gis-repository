@@ -8,14 +8,7 @@ function formatFeatureProperties(properties) {
 		'Ξ¤ΟΟ€ΞΏΟ‚': 'Type',
 		'ΞΞ½ΞΏΞΌΞ±': 'Name (GR)',
 		'ΞΞΏΞΌΟΟ‚': 'Regional Unit (GR)',
-		'Ξ”Ξ®ΞΌΞΏΟ‚': 'Municipality (GR)',
-		'κωδικός_1': 'Code',
-		'επίπεδο': 'Education Level',
-		'τύπος': 'Type',
-		'ονομα': 'Name (GR)',
-		'όνομα': 'Name (GR)',
-		'νομός': 'Regional Unit (GR)',
-		'δήμος': 'Municipality (GR)'
+		'Ξ”Ξ®ΞΌΞΏΟ‚': 'Municipality (GR)'
 	};
 	for (var key in properties) {
 		var value = properties[key];

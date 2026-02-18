@@ -108,6 +108,8 @@ AthensGIS.geojsonLayers = AthensGIS.geojsonLayers || {};
 AthensGIS.activeLayerInfos = AthensGIS.activeLayerInfos || {};
 AthensGIS.selectedFeature = null;
 AthensGIS.currentOpacity = AthensGIS.currentOpacity || 1;
+const GITHUB_SITE_ROOT_URL = 'https://kmarkosgis.github.io/athens-gis-repository/';
+const FIXED_ASSET_ROOTS = { data: 'Data', info: 'info' };
 
 function getMap(){ return AthensGIS.map; }
 
@@ -143,6 +145,11 @@ function normalizeRootUrl(input){
     var path = (parsed.pathname || '/').replace(/\\/g, '/').replace(/\/{2,}/g, '/');
     if(path.toLowerCase().endsWith('/index.html')){
       path = path.slice(0, -'/index.html'.length);
+    } else if(path && !path.endsWith('/')){
+      var lastSeg = path.split('/').pop() || '';
+      if(lastSeg.indexOf('.') !== -1){
+        path = path.slice(0, path.lastIndexOf('/') + 1);
+      }
     }
     if(!path.endsWith('/')) path += '/';
     parsed.pathname = path;
@@ -153,53 +160,35 @@ function normalizeRootUrl(input){
 }
 
 function getSiteRootUrl(){
+  var host = String(window.location.hostname || '').toLowerCase();
+  if(host === 'kmarkosgis.github.io'){
+    return GITHUB_SITE_ROOT_URL;
+  }
   var configured = AthensGIS && AthensGIS.siteRootUrl;
   var normalizedConfigured = normalizeRootUrl(configured);
   if(normalizedConfigured) return normalizedConfigured;
-
-  try{
-    var canonical = document.querySelector('link[rel="canonical"]');
-    if(canonical && canonical.href){
-      var canonicalUrl = normalizeRootUrl(canonical.href);
-      if(canonicalUrl) return canonicalUrl;
-    }
-  }catch(e){}
-
-  // Fallback for local/dev usage.
-  var fallback = normalizeRootUrl(window.location.origin + (window.location.pathname || '/'));
+  var fallback = normalizeRootUrl(window.location.href);
   if(fallback) return fallback;
-  return window.location.origin + '/';
+  return './';
 }
 
 function getAssetBaseCandidates(kind){
-  var defaults = kind === 'data' ? ['Data'] : ['info'];
-  var cfg = AthensGIS && AthensGIS.assetBasePaths && AthensGIS.assetBasePaths[kind];
-  var values = (Array.isArray(cfg) && cfg.length) ? cfg.slice() : defaults.slice();
-  if(Array.isArray(cfg) && cfg.length){
-    defaults.forEach(function(v){
-      var normalizedDefault = normalizeAssetBase(v);
-      if(!normalizedDefault) return;
-      var existsDefault = values.some(function(existing){
-        return String(existing).toLowerCase() === normalizedDefault.toLowerCase();
-      });
-      if(!existsDefault) values.push(normalizedDefault);
-    });
-    cfg.forEach(function(v){
-      var normalized = normalizeAssetBase(v);
-      if(!normalized) return;
-      var exists = values.some(function(existing){
-        return String(existing).toLowerCase() === normalized.toLowerCase();
-      });
-      if(!exists) values.push(normalized);
-    });
-  }
-  return values.map(normalizeAssetBase).filter(Boolean);
+  return [kind === 'data' ? FIXED_ASSET_ROOTS.data : FIXED_ASSET_ROOTS.info];
 }
 
 function buildAssetUrl(kind, relativePath, base){
-  var root = normalizeAssetBase(base || (kind === 'data' ? 'Data' : 'info'));
+  var root = kind === 'data' ? FIXED_ASSET_ROOTS.data : FIXED_ASSET_ROOTS.info;
+  var normalizedBase = normalizeAssetBase(base);
+  if(normalizedBase){
+    var lower = normalizedBase.toLowerCase();
+    if(lower === 'data') root = FIXED_ASSET_ROOTS.data;
+    else if(lower === 'info') root = FIXED_ASSET_ROOTS.info;
+  }
   var runtimeBase = getSiteRootUrl();
-  return new URL(root + '/' + encodePathSegments(relativePath), runtimeBase).toString();
+  var url = new URL(root + '/' + encodePathSegments(relativePath), runtimeBase);
+  // Defensive normalization in case any upstream value contains duplicated repo segments.
+  url.pathname = url.pathname.replace(/(\/athens-gis-repository\/)+/ig, '/athens-gis-repository/');
+  return url.toString();
 }
 
 function fetchAssetWithFallback(kind, relativePath, parser){

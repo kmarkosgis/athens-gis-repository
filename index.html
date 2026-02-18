@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <base href="https://kmarkosgis.github.io/athens-gis-repository/">
   <link rel="stylesheet" href="style.css">
   <meta charset="utf-8" />
   <title>Athens GIS Repository</title>
@@ -89,18 +88,19 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" crossorigin="anonymous" />
   <script>
     // Global object must be available before any module scripts.
-    // Keep root and folder names explicit so all assets resolve from the canonical GitHub Pages URL.
-    window.AthensGIS = window.AthensGIS || {
+    // GitHub Pages uses canonical root; local VS/live-server uses local project root.
+    window.AthensGIS = Object.assign({
       currentOpacity: 1,
       geojsonLayers: {},
       activeLayerInfos: {},
-      selectedFeature: null,
-      siteRootUrl: 'https://kmarkosgis.github.io/athens-gis-repository/',
-      assetBasePaths: {
-        data: ['Data'],
-        info: ['info']
-      }
-    };
+      selectedFeature: null
+    }, window.AthensGIS || {});
+    var host = String(window.location.hostname || '').toLowerCase();
+    var isGitHubPages = host === 'kmarkosgis.github.io';
+    window.AthensGIS.siteRootUrl = isGitHubPages
+      ? 'https://kmarkosgis.github.io/athens-gis-repository/'
+      : './';
+    window.AthensGIS.assetBasePaths = { data: ['Data'], info: ['info'] };
   </script>
 </head>
 
@@ -233,15 +233,15 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
 <!-- Corrected folder name capitalization (JS instead of js) for case-sensitive hosting -->
-<script src="JS/map-init.js"></script>
-<script src="JS/legend.js"></script>
-<script src="JS/info-box.js"></script>
-<script src="JS/layer-control.js"></script>
-<script src="JS/search.js"></script>
-<script src="JS/measure.js"></script>
-<script src="JS/export.js"></script>
-<script src="JS/ui.js"></script>
-<script src="JS/utils.js"></script>
+<script src="JS/map-init.js?v=20260218-1"></script>
+<script src="JS/legend.js?v=20260218-1"></script>
+<script src="JS/info-box.js?v=20260218-1"></script>
+<script src="JS/layer-control.js?v=20260218-1"></script>
+<script src="JS/search.js?v=20260218-1"></script>
+<script src="JS/measure.js?v=20260218-1"></script>
+<script src="JS/export.js?v=20260218-1"></script>
+<script src="JS/ui.js?v=20260218-1"></script>
+<script src="JS/utils.js?v=20260218-1"></script>
 <!-- Removed duplicate closing body and relocated global object definition -->
 <script>
 // Move announcement close logic to JS file (or here if not in a module)

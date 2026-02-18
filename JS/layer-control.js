@@ -136,14 +136,21 @@ function normalizeAssetBase(base){
 }
 
 function getAppDirectoryPath(){
+  function ensureDirectoryPath(inputPath){
+    var path = String(inputPath || '/').trim().replace(/\\/g, '/');
+    if(!path) path = '/';
+    if(!path.startsWith('/')) path = '/' + path;
+    if(path.endsWith('/')) return path;
+    var lastSegment = path.split('/').pop() || '';
+    if(lastSegment.indexOf('.') !== -1){
+      return path.slice(0, path.lastIndexOf('/') + 1) || '/';
+    }
+    return path + '/';
+  }
+
   var configured = AthensGIS && AthensGIS.appBasePath;
   if(configured){
-    var cfg = String(configured).trim().replace(/\\/g, '/');
-    if(cfg){
-      if(!cfg.startsWith('/')) cfg = '/' + cfg;
-      cfg = cfg.replace(/\/+$/, '');
-      return (cfg || '/') + '/';
-    }
+    return ensureDirectoryPath(configured);
   }
 
   // Prefer canonical URL to avoid duplicated nested paths on mirrored/replayed sessions.
@@ -152,11 +159,7 @@ function getAppDirectoryPath(){
     if(canonical && canonical.href){
       var canonicalUrl = new URL(canonical.href, window.location.href);
       if(canonicalUrl.origin === window.location.origin){
-        var canonicalPath = canonicalUrl.pathname || '/';
-        if(!canonicalPath.endsWith('/')){
-          canonicalPath = canonicalPath.slice(0, canonicalPath.lastIndexOf('/') + 1) || '/';
-        }
-        return canonicalPath;
+        return ensureDirectoryPath(canonicalUrl.pathname || '/');
       }
     }
   }catch(e){}
@@ -169,23 +172,14 @@ function getAppDirectoryPath(){
       if(scriptUrl.origin === window.location.origin){
         var scriptDir = scriptUrl.pathname.slice(0, scriptUrl.pathname.lastIndexOf('/') + 1) || '/';
         if(scriptDir.toLowerCase().endsWith('/js/')){
-          return scriptDir.slice(0, -4) || '/';
+          return ensureDirectoryPath(scriptDir.slice(0, -4) || '/');
         }
-        return scriptDir;
+        return ensureDirectoryPath(scriptDir);
       }
     }
   }catch(e){}
 
-  var path = window.location.pathname || '/';
-  if(!path.endsWith('/')){
-    var lastSegment = path.split('/').pop() || '';
-    if(lastSegment.indexOf('.') !== -1){
-      path = path.slice(0, path.lastIndexOf('/') + 1) || '/';
-    } else {
-      path = path + '/';
-    }
-  }
-  return path;
+  return ensureDirectoryPath(window.location.pathname || '/');
 }
 
 function getAssetBaseCandidates(kind){

@@ -87,12 +87,18 @@
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" crossorigin="anonymous" />
   <script>
-    // Global object must be available before any module scripts
+    // Global object must be available before any module scripts.
+    // Keep base paths explicit so asset URLs stay stable even if a crawler/browser lands on nested mirrored paths.
     window.AthensGIS = window.AthensGIS || {
       currentOpacity: 1,
       geojsonLayers: {},
       activeLayerInfos: {},
-      selectedFeature: null
+      selectedFeature: null,
+      appBasePath: '/athens-gis-repository/',
+      assetBasePaths: {
+        data: ['Data', 'data'],
+        info: ['info', 'Info']
+      }
     };
   </script>
 </head>

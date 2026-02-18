@@ -122,7 +122,7 @@ function normalizeAssetBase(base){
   var raw = String(base || '').trim();
   if(!raw) return '';
   raw = raw.replace(/\\/g, '/');
-  // Keep same-origin absolute URLs but convert them to path-only form.
+  // Convert same-host absolute URLs to path-only form.
   try{
     var parsed = new URL(raw, window.location.href);
     if(parsed.origin === window.location.origin){
@@ -135,58 +135,55 @@ function normalizeAssetBase(base){
   return raw;
 }
 
-function getAppDirectoryPath(){
-  function ensureDirectoryPath(inputPath){
-    var path = String(inputPath || '/').trim().replace(/\\/g, '/');
-    if(!path) path = '/';
-    if(!path.startsWith('/')) path = '/' + path;
-    if(path.endsWith('/')) return path;
-    var lastSegment = path.split('/').pop() || '';
-    if(lastSegment.indexOf('.') !== -1){
-      return path.slice(0, path.lastIndexOf('/') + 1) || '/';
+function normalizeRootUrl(input){
+  try{
+    var parsed = new URL(String(input || ''), window.location.href);
+    parsed.hash = '';
+    parsed.search = '';
+    var path = (parsed.pathname || '/').replace(/\\/g, '/').replace(/\/{2,}/g, '/');
+    if(path.toLowerCase().endsWith('/index.html')){
+      path = path.slice(0, -'/index.html'.length);
     }
-    return path + '/';
+    if(!path.endsWith('/')) path += '/';
+    parsed.pathname = path;
+    return parsed.toString();
+  }catch(e){
+    return '';
   }
+}
 
-  var configured = AthensGIS && AthensGIS.appBasePath;
-  if(configured){
-    return ensureDirectoryPath(configured);
-  }
+function getSiteRootUrl(){
+  var configured = AthensGIS && AthensGIS.siteRootUrl;
+  var normalizedConfigured = normalizeRootUrl(configured);
+  if(normalizedConfigured) return normalizedConfigured;
 
-  // Prefer canonical URL to avoid duplicated nested paths on mirrored/replayed sessions.
   try{
     var canonical = document.querySelector('link[rel="canonical"]');
     if(canonical && canonical.href){
-      var canonicalUrl = new URL(canonical.href, window.location.href);
-      if(canonicalUrl.origin === window.location.origin){
-        return ensureDirectoryPath(canonicalUrl.pathname || '/');
-      }
+      var canonicalUrl = normalizeRootUrl(canonical.href);
+      if(canonicalUrl) return canonicalUrl;
     }
   }catch(e){}
 
-  // Fall back to script location when available.
-  try{
-    var scriptEl = document.currentScript || document.querySelector('script[src$="JS/layer-control.js"]');
-    if(scriptEl && scriptEl.src){
-      var scriptUrl = new URL(scriptEl.src, window.location.href);
-      if(scriptUrl.origin === window.location.origin){
-        var scriptDir = scriptUrl.pathname.slice(0, scriptUrl.pathname.lastIndexOf('/') + 1) || '/';
-        if(scriptDir.toLowerCase().endsWith('/js/')){
-          return ensureDirectoryPath(scriptDir.slice(0, -4) || '/');
-        }
-        return ensureDirectoryPath(scriptDir);
-      }
-    }
-  }catch(e){}
-
-  return ensureDirectoryPath(window.location.pathname || '/');
+  // Fallback for local/dev usage.
+  var fallback = normalizeRootUrl(window.location.origin + (window.location.pathname || '/'));
+  if(fallback) return fallback;
+  return window.location.origin + '/';
 }
 
 function getAssetBaseCandidates(kind){
-  var defaults = kind === 'data' ? ['data', 'Data'] : ['info', 'Info'];
+  var defaults = kind === 'data' ? ['Data'] : ['info'];
   var cfg = AthensGIS && AthensGIS.assetBasePaths && AthensGIS.assetBasePaths[kind];
-  var values = defaults.slice();
+  var values = (Array.isArray(cfg) && cfg.length) ? cfg.slice() : defaults.slice();
   if(Array.isArray(cfg) && cfg.length){
+    defaults.forEach(function(v){
+      var normalizedDefault = normalizeAssetBase(v);
+      if(!normalizedDefault) return;
+      var existsDefault = values.some(function(existing){
+        return String(existing).toLowerCase() === normalizedDefault.toLowerCase();
+      });
+      if(!existsDefault) values.push(normalizedDefault);
+    });
     cfg.forEach(function(v){
       var normalized = normalizeAssetBase(v);
       if(!normalized) return;
@@ -200,9 +197,8 @@ function getAssetBaseCandidates(kind){
 }
 
 function buildAssetUrl(kind, relativePath, base){
-  var root = normalizeAssetBase(base || (kind === 'data' ? 'data' : 'info'));
-  var appDir = getAppDirectoryPath();
-  var runtimeBase = window.location.origin + appDir;
+  var root = normalizeAssetBase(base || (kind === 'data' ? 'Data' : 'info'));
+  var runtimeBase = getSiteRootUrl();
   return new URL(root + '/' + encodePathSegments(relativePath), runtimeBase).toString();
 }
 

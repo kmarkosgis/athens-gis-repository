@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <base href="https://kmarkosgis.github.io/athens-gis-repository/">
   <link rel="stylesheet" href="style.css">
   <meta charset="utf-8" />
   <title>Athens GIS Repository</title>
@@ -88,16 +89,16 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" crossorigin="anonymous" />
   <script>
     // Global object must be available before any module scripts.
-    // Keep base paths explicit so asset URLs stay stable even if a crawler/browser lands on nested mirrored paths.
+    // Keep root and folder names explicit so all assets resolve from the canonical GitHub Pages URL.
     window.AthensGIS = window.AthensGIS || {
       currentOpacity: 1,
       geojsonLayers: {},
       activeLayerInfos: {},
       selectedFeature: null,
-      appBasePath: '/athens-gis-repository/',
+      siteRootUrl: 'https://kmarkosgis.github.io/athens-gis-repository/',
       assetBasePaths: {
-        data: ['Data', 'data'],
-        info: ['info', 'Info']
+        data: ['Data'],
+        info: ['info']
       }
     };
   </script>

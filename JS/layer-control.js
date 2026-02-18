@@ -109,7 +109,7 @@ AthensGIS.activeLayerInfos = AthensGIS.activeLayerInfos || {};
 AthensGIS.selectedFeature = null;
 AthensGIS.currentOpacity = AthensGIS.currentOpacity || 1;
 const GITHUB_SITE_ROOT_URL = 'https://kmarkosgis.github.io/athens-gis-repository/';
-const FIXED_ASSET_ROOTS = { data: 'Data', info: 'info' };
+const FIXED_ASSET_ROOTS = { data: 'data', info: 'info' };
 
 function getMap(){ return AthensGIS.map; }
 

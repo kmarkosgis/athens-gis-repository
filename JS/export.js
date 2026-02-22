@@ -1,5 +1,116 @@
 // Initialize EasyPrint printer and attach export handler (no watermark)
 (function(){
+  var printBrandOverlay = null;
+  var printScaleOverlay = null;
+
+  function formatScale(value){
+    return String(value).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+
+  function getCurrentScaleText(map){
+    if(!map || !map.getCenter || !map.getZoom) return 'Scale 1:-';
+    var center = map.getCenter();
+    var zoom = map.getZoom();
+    var metersPerPixel = 156543.03392804097 * Math.cos(center.lat * Math.PI / 180) / Math.pow(2, zoom);
+    var rawScale = (metersPerPixel * 96) / 0.0254;
+    var roundedScale = Math.max(1, Math.round(rawScale / 100) * 100);
+    return 'Scale 1:' + formatScale(roundedScale);
+  }
+
+  function ensurePrintOverlays(map){
+    if(printBrandOverlay && printScaleOverlay) return;
+    if(!map || !map.getContainer) return null;
+    var container = map.getContainer();
+    if(!container) return null;
+
+    // Keep overlays anchored to the map so EasyPrint captures them in the exported image.
+    if(getComputedStyle(container).position === 'static'){
+      container.style.position = 'relative';
+    }
+
+    if(!printBrandOverlay){
+      var brand = document.createElement('div');
+      brand.id = 'exportPrintBrandOverlay';
+      brand.style.position = 'absolute';
+      brand.style.top = '10px';
+      brand.style.left = '10px';
+      brand.style.display = 'none';
+      brand.style.alignItems = 'center';
+      brand.style.gap = '10px';
+      brand.style.padding = '6px 10px';
+      brand.style.borderRadius = '12px';
+      brand.style.background = 'rgba(55, 65, 81, 0.5)';
+      brand.style.border = '0px solid rgba(171, 199, 222, 0.9)';
+      brand.style.boxShadow = '0 1px 3px rgba(0,0,0,0.25)';
+      brand.style.color = 'black';
+      brand.style.pointerEvents = 'none';
+      brand.style.zIndex = '1200';
+
+      var logo = document.createElement('img');
+      logo.src = 'images/41.png';
+      logo.alt = 'Athens GIS Repository';
+      logo.style.width = 'auto';
+      logo.style.height = '42px';
+      logo.style.objectFit = 'contain';
+      logo.style.flex = '0 0 auto';
+
+      var title = document.createElement('span');
+      title.textContent = '';
+      title.style.color = 'rgba(17, 24, 39, 1)';
+      title.style.fontFamily = '"Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif';
+      title.style.fontSize = '18px';
+      title.style.fontWeight = '600';
+      title.style.letterSpacing = '0.7px';
+      title.style.lineHeight = '1.1';
+      title.style.whiteSpace = 'nowrap';
+
+      brand.appendChild(logo);
+      brand.appendChild(title);
+      container.appendChild(brand);
+      printBrandOverlay = brand;
+    }
+
+    if(!printScaleOverlay){
+      var scale = document.createElement('div');
+      scale.id = 'exportPrintScaleOverlay';
+      scale.style.position = 'absolute';
+      scale.style.left = '10px';
+      scale.style.bottom = '10px';
+      scale.style.display = 'none';
+      scale.style.padding = '3px 8px';
+      scale.style.borderRadius = '8px';
+      scale.style.background = 'rgba(255,255,255,0.9)';
+      scale.style.border = '0px solid rgba(171, 199, 222, 0.85)';
+      scale.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2)';
+      scale.style.color = 'rgba(31, 41, 55, 1)';
+      scale.style.fontFamily = '"Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif';
+      scale.style.fontSize = '11px';
+      scale.style.fontWeight = '500';
+      scale.style.letterSpacing = '0.3px';
+      scale.style.pointerEvents = 'none';
+      scale.style.zIndex = '1200';
+      container.appendChild(scale);
+      printScaleOverlay = scale;
+    }
+  }
+
+  function updatePrintScaleOverlay(map){
+    if(!printScaleOverlay) return;
+    printScaleOverlay.textContent = getCurrentScaleText(map);
+  }
+
+  function showPrintOverlays(map){
+    ensurePrintOverlays(map);
+    updatePrintScaleOverlay(map);
+    if(printBrandOverlay) printBrandOverlay.style.display = 'flex';
+    if(printScaleOverlay) printScaleOverlay.style.display = 'block';
+  }
+
+  function hidePrintOverlays(){
+    if(printBrandOverlay) printBrandOverlay.style.display = 'none';
+    if(printScaleOverlay) printScaleOverlay.style.display = 'none';
+  }
+
   function initPrinter(){
     if(!window.AthensGIS || !window.AthensGIS.map || !L.easyPrint) {
       return setTimeout(initPrinter, 150);
@@ -16,11 +127,12 @@
         hidden: true,
         hideControlContainer: false
       }).addTo(map);
+      ensurePrintOverlays(map);
       window.AthensGIS._easyPrinter = printer;
       // Wire the overlay to EasyPrint lifecycle events so we always show feedback while printing
       try {
-        map.on('easyPrint-start', function(){ showOverlay(); });
-        map.on('easyPrint-finished', function(){ hideOverlay(); });
+        map.on('easyPrint-start', function(){ showOverlay(); showPrintOverlays(map); });
+        map.on('easyPrint-finished', function(){ hideOverlay(); hidePrintOverlays(); });
       } catch(e){ /* ignore if map/event not available */ }
     } catch(e){
       console.warn('EasyPrint init failed', e);
@@ -208,10 +320,11 @@
     var targetClass = (mode === 'Current') ? 'CurrentSize' : (mode === 'A4Landscape' ? 'A4Landscape page' : 'A4Portrait page');
     // show overlay immediately for feedback (also handled by easyPrint-start event)
     showOverlay();
+    showPrintOverlays(map);
     try { printer.printMap(targetClass, 'Map_Print'); }
-    catch(e){ console.error('printMap error', e); hideOverlay(); return; }
+    catch(e){ console.error('printMap error', e); hideOverlay(); hidePrintOverlays(); return; }
     // wait for image and download; always hide overlay afterwards
-    waitForAndDownloadImage().then(function(){ /* success */ }).catch(function(err){ console.error('Export failed', err); }).finally(function(){ hideOverlay(); });
+    waitForAndDownloadImage().then(function(){ /* success */ }).catch(function(err){ console.error('Export failed', err); }).finally(function(){ hideOverlay(); hidePrintOverlays(); });
   }
 
   // Wait for the EasyPrint image to appear, then try to fetch and save it using FileSaver (if available).

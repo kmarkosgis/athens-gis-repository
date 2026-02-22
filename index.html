@@ -56,14 +56,6 @@
   }
   </script>
 
-  <script>
-    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group identify setPersonProperties setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags resetGroups onFeatureFlags addFeatureFlagsHandler onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
-    posthog.init('phc_MHHcy6vbXCCiNqQcOlSEmTZvBPIXI4bTv36F4vvQyf6', {
-        api_host: 'https://eu.i.posthog.com',
-        defaults: '2026-01-30'
-    })
-  </script>
-
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -87,25 +79,22 @@
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" crossorigin="anonymous" />
   <script>
-    // Global object must be available before any module scripts
-    window.AthensGIS = window.AthensGIS || {
+    // Global object must be available before any module scripts.
+    // GitHub Pages uses canonical root; local VS/live-server uses local project root.
+    window.AthensGIS = Object.assign({
       currentOpacity: 1,
       geojsonLayers: {},
       activeLayerInfos: {},
       selectedFeature: null
-    };
+    }, window.AthensGIS || {});
+    var host = String(window.location.hostname || '').toLowerCase();
+    var isGitHubPages = host === 'kmarkosgis.github.io';
+    window.AthensGIS.siteRootUrl = isGitHubPages
+      ? 'https://kmarkosgis.github.io/athens-gis-repository/'
+      : './';
+    window.AthensGIS.assetBasePaths = { data: ['data'], info: ['info'] };
   </script>
 </head>
-
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-BSNF6CGQ5J"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-BSNF6CGQ5J');
-</script>  
 
 <body>
 
@@ -185,10 +174,200 @@
   Click on the map to draw your measurement. Double click to finish. Press ESC to cancel.
 </div>
 
-<div id="search-box">
-  <input type="text" id="address" placeholder="Search for an address">
-  <button id="search-btn" title="Search">🔍</button>
-  <ul id="suggestions" ></ul>
+<div id="citation-box">
+  <button id="citation-btn" title="Show citation options">CITE</button>
+  <button id="legal-btn" title="Show legal information">LEGAL</button>
+</div>
+
+<div id="citation-popup" hidden>
+  <div class="citation-popup-header">
+    <h3 id="citation-title">CITATION</h3>
+    <button id="citation-close" title="Close citation window" aria-label="Close citation window">&times;</button>
+  </div>
+  <p id="citation-status">Loading citation from CITATION.cff...</p>
+  <div id="citation-controls">
+    <select id="citation-style" aria-label="Citation style">
+      <option value="apa">APA</option>
+      <option value="chicago">Chicago</option>
+      <option value="mla">MLA</option>
+      <option value="asa">ASA</option>
+      <option value="ieee">IEEE</option>
+      <option value="vancouver">Vancouver</option>
+      <option value="bibtex">BibTeX</option>
+    </select>
+    <button id="citation-copy-btn" title="Copy citation"><img src="images/copy.png" alt="Copy citation"></button>
+  </div>
+  <textarea id="citation-text" readonly aria-label="Citation text"></textarea>
+</div>
+
+<div id="legal-modal" hidden aria-hidden="true">
+  <div id="legal-content" role="dialog" aria-modal="true" aria-labelledby="legal-title">
+    <div class="legal-header">
+      <h3 id="legal-title">LEGAL</h3>
+      <button id="legal-close" title="Close legal window" aria-label="Close legal window">&times;</button>
+    </div>
+    <div id="legal-body">
+      <h4>1. About This Website</h4>
+      <p>Athens GIS Repository is an open-access geospatial data platform providing datasets related to Greece and the Attica region.</p>
+      <p>Maintainer: Konstantinos Markos<br>DOI: <a href="https://doi.org/10.5281/zenodo.18727780" target="_blank" rel="noopener noreferrer">https://doi.org/10.5281/zenodo.18727780</a></p>
+      <p>Hosting Provider: GitHub</p>
+
+      <h4>2. Intellectual Property &amp; License</h4>
+      <p>Unless otherwise stated, datasets and materials published on this website are licensed under:</p>
+      <p><strong>Creative Commons Attribution 4.0 International (CC-BY 4.0)</strong></p>
+      <p>This license allows users to:</p>
+      <ul>
+        <li>Share — copy and redistribute the material in any medium or format</li>
+        <li>Adapt — remix, transform, and build upon the material</li>
+        <li>Use the material for any purpose, including commercial use</li>
+      </ul>
+      <p>Under the condition that:</p>
+      <ul>
+        <li>Appropriate attribution is given to “Athens GIS Repository”</li>
+        <li>A link to the license is provided</li>
+        <li>Changes are indicated where applicable</li>
+      </ul>
+      <p>Full license text:<br><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">https://creativecommons.org/licenses/by/4.0/</a></p>
+      <p>Certain datasets may incorporate material derived from third-party sources such as:</p>
+      <ul>
+        <li>OpenStreetMap</li>
+        <li>Copernicus</li>
+      </ul>
+      <p>Such materials remain subject to their respective licensing terms.</p>
+
+      <h4>3. Citation Policy</h4>
+      <p>If data from this repository are used in academic, research, or professional work, users are requested to cite.</p>
+
+      <h4>4. Disclaimer of Liability</h4>
+      <p>All datasets and materials are provided “as is” without warranty of any kind, express or implied.</p>
+      <p>Athens GIS Repository and its maintainer shall not be held liable for:</p>
+      <ul>
+        <li>Errors or omissions in the data</li>
+        <li>Misinterpretation of spatial information</li>
+        <li>Decisions made based on dataset use</li>
+        <li>Direct or indirect damages resulting from use</li>
+      </ul>
+      <p>Users are responsible for verifying the suitability and accuracy of data for their specific applications.</p>
+
+      <h4>5. Privacy Policy (GDPR Compliance)</h4>
+      <p>This website operates in accordance with:</p>
+      <p>Regulation (EU) 2016/679 (General Data Protection Regulation – GDPR)<br>and the EU ePrivacy Directive.</p>
+
+      <h4>5.1 Data Controller</h4>
+      <p>Athens GIS Repository Team</p>
+
+      <h4>5.2 Personal Data Collection</h4>
+      <p>This website does not require user registration.</p>
+      <p>However, limited technical and analytical data may be processed through third-party analytics services.</p>
+
+      <h4>5.3 Analytics Services</h4>
+      <p><h1>A. Google Analytics 4</h1></p>
+      <p>Service Provider: Google</p>
+      <p>Google Analytics collects:</p>
+      <ul>
+        <li>Anonymized IP address</li>
+        <li>Browser type and version</li>
+        <li>Device type</li>
+        <li>Approximate geographic location</li>
+        <li>Pages visited</li>
+        <li>Time spent on pages</li>
+        <li>Referring URLs</li>
+      </ul>
+      <p>Purpose of processing:</p>
+      <ul>
+        <li>Website performance monitoring</li>
+        <li>Traffic analysis</li>
+        <li>User experience improvement</li>
+      </ul>
+      <p>IP anonymization is enabled.</p>
+      <p>Google may process data on servers located outside the European Union in accordance with applicable safeguards, including Standard Contractual Clauses.</p>
+      <p>Privacy policy:<br><a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">https://policies.google.com/privacy</a></p>
+
+      <p><h1>B. PostHog (EU Region)</h1></p>
+      <p>Service Provider: PostHog</p>
+      <p>PostHog is configured to use the European Union data region.</p>
+      <p>PostHog collects:</p>
+      <ul>
+        <li>Event interactions</li>
+        <li>Page navigation behavior</li>
+        <li>Device and browser metadata</li>
+        <li>Technical usage logs</li>
+      </ul>
+      <p>Purpose of processing:</p>
+      <ul>
+        <li>Product analytics</li>
+        <li>Feature evaluation</li>
+        <li>Platform optimization</li>
+      </ul>
+      <p>Privacy policy:<br><a href="https://posthog.com/privacy" target="_blank" rel="noopener noreferrer">https://posthog.com/privacy</a></p>
+
+      <h4>5.4 Legal Basis for Processing</h4>
+      <p>Analytics tools are activated only after explicit user consent via the cookie banner.</p>
+      <p>Legal basis:</p>
+      <ul>
+        <li>Article 6(1)(a) GDPR — Consent</li>
+        <li>Article 6(1)(f) GDPR — Legitimate interest (website improvement)</li>
+      </ul>
+      <p>Users may withdraw consent at any time by adjusting browser storage settings.</p>
+
+      <h4>5.5 Cookies</h4>
+      <p>This website uses analytics cookies and similar technologies only after user consent.</p>
+      <p>Users may:</p>
+      <ul>
+        <li>Accept or reject analytics cookies</li>
+        <li>Delete cookies via browser settings</li>
+        <li>Use browser privacy tools</li>
+      </ul>
+      <p>No advertising or profiling cookies are used.</p>
+
+      <h4>5.6 Data Retention</h4>
+      <p>Analytics data retention is configured according to:</p>
+      <ul>
+        <li>Google Analytics settings</li>
+        <li>PostHog configuration</li>
+      </ul>
+      <p>Data are retained only as long as necessary for analytics purposes.</p>
+
+      <h4>5.7 International Data Transfers</h4>
+      <p>Some analytics providers may process data outside the EU.</p>
+      <p>Where applicable, transfers rely on:</p>
+      <ul>
+        <li>Standard Contractual Clauses (SCCs)</li>
+        <li>Adequacy decisions</li>
+        <li>Provider compliance mechanisms</li>
+      </ul>
+
+      <h4>5.8 User Rights Under GDPR</h4>
+      <p>Under GDPR, users have the right to:</p>
+      <ul>
+        <li>Access their personal data</li>
+        <li>Request correction</li>
+        <li>Request deletion</li>
+        <li>Restrict processing</li>
+        <li>Object to processing</li>
+        <li>Data portability</li>
+        <li>Lodge a complaint with a supervisory authority</li>
+      </ul>
+      <p>Supervisory Authority (Greece):</p>
+      <p>Hellenic Data Protection Authority<br><a href="https://www.dpa.gr/" target="_blank" rel="noopener noreferrer">https://www.dpa.gr/</a></p>
+
+      <h4>6. Hosting &amp; Infrastructure</h4>
+      <p>This website is hosted on:</p>
+      <p>GitHub</p>
+      <p>GitHub may process technical server logs including:</p>
+      <ul>
+        <li>IP addresses</li>
+        <li>Access timestamps</li>
+        <li>Browser information</li>
+      </ul>
+      <p>GitHub Privacy Statement:<br><a href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement" target="_blank" rel="noopener noreferrer">https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement</a></p>
+
+      <h4>7. Governing Law</h4>
+      <p>This website is operated from Greece.</p>
+      <p>Any disputes arising from its use shall be governed by the laws of Greece and applicable European Union law.</p>
+
+    </div>
+  </div>
 </div>
 
 <div id="legend-bar" style="display:none;">
@@ -197,8 +376,25 @@
   <ul id="legend-list"></ul>
 </div>
 
+<div id="cookie-consent-box" role="dialog" aria-live="polite" aria-label="Cookie preferences" hidden>
+  <p id="cookie-consent-text">
+    This website uses analytics tools (Google Analytics &amp; PostHog) to improve user experience.
+    You can accept or reject non-essential cookies.
+  </p>
+  <div id="cookie-consent-actions">
+    <button id="cookie-accept-btn" type="button">Accept</button>
+    <button id="cookie-reject-btn" type="button">Reject</button>
+  </div>
+</div>
+
+<div id="map-scale-ratio" aria-live="polite">Scale 1:100.000</div>
+
+<a href="https://doi.org/10.5281/zenodo.18727780">
+  <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.18727780.svg" alt="DOI" style="left: 10px; position: absolute; bottom: 0px; z-index: 1500; height: 19px;">
+</a>
+
 <div id="footer">
-  Created by Konstantinos Markos | PhD Candidate, SRSGE, NTUA
+  © 2026 Athens GIS Repository | Licensed under CC-BY 4.0
 </div>
 
 <!-- Welcome Modal -->
@@ -206,6 +402,7 @@
   <div id="welcomeContent">
     <h2>Welcome to Athens GIS Repository</h2>    
     <img src="images/4.png" alt="Logo" class="welcome-logo">
+    Created by Konstantinos Markos | PhD Candidate, SRSGE, NTUA
     <p>
       Explore the geography of the Athens Metropolitan Area with interactive maps and data. Here you’ll find layers on administrative boundaries, transportation networks, environment, natural hazards, POIs, energy and population statistics, all in one place.
     </p>
@@ -226,15 +423,17 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
 <!-- Corrected folder name capitalization (JS instead of js) for case-sensitive hosting -->
-<script src="JS/map-init.js"></script>
-<script src="JS/legend.js"></script>
-<script src="JS/info-box.js"></script>
-<script src="JS/layer-control.js"></script>
-<script src="JS/search.js"></script>
-<script src="JS/measure.js"></script>
-<script src="JS/export.js"></script>
-<script src="JS/ui.js"></script>
-<script src="JS/utils.js"></script>
+<script src="JS/map-init.js?v=20260218-1"></script>
+<script src="JS/legend.js?v=20260218-1"></script>
+<script src="JS/info-box.js?v=20260218-1"></script>
+<script src="JS/layer-control.js?v=20260218-1"></script>
+<script src="JS/citation.js?v=20260222-4"></script>
+<script src="JS/legal.js?v=20260222-1"></script>
+<script src="JS/measure.js?v=20260218-1"></script>
+<script src="JS/export.js?v=20260218-1"></script>
+<script src="JS/ui.js?v=20260218-1"></script>
+<script src="JS/utils.js?v=20260218-1"></script>
+<script src="JS/cookies.js?v=20260222-1"></script>
 <!-- Removed duplicate closing body and relocated global object definition -->
 <script>
 // Move announcement close logic to JS file (or here if not in a module)

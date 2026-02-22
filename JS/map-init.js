@@ -12,6 +12,29 @@
     setTimeout(function () { map.invalidateSize(); }, 150);
   });
 
+  // === Fixed scale ratio label (example: 1:100.000) ===
+  (function(){
+    var scaleEl = document.getElementById('map-scale-ratio');
+    if(!scaleEl) return;
+
+    function formatScale(value){
+      return String(value).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    function updateScaleRatio(){
+      var center = map.getCenter();
+      var zoom = map.getZoom();
+      var metersPerPixel = 156543.03392804097 * Math.cos(center.lat * Math.PI / 180) / Math.pow(2, zoom);
+      var rawScale = (metersPerPixel * 96) / 0.0254;
+      var roundedScale = Math.max(1, Math.round(rawScale / 100) * 100);
+      scaleEl.textContent = 'Scale 1 : ' + formatScale(roundedScale);
+    }
+
+    map.on('zoomend moveend resize', updateScaleRatio);
+    updateScaleRatio();
+  })();
+  // === End fixed scale ratio label ===
+
   var positron = L.tileLayer(
     "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png?api_key=ddbe6f28-1e48-473a-8155-c9669166a43e" ,
   { attribution: "© OpenMapTiles © Stadia Maps" }

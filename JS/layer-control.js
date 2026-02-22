@@ -108,6 +108,8 @@ AthensGIS.geojsonLayers = AthensGIS.geojsonLayers || {};
 AthensGIS.activeLayerInfos = AthensGIS.activeLayerInfos || {};
 AthensGIS.selectedFeature = null;
 AthensGIS.currentOpacity = AthensGIS.currentOpacity || 1;
+const GITHUB_SITE_ROOT_URL = 'https://kmarkosgis.github.io/athens-gis-repository/';
+const FIXED_ASSET_ROOTS = { data: 'data', info: 'info' };
 
 function getMap(){ return AthensGIS.map; }
 
@@ -122,7 +124,7 @@ function normalizeAssetBase(base){
   var raw = String(base || '').trim();
   if(!raw) return '';
   raw = raw.replace(/\\/g, '/');
-  // Keep same-origin absolute URLs but convert them to path-only form.
+  // Convert same-host absolute URLs to path-only form.
   try{
     var parsed = new URL(raw, window.location.href);
     if(parsed.origin === window.location.origin){
@@ -135,38 +137,58 @@ function normalizeAssetBase(base){
   return raw;
 }
 
-function getAppDirectoryPath(){
-  var path = window.location.pathname || '/';
-  if(path.endsWith('/')) return path;
-  var lastSegment = path.split('/').pop() || '';
-  if(lastSegment.indexOf('.') !== -1){
-    return path.slice(0, path.lastIndexOf('/') + 1) || '/';
+function normalizeRootUrl(input){
+  try{
+    var parsed = new URL(String(input || ''), window.location.href);
+    parsed.hash = '';
+    parsed.search = '';
+    var path = (parsed.pathname || '/').replace(/\\/g, '/').replace(/\/{2,}/g, '/');
+    if(path.toLowerCase().endsWith('/index.html')){
+      path = path.slice(0, -'/index.html'.length);
+    } else if(path && !path.endsWith('/')){
+      var lastSeg = path.split('/').pop() || '';
+      if(lastSeg.indexOf('.') !== -1){
+        path = path.slice(0, path.lastIndexOf('/') + 1);
+      }
+    }
+    if(!path.endsWith('/')) path += '/';
+    parsed.pathname = path;
+    return parsed.toString();
+  }catch(e){
+    return '';
   }
-  return path + '/';
+}
+
+function getSiteRootUrl(){
+  var host = String(window.location.hostname || '').toLowerCase();
+  if(host === 'kmarkosgis.github.io'){
+    return GITHUB_SITE_ROOT_URL;
+  }
+  var configured = AthensGIS && AthensGIS.siteRootUrl;
+  var normalizedConfigured = normalizeRootUrl(configured);
+  if(normalizedConfigured) return normalizedConfigured;
+  var fallback = normalizeRootUrl(window.location.href);
+  if(fallback) return fallback;
+  return './';
 }
 
 function getAssetBaseCandidates(kind){
-  var defaults = kind === 'data' ? ['data', 'Data'] : ['info', 'Info'];
-  var cfg = AthensGIS && AthensGIS.assetBasePaths && AthensGIS.assetBasePaths[kind];
-  var values = defaults.slice();
-  if(Array.isArray(cfg) && cfg.length){
-    cfg.forEach(function(v){
-      var normalized = normalizeAssetBase(v);
-      if(!normalized) return;
-      var exists = values.some(function(existing){
-        return String(existing).toLowerCase() === normalized.toLowerCase();
-      });
-      if(!exists) values.push(normalized);
-    });
-  }
-  return values.map(normalizeAssetBase).filter(Boolean);
+  return [kind === 'data' ? FIXED_ASSET_ROOTS.data : FIXED_ASSET_ROOTS.info];
 }
 
 function buildAssetUrl(kind, relativePath, base){
-  var root = normalizeAssetBase(base || (kind === 'data' ? 'data' : 'info'));
-  var appDir = getAppDirectoryPath();
-  var runtimeBase = window.location.origin + appDir;
-  return new URL(root + '/' + encodePathSegments(relativePath), runtimeBase).toString();
+  var root = kind === 'data' ? FIXED_ASSET_ROOTS.data : FIXED_ASSET_ROOTS.info;
+  var normalizedBase = normalizeAssetBase(base);
+  if(normalizedBase){
+    var lower = normalizedBase.toLowerCase();
+    if(lower === 'data') root = FIXED_ASSET_ROOTS.data;
+    else if(lower === 'info') root = FIXED_ASSET_ROOTS.info;
+  }
+  var runtimeBase = getSiteRootUrl();
+  var url = new URL(root + '/' + encodePathSegments(relativePath), runtimeBase);
+  // Defensive normalization in case any upstream value contains duplicated repo segments.
+  url.pathname = url.pathname.replace(/(\/athens-gis-repository\/)+/ig, '/athens-gis-repository/');
+  return url.toString();
 }
 
 function fetchAssetWithFallback(kind, relativePath, parser){
@@ -813,13 +835,87 @@ function renderLayerControl(){
     }
   }
 
+  function sanitizeDownloadFilePart(value){
+    var cleaned = String(value || 'Layer').replace(/[\\/:*?"<>|]/g, '').trim();
+    cleaned = cleaned.replace(/\s+/g, ' ');
+    return cleaned || 'Layer';
+  }
+
+  function getLayerZipFileName(layerName){
+    return 'AthensGISRepository_' + sanitizeDownloadFilePart(layerName) + '.zip';
+  }
+
+  function setDownloadButtonBusy(buttonEl, isBusy){
+    if(!buttonEl) return;
+    if(isBusy){
+      if(!buttonEl.dataset.originalLabel) buttonEl.dataset.originalLabel = buttonEl.textContent || 'DOWNLOAD';
+      buttonEl.textContent = 'PREPARING...';
+      buttonEl.style.pointerEvents = 'none';
+      buttonEl.style.opacity = '0.85';
+      return;
+    }
+    buttonEl.textContent = buttonEl.dataset.originalLabel || 'DOWNLOAD';
+    buttonEl.style.pointerEvents = '';
+    buttonEl.style.opacity = '';
+  }
+
+  function downloadLayerAsZip(info, categoryName, subcategoryName, buttonEl){
+    if(!info || !info.file) return Promise.resolve();
+    if(typeof JSZip === 'undefined'){
+      console.error('JSZip is not available.');
+      return Promise.resolve();
+    }
+    var sourceFile = String(info.file);
+    var sourceName = sourceFile.split('/').pop() || 'layer.geojson';
+    var baseName = sourceName.replace(/\.[^/.]+$/, '') || 'layer';
+    var txtRelativePath = sourceFile.replace(/\.[^/.]+$/, '') + '.txt';
+    var geojsonFilename = baseName + '.geojson';
+    var txtFilename = baseName + '.txt';
+    var zipFilename = getLayerZipFileName(info.name);
+
+    setDownloadButtonBusy(buttonEl, true);
+    return Promise.all([
+      loadLayerData(sourceFile),
+      loadLayerInfo(txtRelativePath)
+    ]).then(function(results){
+      var data = results[0];
+      var infoText = results[1];
+      var zip = new JSZip();
+      zip.file(geojsonFilename, JSON.stringify(data, null, 2));
+      zip.file(txtFilename, infoText || '');
+      return zip.generateAsync({ type: 'blob' });
+    }).then(function(blob){
+      if(typeof saveAs === 'function'){
+        saveAs(blob, zipFilename);
+      } else {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = zipFilename;
+        a.click();
+        setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+      }
+      trackLayerDownload({
+        name: info.name,
+        file: zipFilename,
+        sourceFile: info.file
+      }, categoryName, subcategoryName);
+    }).catch(function(err){
+      console.error('Failed to create zip for layer "' + (info.name || sourceFile) + '":', err);
+      alert('Could not create the zip file for "' + (info.name || sourceFile) + '". Please try again.');
+    }).then(function(){
+      setDownloadButtonBusy(buttonEl, false);
+    });
+  }
+
   function trackLayerDownload(info, categoryName, subcategoryName){
     if(!info || !window.posthog || typeof window.posthog.capture !== 'function') return;
     var props = {
       layer_name: info.name,
-      layer_file: info.file || 'Relief_layers.zip',
-      download_type: info.name === 'Relief' ? 'zip' : 'file'
+      layer_file: info.file || getLayerZipFileName(info.name),
+      download_type: 'zip'
     };
+    if(info.sourceFile) props.source_layer_file = info.sourceFile;
     if(categoryName) props.category = categoryName;
     if(subcategoryName) props.subcategory = subcategoryName;
     try{ window.posthog.capture('layer_download', props); }catch(e){}
@@ -833,8 +929,12 @@ function renderLayerControl(){
     var label=document.createElement('label'); label.htmlFor=id; label.textContent=info.name;
     var dl = null;
     if(info.name!=='Relief'){
-      dl=document.createElement('a'); dl.href=buildAssetUrl('data', info.file); dl.download=info.file; dl.innerHTML='DOWNLOAD'; dl.className='download-button'; dl.style.display='none'; dl.title='Download the selected layer';
-      dl.addEventListener('click', function(){ trackLayerDownload(info, categoryName, subcategoryName); });
+      dl=document.createElement('a'); dl.href='#'; dl.innerHTML='DOWNLOAD'; dl.className='download-button'; dl.style.display='none'; dl.title='Download the selected layer as ZIP';
+      dl.addEventListener('click', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        downloadLayerAsZip(info, categoryName, subcategoryName, dl);
+      });
     }
     row.appendChild(cb); row.appendChild(label); if(dl) row.appendChild(dl); parentEl.appendChild(row);
     // Tag original parents for flat-search restore and counting
@@ -1004,7 +1104,9 @@ function renderLayerControl(){
       var subTitle = document.createElement('h5');
       subTitle.textContent = subcat;
       subTitle.style.fontSize = '13px';
-      subTitle.style.fontWeight = '500';
+      subTitle.style.fontWeight = '400';
+      subTitle.style.fontStyle = 'italic';
+      subTitle.style.letterSpacing = '0.5px';
       subTitle.style.margin = '2px 0';
 
       var subArrow = document.createElement('span');

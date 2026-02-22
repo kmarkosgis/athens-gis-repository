@@ -40,3 +40,4 @@ The data is organized by thematic domains such as:
 - Files in `info/` provide context for the corresponding layers in `data/`.
 
 ## Licence
+Creative Commons Attribution 4.0 International (CC-BY 4.0)

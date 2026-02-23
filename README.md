@@ -6,7 +6,7 @@ Copyright © 2026 Athens GIS Repository
 
 This work is licensed under the Creative Commons Attribution 4.0 International.
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18727780.svg)](https://doi.org/10.5281/zenodo.18727780)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18727779.svg)](https://doi.org/10.5281/zenodo.18727779)
 
 ## Project Overview
 

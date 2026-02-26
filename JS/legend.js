@@ -1,7 +1,7 @@
 // Legend configuration: choose layers, field, and styles
 window.legendConfigs = {
 // Update the legend bar for a given layer name
-  "Stations of Metro Lines 1, 2 and 3": {
+  "Metro Stations of Lines 1, 2 and 3": {
     field: "metroline",
     title: "Metro Lines",
     classes: {
@@ -10,7 +10,7 @@ window.legendConfigs = {
       "3": { color: "#0000ff",label:"Line 3" }   //blue
     }
   },
-  "Stations of Metro Line 4": {
+  "Metro Stations of Line 4": {
     field: "STOP",
     title: "Metro Lines",
     classes: {

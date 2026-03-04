@@ -1,6 +1,8 @@
   // === Initialize map ===
   var map = L.map('map', {
-    zoomControl: false  // turn off default zoom control
+    zoomControl: false,  // turn off default zoom control
+    zoomDelta: 0.5,      // smaller zoom step
+    zoomSnap: 0.5        // allow half-step zoom levels
   }).setView([37.98, 23.72], 12);
   if (window.AthensGIS) { window.AthensGIS.map = map; }
 
@@ -159,10 +161,12 @@
       } else { zin.disabled = false; zin.style.opacity = 1; zin.style.cursor='pointer'; }
     }
 
-    zin.addEventListener('click', function(e){ e.preventDefault(); if(zin.disabled) return; map.zoomIn(); });
-    zout.addEventListener('click', function(e){ e.preventDefault(); if(zout.disabled) return; map.zoomOut(); });
+    var zoomStep = 0.5;
+    zin.addEventListener('click', function(e){ e.preventDefault(); if(zin.disabled) return; map.zoomIn(zoomStep); });
+    zout.addEventListener('click', function(e){ e.preventDefault(); if(zout.disabled) return; map.zoomOut(zoomStep); });
 
     map.on('zoomend', updateDisabled);
     updateDisabled();
   })();
   // === End Custom Zoom Control Buttons Logic ===
+

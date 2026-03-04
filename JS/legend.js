@@ -287,6 +287,32 @@ window.legendConfigs = {
         "university": { color: "#b3b3b3ff", label: "University" } //grey
       }
     },
+    "Restaurants, Bars, and Cafe": {
+      field: "amenity",
+      title: "Amenity Type",
+      classes: {
+        "restaurant": { color: "#ff8c00", label: "Restaurant" },
+        "bar": { color: "#008000", label: "Bar" },
+        "cafe": { color: "#ff00ff", label: "Cafe" },
+        "nightclub": { color: "#008000", label: "Bar" },
+        "restaurant;cafe": { color: "#ff8c00", label: "Restaurant" },
+        "cafe;bar": { color: "#ff00ff", label: "Cafe" },
+      }
+    },
+    "Theaters": {
+      field: "amenity",
+      title: "Amenity Type",
+      classes: {
+        "theatre": { color: "#800080", label: "Theaters" } //purple
+      }
+    },
+    "Cinemas": {
+      field: "amenity",
+      title: "Amenity Type",
+      classes: {
+        "cinema": { color: "#ff1493", label: "Cinemas" } //pink
+      }
+    },
     "Earthquakes Attica 2006-2026": {
       field: "mag",
       title: "Earthquake Magnitude",

@@ -62,6 +62,11 @@ var layerCategories = {
       { name: "Schools", file: "Amenities/Schools.geojson" },
       { name: "Universities", file: "Amenities/Universities.geojson" }
     ],
+    "Entertainment and Leisure": [
+      { name: "Cinemas", file: "Amenities/Cinemas.json" },
+      { name: "Theaters", file: "Amenities/Theater.json" },
+      { name: "Restaurants, Bars, and Cafe", file: "Amenities/RestBarCafe.json" }
+    ],
     "Healthcare": [
       { name: "Hospitals", file: "Amenities/Hospitals.geojson" },
       { name: "Pharmacies", file: "Amenities/Pharmacies.geojson" },

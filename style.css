@@ -843,23 +843,37 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
 
     .layer-item {
       display: flex;
-      width: 91%;
+      width: 92%;
       align-items: center;
       justify-content: space-between;
       margin-left: 40px;
-      margin-bottom: 2px;
+      margin-bottom: 4px;
       padding: 2px 6px;
       border: 2px solid transparent;
       border-radius: 10px;
       letter-spacing: 0.5px;
       font-weight: 400;
+      font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       transition: border 0.2s, max-height 0.4s ease, padding 0.4s ease;
       flex-direction: column; /* stack vertically: download above label */
       align-items: flex-start; /* left-justify both */
       gap: 4px;
-      margin-left:6px;
-      max-height: 25px; /* collapsed height */
+      margin-left: 6px;
+      max-height: auto; /* collapsed height */
       overflow: hidden; /* required for smooth max-height transition */
+    }
+
+    .layer-item-actions {
+      order: 2;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      pointer-events: none;
+      transition: max-height 0.25s ease, opacity 0.2s ease;
     }
 
     /* Remove checkbox styles */
@@ -869,7 +883,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
 
     .layer-item:hover {
       border: 2px solid rgba(55, 65, 81, 0.2);
-      border-radius: 12px;
+      border-radius: 10px;
       transition: border 0.2s;
     }
 
@@ -881,9 +895,10 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       color: black;
       max-height: 500px; /* expand when selected */
-      padding: 5px 6px; /* smoother expanded spacing */
+      padding: 2px 6px; /* smoother expanded spacing */
+
       overflow: hidden;
-      transition: border 0.2s, max-height 0.4s, padding 0.3s ;
+      transition: border 0.2s, max-height 0.4s, padding 0.15s ;
     }
     .layer-item.selected:hover {
       border: 2px solid rgba(55, 65, 81, 0.6);
@@ -891,14 +906,15 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
 
     .layer-item label {
       width: 100%;
-      padding: 4px 2px;
+      padding: 0px 2px;
+      margin-bottom: 0px;
       cursor: pointer;
       display: block;
       order: 1; 
     }
 
-    .download-button {
-      order: 2;
+    .download-button,
+    .color-button {
       display: inline-flex;
       align-items: center;
       justify-content: flex-start;
@@ -915,10 +931,15 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       vertical-align: middle;
       flex-shrink: 0;
       margin-left: 0; /* ensure left alignment */
+      margin-bottom: 4px; /* space below buttons */
       transition: 0.4s;
       opacity: 0;
       pointer-events: none; /* avoid clicks when hidden */
       will-change: opacity, transform;
+      font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
+    }
+    .color-button {
+      text-transform: uppercase;
     }
     .download-button:hover {
       background-color: rgba(55, 65, 81, 0.85);
@@ -927,11 +948,92 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       box-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
 
-    /* Reveal download button when layer is selected */
-    .layer-item.selected .download-button {
+    .color-button:hover {
+      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      transform: translateY(-1px);
+    }
+
+    .layer-item.selected .layer-item-actions {
+      max-height: 50px;
+      padding: 0px 0;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Reveal action buttons when layer is selected */
+    .layer-item.selected .download-button,
+    .layer-item.selected .color-button {
       opacity: 1;
       transform: translateY(0);
       pointer-events: auto;
+    }
+
+    .layer-color-panel {
+      order: 3;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      width: 94px;
+      padding: 0 8px;
+      margin-top: -6px;
+      border: 1px solid rgba(55, 65, 81, 0.2);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      pointer-events: none;
+      
+      transition: max-height 0.2s ease, opacity 0.2s ease, padding 0.2s ease, margin 0.2s ease;
+    }
+
+    .layer-color-panel.open {
+      max-height: 120px;
+      opacity: 1;
+      pointer-events: auto;
+      padding: 8px;
+      margin-top: 2px;
+      margin-bottom: 4px;
+    }
+
+    .layer-color-default {
+      grid-column: 1 / -1;
+      height: 24px;
+      border-radius: 7px;
+      border: 1px solid rgba(55, 65, 81, 0.35);
+      background: white;
+      color: rgba(17, 24, 39, 1);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.6px;
+      cursor: pointer;
+      padding: 2px 6px;
+      transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .layer-color-default:hover {
+      background: rgba(55, 65, 81, 0.85);
+      color: white;
+      border-color: transparent;
+    }
+
+    .layer-color-swatch {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      border: 1px solid rgba(31, 41, 55, 0.35);
+      cursor: pointer;
+      padding: 0;
+      
+      box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+    }
+
+    .layer-color-swatch:hover {
+      transform: scale(1.06);
+      border-color: rgba(31, 41, 55, 0.85);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.25);
     }
     .feature-highlight {
     filter: drop-shadow(1px 1px 5px rgba(0, 0, 0, 0.9));
@@ -1226,7 +1328,6 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
     #layerInfoBox,
     #infoBox,
     #basemap-dropdown,
-    #announcement-box,
     #welcomeContent,
     #citation-popup,
     #legal-content {

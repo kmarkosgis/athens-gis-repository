@@ -1,7 +1,7 @@
 // Legend configuration: choose layers, field, and styles
 window.legendConfigs = {
 // Update the legend bar for a given layer name
-  "Stations of Metro Lines 1, 2 and 3": {
+  "Metro Stations of Lines 1, 2 and 3": {
     field: "metroline",
     title: "Metro Lines",
     classes: {
@@ -10,7 +10,7 @@ window.legendConfigs = {
       "3": { color: "#0000ff",label:"Line 3" }   //blue
     }
   },
-  "Stations of Metro Line 4": {
+  "Metro Stations of Line 4": {
     field: "STOP",
     title: "Metro Lines",
     classes: {
@@ -24,6 +24,21 @@ window.legendConfigs = {
       "Μ1": { color: "#008000",label:"Line 1" },  //green
       "Μ2": { color: "#ff0000",label:"Line 2"  },  //red
       "Μ3": { color: "#0000ff",label:"Line 3" }   //blue
+    }
+  },
+  "Extended Metro Lines network": { 
+    field: "ref",
+    title: "Metro Lines",
+    classes: {
+      "Μ1": { color: "#008000",label:"Line 1" },  //green
+      "Μ2": { color: "#ff0000",label:"Line 2"  },  //red
+      "Μ3": { color: "#0000ff",label:"Line 3" },   //blue
+      "Μ4": { color: "#ffff00", label: "Line 4" }, //yellow
+      "M5": { color: "#ff00ff", label: "Line 5" }, //magenta
+      "M6": { color: "#009191", label: "Line 6" }, //cyan
+      "M6A": { color: "#009191", label: "Line 6A" }, //cyan
+      "M7": { color: "#ffa500", label: "Line 7" }, //orange
+      "M8": { color: "#2b002b", label: "Line 8" } 
     }
   },
   "Vegetation Index (Center Sector)": {
@@ -285,6 +300,32 @@ window.legendConfigs = {
       title: "Amenity Type",
       classes: {
         "university": { color: "#b3b3b3ff", label: "University" } //grey
+      }
+    },
+    "Restaurants, Bars, and Cafe": {
+      field: "amenity",
+      title: "Amenity Type",
+      classes: {
+        "restaurant": { color: "#ff8c00", label: "Restaurant" },
+        "bar": { color: "#008000", label: "Bar" },
+        "cafe": { color: "#ff00ff", label: "Cafe" },
+        "nightclub": { color: "#008000", label: "Bar" },
+        "restaurant;cafe": { color: "#ff8c00", label: "Restaurant" },
+        "cafe;bar": { color: "#ff00ff", label: "Cafe" },
+      }
+    },
+    "Theaters": {
+      field: "amenity",
+      title: "Amenity Type",
+      classes: {
+        "theatre": { color: "#800080", label: "Theaters" } //purple
+      }
+    },
+    "Cinemas": {
+      field: "amenity",
+      title: "Amenity Type",
+      classes: {
+        "cinema": { color: "#ff1493", label: "Cinemas" } //pink
       }
     },
     "Earthquakes Attica 2006-2026": {

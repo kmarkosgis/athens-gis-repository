@@ -120,3 +120,46 @@ document.addEventListener("DOMContentLoaded", function () {
 	});
 });
 
+// Announcement box logic with a global 0/1 toggle and per-user dismissal.
+document.addEventListener("DOMContentLoaded", function () {
+	const box = document.getElementById("announcement-box");
+	const closeBtn = document.getElementById("closeAnnouncementBtn");
+	if (!box || !closeBtn) return;
+
+	const announcementToggle = Number((window.AthensGIS || {}).announcementToggle);
+	const dismissalStorageKey = "announcementDismissedSignature";
+	const announcementSignature = Array.from(box.querySelectorAll("p"))
+		.map(function (item) {
+			return (item.textContent || "").replace(/\s+/g, " ").trim();
+		})
+		.join("|");
+
+	function hideAnnouncement() {
+		box.hidden = true;
+		box.setAttribute("aria-hidden", "true");
+	}
+
+	function showAnnouncement() {
+		box.hidden = false;
+		box.setAttribute("aria-hidden", "false");
+	}
+
+	if (announcementToggle !== 1) {
+		localStorage.removeItem(dismissalStorageKey);
+		hideAnnouncement();
+		return;
+	}
+
+	if (localStorage.getItem(dismissalStorageKey) === announcementSignature) {
+		hideAnnouncement();
+		return;
+	}
+
+	showAnnouncement();
+
+	closeBtn.addEventListener("click", function () {
+		localStorage.setItem(dismissalStorageKey, announcementSignature);
+		hideAnnouncement();
+	});
+});
+

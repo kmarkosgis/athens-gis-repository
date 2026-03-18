@@ -85,7 +85,9 @@
       currentOpacity: 1,
       geojsonLayers: {},
       activeLayerInfos: {},
-      selectedFeature: null
+      selectedFeature: null,
+      // Set to 1 to publish the announcement box, or 0 to hide it for everyone.
+      announcementToggle: 1
     }, window.AthensGIS || {});
     var host = String(window.location.hostname || '').toLowerCase();
     var isGitHubPages = host === 'kmarkosgis.github.io';
@@ -103,7 +105,7 @@
 </button>
 
 <div class="logo-container">
-  <img src="images/41.png" alt="Athens GIS Logo" class="logo">
+  <img src="images/63.png" alt="Athens GIS Logo" class="logo">
 </div>
 
 <header>
@@ -133,7 +135,7 @@
   </div>
 </div>
 
-<div class="announcement-box" id="announcement-box">
+<div class="announcement-box" id="announcement-box" hidden>
   <h3>NEWS - ANNOUNCEMENTS<button class="close-btn" id="closeAnnouncementBtn">&times;</button></h3>
   <p><strong>10/03/2026:</strong> Extended Metro network with future lines (Transportation Systems - Rail Transport) added. </p>
   <p><strong>04/03/2026:</strong> Cinemas, Theaters, Restaurants, Cafe, and Bars added (Points of Interest - Entertainment and Leisure).</p>
@@ -400,8 +402,8 @@
 <div id="welcomeModal">
   <div id="welcomeContent">
     <h2>Welcome to Athens GIS Repository</h2>    
-    <img src="images/4.png" alt="Logo" class="welcome-logo">
-    Created by Konstantinos Markos | PhD Candidate, SRSGE, NTUA
+    <img src="images/63.png" alt="Logo" class="welcome-logo">
+    <strong>by Konstantinos Markos | PhD Candidate, SRSGE, NTUA</strong>
     <p>
       Explore the geography of the Athens Metropolitan Area with interactive maps and data. Here you’ll find layers on administrative boundaries, transportation networks, environment, natural hazards, POIs, energy and population statistics, all in one place.
     </p>
@@ -412,6 +414,7 @@
       This repository is a work in progress. More data and features will be added over time, so check back often for updates!
     </p>
     <p>Have fun exploring Athens!</p>
+    <p>Licenced under <strong>Commons Attribution 4.0 International (CC-BY 4.0)</strong></p>
     <button id="closeWelcome">OK</button>
   </div>
 </div>
@@ -430,22 +433,9 @@
 <script src="JS/legal.js?v=20260222-1"></script>
 <script src="JS/measure.js?v=20260218-1"></script>
 <script src="JS/export.js?v=20260305-4"></script>
-<script src="JS/ui.js?v=20260218-1"></script>
+<script src="JS/ui.js?v=20260319-1"></script>
 <script src="JS/utils.js?v=20260218-1"></script>
 <script src="JS/cookies.js?v=20260222-1"></script>
-<!-- Removed duplicate closing body and relocated global object definition -->
-<script>
-// Move announcement close logic to JS file (or here if not in a module)
-document.addEventListener('DOMContentLoaded', function() {
-  var closeBtn = document.getElementById('closeAnnouncementBtn');
-  if (closeBtn) {
-    closeBtn.addEventListener('click', function() {
-      var box = document.getElementById('announcement-box');
-      if (box) box.style.display = 'none';
-    });
-  }
-});
-</script>
 
 <script>
     !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);

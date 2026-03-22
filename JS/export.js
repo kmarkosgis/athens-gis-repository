@@ -7,7 +7,7 @@
   var EXPORT_LEGEND_MAX_CLASSES = 25;
   var A4_BASE_WIDTH = 1045;
   var A4_BASE_HEIGHT = 715;
-  var EXPORT_RESOLUTION_MULTIPLIER = 1.5;
+  var EXPORT_RESOLUTION_MULTIPLIER = 1.3;
 
   function formatScale(value){
     return String(value).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -54,24 +54,23 @@
       brand.style.gap = '10px';
       brand.style.padding = '6px 10px';
       brand.style.borderRadius = '12px';
-      brand.style.background = 'rgba(55, 65, 81, 0.5)';
+      brand.style.background = 'transparent';
       brand.style.border = '0px solid rgba(171, 199, 222, 0.9)';
-      brand.style.boxShadow = '0 1px 3px rgba(0,0,0,0.25)';
       brand.style.color = 'black';
       brand.style.pointerEvents = 'none';
       brand.style.zIndex = '1200';
 
       var logo = document.createElement('img');
-      logo.src = 'images/41.png';
+      logo.src = 'images/6.png';
       logo.alt = 'Athens GIS Repository';
       logo.style.width = 'auto';
-      logo.style.height = '42px';
+      logo.style.height = '100px';
       logo.style.objectFit = 'contain';
       logo.style.flex = '0 0 auto';
 
       var title = document.createElement('span');
       title.textContent = '';
-      title.style.color = 'rgba(17, 24, 39, 1)';
+      title.style.color = 'transparent';
       title.style.fontFamily = '"Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif';
       title.style.fontSize = '18px';
       title.style.fontWeight = '600';
@@ -100,7 +99,7 @@
       scale.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2)';
       scale.style.color = 'rgba(31, 41, 55, 1)';
       scale.style.fontFamily = '"Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif';
-      scale.style.fontSize = '11px';
+      scale.style.fontSize = '14px';
       scale.style.fontWeight = '500';
       scale.style.whiteSpace = 'nowrap';
       scale.style.pointerEvents = 'none';
@@ -126,8 +125,8 @@
       legend.style.boxShadow = '0 1px 4px rgba(0,0,0,0.2)';
       legend.style.color = 'rgba(17, 24, 39, 1)';
       legend.style.fontFamily = '"Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif';
-      legend.style.fontSize = '10px';
-      legend.style.lineHeight = '1.3';
+      legend.style.fontSize = '16px';
+      legend.style.lineHeight = '1.5';
       legend.style.pointerEvents = 'none';
       legend.style.zIndex = '1200';
       container.appendChild(legend);
@@ -195,14 +194,14 @@
       return;
     }
 
-    var html = '<div style="font-size:11px; font-weight:700; letter-spacing:0.3px; margin-bottom:6px;">Legend</div>';
+    var html = '<div style="font-size:16px; font-weight:700; letter-spacing:0.3px; margin-bottom:8px;">Legend</div>';
     groups.forEach(function(group){
-      html += '<div style="font-size:10px; font-weight:600; margin:6px 0 3px;">' + group.title + '</div>';
+      html += '<div style="font-size:16px; font-weight:600; margin:8px 0 5px;">' + group.title + '</div>';
       group.order.forEach(function(key){
         var item = group.items[key];
-        html += '<div style="display:flex; align-items:flex-start; gap:6px; margin:2px 0;">';
-        html += '<span style="width:10px; height:10px; min-width:10px; border-radius:2px; margin-top:2px; background:' + item.color + ';"></span>';
-        html += '<span>' + item.label + '</span>';
+        html += '<div style="display:flex; align-items:flex-start; gap:8px; margin:4px 0;">';
+        html += '<span style="width:14px; height:14px; min-width:14px; border-radius:3px; margin-top:4px; background:' + item.color + ';"></span>';
+        html += '<span style="font-size:16px; line-height:1.35;">' + item.label + '</span>';
         html += '</div>';
       });
     });

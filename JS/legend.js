@@ -100,6 +100,31 @@ window.legendConfigs = {
       "Protected under both Birds and Habitats Directives": { color: "#ffd700", label: "Protected under both Birds and Habitats Directives" },     // gold/yellow
     },
   },
+  "Gardens": {
+    field: "leisure",
+    title: "Public Places",
+    classes: {
+      "garden": { color: "#00db00", label: "Garden" } //light green
+    }
+  },
+  "Parks": {
+    field: "leisure",
+    title: "Public Places",
+    classes: {
+      "park": { color: "#008000", label: "Park" }, //green
+      "null": { color: "#008000", label: "Park" }, //green
+      "pitch": { color: "#019101", label: "Pitch" }, //green
+      "playground": { color: "#4d6d4d", label: "Playground" } //dark green for playgrounds 
+    }
+  },
+  "Playgrounds": {
+    field: "leisure",
+    title: "Public Places",
+    classes: {
+      "playground": { color: "#4d6d4d", label: "Playground" } //dark green for playgrounds
+    }
+  },
+
   "Municipality of Athens Urban Plan (2012)": {
     field: "uses_en",
     title: "Athens Urban Plan (2012)",
@@ -368,6 +393,28 @@ window.legendConfigs = {
         "800-1000": { color: "#808080", label: "800-1000m" }, 
         "1000-1200": { color: "#696969", label: "1000-1200m" }, 
         "1200+": { color: "#525252", label: "1200m+" } 
+      }
+    },
+    "2021 Population Census": {
+      field: "Population",
+      title: "Population",
+      classes: {
+        "0-30000": { color: "#CCDDEB", label: "0-30000" },
+        "30000-60000": { color: "#89B1D1", label: "30000-60000" },
+        "60000-90000": { color: "#4682B4", label: "60000-90000" },
+        "90000-150000": { color: "#2E5576", label: "90000-150000" },
+        "150000+": { color: "#213D54", label: "150000+" }
+      }
+    },
+    "2011 Population Census": {
+      field: "Popul2011",
+      title: "Population",
+      classes: {
+        "0-30000": { color: "#CCDDEB", label: "0-30000" },
+        "30000-60000": { color: "#89B1D1", label: "30000-60000" },
+        "60000-90000": { color: "#4682B4", label: "60000-90000" },
+        "90000-150000": { color: "#2E5576", label: "90000-150000" },
+        "150000+": { color: "#213D54", label: "150000+" }
       }
     }
   };

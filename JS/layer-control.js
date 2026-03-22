@@ -82,7 +82,13 @@ var layerCategories = {
     "Land Uses": [
       { name: "Corine Land Cover (2018)", file: "UrbanPlanning/AthensCorine2018.json" },
       { name: "Municipality of Athens Urban Plan (2012)", file: "UrbanPlanning/Athens Urban Plan 2012.geojson" }
+    ],
+    "Public Spaces": [
+      { name: "Gardens", file: "UrbanPlanning/Gardens.geojson" },
+      { name: "Parks", file: "UrbanPlanning/Parks.geojson" },
+      { name: "Playgrounds", file: "UrbanPlanning/Playgrounds.geojson" }
     ]
+
   },
   "Transportation Systems": {
     "Road Transport": [
@@ -404,6 +410,7 @@ function buildPropertyTable(feature){
     else if(k==='mag') {v=Number(v).toFixed(1); d='Magnitude';}
     else if(k==='place') d='Place';
     else if(k==='amenity') d='Amenity';
+    else if(k==='leisure') d='Public space type';
     rows += '<tr><th>'+d+'</th><td>'+v+'</td></tr>';
   }
   return '<table class="feature-properties-table">'+rows+'</table>';

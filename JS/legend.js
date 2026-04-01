@@ -1,4 +1,4 @@
-// Legend configuration: choose layers, field, and styles
+// Legend configuration: choose layers, field, and styles.
 window.legendConfigs = {
 // Update the legend bar for a given layer name
   "Metro Stations of Lines 1, 2 and 3": {
@@ -372,6 +372,27 @@ window.legendConfigs = {
         "1": { color: "rgba(255, 255, 178, 0.7)", label: "Zone 1 (0.16 g)" }, // pale yellow
         "2": { color: "rgba(254, 204, 92, 0.7)", label: "Zone 2 (0.24 g)" }, // light orange
         "3": { color: "rgba(253, 60, 60, 0.6)", label: "Zone 3 (0.36 g)" } // orange-red
+      }
+    },
+    "Flood Risk Zones 50T": {
+      field: "period",
+      title: "Flood Risk Zones",
+      classes: {
+        "50": { color: "rgba(87, 190, 224, 0.8)", label: "50-year return period" } //light blue
+      }
+    },
+    "Flood Risk Zones 100T": {
+      field: "period",
+      title: "Flood Risk Zones",
+      classes: {
+        "100": { color: "rgba(75, 158, 185, 0.8)", label: "100-year return period" } //light blue
+      }
+    },
+    "Flood Risk Zones 1000T": {
+      field: "period",
+      title: "Flood Risk Zones",
+      classes: {
+        "1000": { color: "rgba(56, 117, 138, 0.8)", label: "1000-year return period" } //light blue
       }
     },
     "Traffic Accidents 2023-2025": {

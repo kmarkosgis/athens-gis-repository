@@ -48,6 +48,11 @@ var layerCategories = {
       "Earthquakes": [
         { name: "Earthquakes Attica 2006-2026", file: "Disasters/EarthquakesAttica2006-2026.json" },
         { name: "Seismic Hazard Zones", file: "Disasters/Seismiczones.json" }
+      ],
+      "Floods": [
+        { name: "Flood Risk Zones 50T", file: "Disasters/Floods50T.geojson" },
+        { name: "Flood Risk Zones 100T", file: "Disasters/Floods100T.geojson" },
+        { name: "Flood Risk Zones 1000T", file: "Disasters/Floods1000T.geojson" }
       ]
   },
   "Points of Interest": {
@@ -411,6 +416,7 @@ function buildPropertyTable(feature){
     else if(k==='place') d='Place';
     else if(k==='amenity') d='Amenity';
     else if(k==='leisure') d='Public space type';
+    else if(k==='period') d='Return Period (years)';
     rows += '<tr><th>'+d+'</th><td>'+v+'</td></tr>';
   }
   return '<table class="feature-properties-table">'+rows+'</table>';
@@ -547,7 +553,7 @@ function geojsonOptions(layerName, legendConfig){
           if(contourColor){ terrainStyle.color = contourColor; terrainStyle.fillColor = contourColor; }
           return terrainStyle;
         }catch(e){
-          return { weight: baseWeight, fillOpacity: fillOpacity };
+          return { weight: baseWeight, fillOpacity: AthensGIS.currentOpacity };
         }
       }
       if(legendConfig && feature.properties && legendConfig.field in feature.properties){

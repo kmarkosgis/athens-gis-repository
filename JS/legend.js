@@ -1,4 +1,4 @@
-// Legend configuration: choose layers, field, and styles
+// Legend configuration: choose layers, field, and styles.
 window.legendConfigs = {
 // Update the legend bar for a given layer name
   "Metro Stations of Lines 1, 2 and 3": {
@@ -24,6 +24,21 @@ window.legendConfigs = {
       "Μ1": { color: "#008000",label:"Line 1" },  //green
       "Μ2": { color: "#ff0000",label:"Line 2"  },  //red
       "Μ3": { color: "#0000ff",label:"Line 3" }   //blue
+    }
+  },
+  "Extended Metro Lines network": { 
+    field: "ref",
+    title: "Metro Lines",
+    classes: {
+      "Μ1": { color: "#008000",label:"Line 1" },  //green
+      "Μ2": { color: "#ff0000",label:"Line 2"  },  //red
+      "Μ3": { color: "#0000ff",label:"Line 3" },   //blue
+      "Μ4": { color: "#ffff00", label: "Line 4" }, //yellow
+      "M5": { color: "#ff00ff", label: "Line 5" }, //magenta
+      "M6": { color: "#009191", label: "Line 6" }, //cyan
+      "M6A": { color: "#009191", label: "Line 6A" }, //cyan
+      "M7": { color: "#ffa500", label: "Line 7" }, //orange
+      "M8": { color: "#2b002b", label: "Line 8" } 
     }
   },
   "Vegetation Index (Center Sector)": {
@@ -85,6 +100,31 @@ window.legendConfigs = {
       "Protected under both Birds and Habitats Directives": { color: "#ffd700", label: "Protected under both Birds and Habitats Directives" },     // gold/yellow
     },
   },
+  "Gardens": {
+    field: "leisure",
+    title: "Public Places",
+    classes: {
+      "garden": { color: "#00db00", label: "Garden" } //light green
+    }
+  },
+  "Parks": {
+    field: "leisure",
+    title: "Public Places",
+    classes: {
+      "park": { color: "#008000", label: "Park" }, //green
+      "null": { color: "#008000", label: "Park" }, //green
+      "pitch": { color: "#019101", label: "Pitch" }, //green
+      "playground": { color: "#4d6d4d", label: "Playground" } //dark green for playgrounds 
+    }
+  },
+  "Playgrounds": {
+    field: "leisure",
+    title: "Public Places",
+    classes: {
+      "playground": { color: "#4d6d4d", label: "Playground" } //dark green for playgrounds
+    }
+  },
+
   "Municipality of Athens Urban Plan (2012)": {
     field: "uses_en",
     title: "Athens Urban Plan (2012)",
@@ -334,6 +374,27 @@ window.legendConfigs = {
         "3": { color: "rgba(253, 60, 60, 0.6)", label: "Zone 3 (0.36 g)" } // orange-red
       }
     },
+    "Flood Risk Zones 50T": {
+      field: "period",
+      title: "Flood Risk Zones",
+      classes: {
+        "50": { color: "rgba(87, 190, 224, 0.8)", label: "50-year return period" } //light blue
+      }
+    },
+    "Flood Risk Zones 100T": {
+      field: "period",
+      title: "Flood Risk Zones",
+      classes: {
+        "100": { color: "rgba(75, 158, 185, 0.8)", label: "100-year return period" } //light blue
+      }
+    },
+    "Flood Risk Zones 1000T": {
+      field: "period",
+      title: "Flood Risk Zones",
+      classes: {
+        "1000": { color: "rgba(56, 117, 138, 0.8)", label: "1000-year return period" } //light blue
+      }
+    },
     "Traffic Accidents 2023-2025": {
       field: "Cause",
       title: "Traffic Accidents - Cause of collision",
@@ -353,6 +414,28 @@ window.legendConfigs = {
         "800-1000": { color: "#808080", label: "800-1000m" }, 
         "1000-1200": { color: "#696969", label: "1000-1200m" }, 
         "1200+": { color: "#525252", label: "1200m+" } 
+      }
+    },
+    "2021 Population Census": {
+      field: "Population",
+      title: "Population",
+      classes: {
+        "0-30000": { color: "#CCDDEB", label: "0-30000" },
+        "30000-60000": { color: "#89B1D1", label: "30000-60000" },
+        "60000-90000": { color: "#4682B4", label: "60000-90000" },
+        "90000-150000": { color: "#2E5576", label: "90000-150000" },
+        "150000+": { color: "#213D54", label: "150000+" }
+      }
+    },
+    "2011 Population Census": {
+      field: "Popul2011",
+      title: "Population",
+      classes: {
+        "0-30000": { color: "#CCDDEB", label: "0-30000" },
+        "30000-60000": { color: "#89B1D1", label: "30000-60000" },
+        "60000-90000": { color: "#4682B4", label: "60000-90000" },
+        "90000-150000": { color: "#2E5576", label: "90000-150000" },
+        "150000+": { color: "#213D54", label: "150000+" }
       }
     }
   };

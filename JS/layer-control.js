@@ -48,6 +48,11 @@ var layerCategories = {
       "Earthquakes": [
         { name: "Earthquakes Attica 2006-2026", file: "Disasters/EarthquakesAttica2006-2026.json" },
         { name: "Seismic Hazard Zones", file: "Disasters/Seismiczones.json" }
+      ],
+      "Floods": [
+        { name: "Flood Risk Zones 50T", file: "Disasters/Floods50T.geojson" },
+        { name: "Flood Risk Zones 100T", file: "Disasters/Floods100T.geojson" },
+        { name: "Flood Risk Zones 1000T", file: "Disasters/Floods1000T.geojson" }
       ]
   },
   "Points of Interest": {
@@ -82,7 +87,13 @@ var layerCategories = {
     "Land Uses": [
       { name: "Corine Land Cover (2018)", file: "UrbanPlanning/AthensCorine2018.json" },
       { name: "Municipality of Athens Urban Plan (2012)", file: "UrbanPlanning/Athens Urban Plan 2012.geojson" }
+    ],
+    "Public Spaces": [
+      { name: "Gardens", file: "UrbanPlanning/Gardens.geojson" },
+      { name: "Parks", file: "UrbanPlanning/Parks.geojson" },
+      { name: "Playgrounds", file: "UrbanPlanning/Playgrounds.geojson" }
     ]
+
   },
   "Transportation Systems": {
     "Road Transport": [
@@ -99,6 +110,8 @@ var layerCategories = {
       { name: "Metro Stations of Lines 1, 2 and 3", file: "Transportation/AthensMetro123.geojson" },
       { name: "Metro Stations of Line 4", file: "Transportation/AthensMetro4.geojson" },
       { name: "Metro Lines 1, 2 and 3", file: "Transportation/AthensMetroNet.geojson" },
+      { name: "Extended Metro Lines network", file: "Transportation/AthensMetroExtended.json" },
+
       { name: "Metro Boarding Platforms of Line 1", file: "Transportation/MetroPlatforms.geojson" },
       { name: "Railway Network (Greece)", file: "Transportation/GreeceRail.geojson" },
       { name: "Suburban Railway Stations", file: "Transportation/AthensTrain.geojson" },
@@ -403,6 +416,8 @@ function buildPropertyTable(feature){
     else if(k==='mag') {v=Number(v).toFixed(1); d='Magnitude';}
     else if(k==='place') d='Place';
     else if(k==='amenity') d='Amenity';
+    else if(k==='leisure') d='Public space type';
+    else if(k==='period') d='Return Period (years)';
     rows += '<tr><th>'+d+'</th><td>'+v+'</td></tr>';
   }
   return '<table class="feature-properties-table">'+rows+'</table>';
@@ -539,7 +554,7 @@ function geojsonOptions(layerName, legendConfig){
           if(contourColor){ terrainStyle.color = contourColor; terrainStyle.fillColor = contourColor; }
           return terrainStyle;
         }catch(e){
-          return { weight: baseWeight, fillOpacity: fillOpacity };
+          return { weight: baseWeight, fillOpacity: AthensGIS.currentOpacity };
         }
       }
       if(legendConfig && feature.properties && legendConfig.field in feature.properties){

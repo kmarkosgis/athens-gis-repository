@@ -111,7 +111,6 @@ var layerCategories = {
       { name: "Metro Stations of Line 4", file: "Transportation/AthensMetro4.geojson" },
       { name: "Metro Lines 1, 2 and 3", file: "Transportation/AthensMetroNet.geojson" },
       { name: "Extended Metro Lines network", file: "Transportation/AthensMetroExtended.json" },
-
       { name: "Metro Boarding Platforms of Line 1", file: "Transportation/MetroPlatforms.geojson" },
       { name: "Railway Network (Greece)", file: "Transportation/GreeceRail.geojson" },
       { name: "Suburban Railway Stations", file: "Transportation/AthensTrain.geojson" },

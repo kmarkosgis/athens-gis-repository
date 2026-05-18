@@ -99,6 +99,7 @@ var layerCategories = {
     "Road Transport": [
       { name: "AI Traffic Cameras", file: "Transportation/AICameras.json" },
       { name: "Avenues", file: "Transportation/AthensAvenues.json" },
+      { name: "OASA Bus Lanes", file: "Transportation/Bus_Lanes.geojson" },
       { name: "OASA Bus Stops", file: "Transportation/AthensBusStops.geojson" },
       { name: "Highways (Greece)", file: "Transportation/GreeceHighways.geojson" },
       { name: "Street Network Mun. of Athens", file: "Transportation/AthStreets.geojson" },
@@ -380,7 +381,7 @@ function buildPropertyTable(feature){
 
     if(k==='shapeleng_'){ v=Number(v).toFixed(2); d='Shape Length (km)'; }
     else if(k==='shapearea'){ v=Number(v).toFixed(2); d='Shape Area (km²)'; }
-    else if(['shapeleng_m','shapelengm','length'].includes(k)){ v=Number(v).toFixed(2); d='Shape Length (m)'; }
+    else if(['shapeleng_m','shapelengm','length','shape_leng'].includes(k)){ v=Number(v).toFixed(2); d='Shape Length (m)'; }
     else if(['shapearea_m','shapeaream'].includes(k)){ v=Number(v).toFixed(2); d='Shape Area (m²)'; }
     else if(['name','name_el','name_place','gname','uses_gr'].includes(k)){ d='Name (GR)'; }
     else if(['ename','name_pl_en','name_en','uses_en','name:en'].includes(k)){ d='Name (ENG)'; }

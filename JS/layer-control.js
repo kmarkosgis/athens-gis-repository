@@ -89,6 +89,7 @@ var layerCategories = {
       { name: "Municipality of Athens Urban Plan (2012)", file: "UrbanPlanning/Athens Urban Plan 2012.geojson" }
     ],
     "Public Spaces": [
+      { name: "Archaeological Sites", file: "UrbanPlanning/Arch_sites.geojson" },
       { name: "Gardens", file: "UrbanPlanning/Gardens.geojson" },
       { name: "Parks", file: "UrbanPlanning/Parks.geojson" },
       { name: "Playgrounds", file: "UrbanPlanning/Playgrounds.geojson" }
@@ -397,7 +398,7 @@ function buildPropertyTable(feature){
     else if(k==='dk_en') d='Municipal Community (ENG)';
     else if(k==='sectionnam') d='Section Name';
     else if(k==='metroline') d='Metro Line';
-    else if(k==='highway') d='Type';
+    else if(k==='highway' || k=='historic') d='Type';
     else if(k==='oneway') d='One-Way Road';
     else if(k==='surface') d='Surface Type';
     else if(k==='fid' || k==='objectid'|| k==='full_id') d='Feature ID';

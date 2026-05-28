@@ -1,75 +1,131 @@
-// Utility: Update opacity for all active (vector) layers registered in AthensGIS.geojsonLayers
-function updateLayerOpacity() {
-	var ag = window.AthensGIS || {};
-	var op = ag.currentOpacity != null ? ag.currentOpacity : 1;
-	Object.keys(ag.geojsonLayers || {}).forEach(function(key){
-		var lyr = ag.geojsonLayers[key];
-		if(!lyr) return;
-		if(typeof lyr.setStyle === 'function') {
-			try {
-				lyr.setStyle(function(feature){
-					// Attempt to preserve existing style colors
-					var base = {};
-					if(feature && feature.properties && lyr.options && typeof lyr.options.style === 'function') {
-						try { base = lyr.options.style(feature) || {}; } catch(e) { base = {}; }
-					}
-					base.fillOpacity = op;
-					if(base.opacity !== undefined) base.opacity = op; else base.opacity = op; // ensure stroke opacity
-					return base;
-				});
-			} catch(err){ /* fallback to layer.eachLayer */
-				if(lyr.eachLayer) {
-					lyr.eachLayer(function(fl){ if(fl.setStyle) fl.setStyle({ fillOpacity: op, opacity: op }); });
-				}
-			}
-		} else if(lyr.eachLayer) {
-			lyr.eachLayer(function(fl){ if(fl.setStyle) fl.setStyle({ fillOpacity: op, opacity: op }); });
-		}
-	});
-}
+// Per-layer opacity management and popup
+(function () {
+	var ag = window.AthensGIS = window.AthensGIS || {};
+	ag.layerOpacities  = ag.layerOpacities  || {};
+	ag.activeLayerOrder = ag.activeLayerOrder || [];
+	ag.layerKeyByName   = ag.layerKeyByName   || {};
 
-// Wire opacity slider
-(function(){
-	function initOpacitySlider(){
-		var slider = document.getElementById('opacityRange');
-		if(!slider) return;
-		var ag = window.AthensGIS || (window.AthensGIS = {});
-		// Initialize display spans if exist
-		var minSpan = document.getElementById('opacityValueMin');
-		var maxSpan = document.getElementById('opacityValueMax');
-		function updateDisplay(val){
-			if(minSpan) minSpan.textContent = '0%';
-			if(maxSpan) maxSpan.textContent = Math.round(val*100) + '%';
+	function getLayerOpacity(layerName) {
+		var op = ag.layerOpacities[layerName];
+		return (op !== undefined && op !== null) ? op : 1;
+	}
+	ag.getLayerOpacity = getLayerOpacity;
+
+	function refreshSingleLayer(lyr) {
+		if (!lyr) return;
+		try {
+			if (typeof lyr.setStyle === 'function' && lyr.options && typeof lyr.options.style === 'function') {
+				lyr.setStyle(lyr.options.style);
+				return;
+			}
+		} catch (e) {}
+		try {
+			if (typeof lyr.eachLayer === 'function') {
+				lyr.eachLayer(function (sub) {
+					if (sub && typeof sub.setStyle === 'function') {
+						try {
+							if (sub.options && typeof sub.options.style === 'function') sub.setStyle(sub.options.style);
+						} catch (e) {}
+					}
+				});
+			}
+		} catch (e) {}
+	}
+
+	function setLayerOpacity(layerName, opacity) {
+		ag.layerOpacities[layerName] = opacity;
+		var key = ag.layerKeyByName[layerName] || layerName;
+		var lyr = ag.geojsonLayers && ag.geojsonLayers[key];
+		if (lyr) {
+			refreshSingleLayer(lyr);
+			if (lyr._polyLayer) refreshSingleLayer(lyr._polyLayer);
+			if (lyr._vecLayer)  refreshSingleLayer(lyr._vecLayer);
 		}
-		updateDisplay(slider.value);
-		slider.addEventListener('input', function(){
-			ag.currentOpacity = parseFloat(this.value);
-			updateDisplay(this.value);
-			updateLayerOpacity();
+	}
+	ag.setLayerOpacity = setLayerOpacity;
+
+	function buildOpacityPopup() {
+		var popup = document.getElementById('opacity-popup');
+		if (!popup) return;
+		var layers = (ag.activeLayerOrder || []).slice();
+
+		var html = '<div class="opacity-popup-header">OPACITY</div>';
+
+		if (layers.length === 0) {
+			html += '<div class="opacity-popup-empty">No active layers</div>';
+		} else {
+			html += '<ul id="opacity-layer-list">';
+			layers.forEach(function (layerName) {
+				var op  = getLayerOpacity(layerName);
+				var pct = Math.round(op * 100);
+				var safeId = layerName.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+				var safeAttr = layerName.replace(/"/g, '&quot;');
+				html += '<li class="opacity-layer-item">';
+				html += '<span class="opacity-layer-name" title="' + safeAttr + '">' + layerName + '</span>';
+				html += '<input type="range" class="opacity-layer-slider" id="osl-' + safeId + '" data-layer="' + safeAttr + '" min="0" max="100" step="5" value="' + pct + '">';
+				html += '<span class="opacity-layer-value" id="osv-' + safeId + '">' + pct + '%</span>';
+				html += '</li>';
+			});
+			html += '</ul>';
+		}
+
+		popup.innerHTML = html;
+
+		popup.querySelectorAll('.opacity-layer-slider').forEach(function (slider) {
+			slider.addEventListener('input', function () {
+				var name = this.dataset.layer;
+				var val  = parseFloat(this.value) / 100;
+				setLayerOpacity(name, val);
+				var valSpan = this.parentElement.querySelector('.opacity-layer-value');
+				if (valSpan) valSpan.textContent = this.value + '%';
+			});
 		});
 	}
-	if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', initOpacitySlider); else initOpacitySlider();
+
+	// Only rebuild if the popup is currently visible
+	function refreshOpacityPopupIfOpen() {
+		var popup = document.getElementById('opacity-popup');
+		if (popup && !popup.hidden) buildOpacityPopup();
+	}
+	ag.refreshOpacityPopup = refreshOpacityPopupIfOpen;
+
+	function initOpacityButton() {
+		var btn   = document.getElementById('opacityBtn');
+		var popup = document.getElementById('opacity-popup');
+		if (!btn || !popup) return;
+
+		btn.addEventListener('click', function (e) {
+			e.stopPropagation();
+			var isOpen = !popup.hidden;
+			popup.hidden = isOpen;
+			btn.classList.toggle('active', !isOpen);
+			if (!isOpen) buildOpacityPopup();
+		});
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initOpacityButton);
+	} else {
+		initOpacityButton();
+	}
 })();
 
-// Remove highlight from selected feature and hide info box
-(function bindClearSelectionOnMapClick(){
-	var ag = window.AthensGIS || (window.AthensGIS = {});
+// Remove highlight from selected feature and hide info box on map click
+(function bindClearSelectionOnMapClick() {
+	var ag     = window.AthensGIS || (window.AthensGIS = {});
 	var mapRef = ag.map || (typeof window.map !== 'undefined' ? window.map : null);
-	if(!mapRef || typeof mapRef.on !== 'function') return;
+	if (!mapRef || typeof mapRef.on !== 'function') return;
 
 	mapRef.on('click', function () {
-		// Remove highlight from all features and reset their style
-		Object.keys(ag.geojsonLayers || {}).forEach(function(key){
+		Object.keys(ag.geojsonLayers || {}).forEach(function (key) {
 			var layer = ag.geojsonLayers[key];
 			if (layer && layer.eachLayer) {
-				layer.eachLayer(function(featureLayer) {
-					// Remove highlight class if present
+				layer.eachLayer(function (featureLayer) {
 					if (featureLayer._path) {
-						featureLayer._path.classList.remove("feature-highlight");
+						featureLayer._path.classList.remove('feature-highlight');
 					}
-					// Reset style if possible
 					if (layer.resetStyle) {
-						try { layer.resetStyle(featureLayer); } catch(_){}
+						try { layer.resetStyle(featureLayer); } catch (_) {}
 					}
 				});
 			}
@@ -77,8 +133,7 @@ function updateLayerOpacity() {
 
 		ag.selectedFeature = null;
 
-		// Hide info box
-		var infoBox = document.getElementById("infoBox");
-		if (infoBox) infoBox.style.display = "none";
+		var infoBox = document.getElementById('infoBox');
+		if (infoBox) infoBox.style.display = 'none';
 	});
 })();

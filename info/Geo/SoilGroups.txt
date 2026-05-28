@@ -1,0 +1,5 @@
+World Reference Base (2006) Soil Groups for the Attica region.
+
+<p>Uploaded: 28-05-2026<p/>
+<p>Contributors: K. Markos<p/>
+<p>Source: SoilGrids<p/>

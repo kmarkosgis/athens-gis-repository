@@ -82,9 +82,11 @@
     // Global object must be available before any module scripts.
     // GitHub Pages uses canonical root; local VS/live-server uses local project root.
     window.AthensGIS = Object.assign({
-      currentOpacity: 1,
       geojsonLayers: {},
       activeLayerInfos: {},
+      layerOpacities: {},
+      activeLayerOrder: [],
+      layerKeyByName: {},
       selectedFeature: null,
       // Set to 1 to publish the announcement box, or 0 to hide it for everyone.
       announcementToggle: 1
@@ -137,9 +139,9 @@
 
 <div class="announcement-box" id="announcement-box" hidden>
   <h3>NEWS - ANNOUNCEMENTS<button class="close-btn" id="closeAnnouncementBtn">&times;</button></h3>
+  <p><strong>28/05/2026:</strong> Soil groups added (Geology). Reconfigured the opacity function in the toolbar.</p>
   <p><strong>25/05/2026:</strong> Archaeological Sites added (Public Places - Urban Planning).</p>
   <p><strong>18/05/2026:</strong> Dedicated bus lanes added (Transportation Systems - Road Transport).</p>
-  <p><strong>02/04/2026:</strong> Flood risk zones for 50, 100, and 1000-year return periods added (Floods - Natural Hazards).</p>
 </div>
 
 <div id="map"></div>
@@ -163,13 +165,16 @@
 <!-- Toolbar container -->
 <div id="toolbar">
   <h1>TOOLBAR</h1>
-  <label for="opacityRange">Opacity:</label>
-  <span id="opacityValueMax">100%</span>
-  <input type="range" id="opacityRange" min="0" max="1" step="0.05" value="1">
+  <button id="opacityBtn" title="Adjust layer opacity">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.66 8L12 2.35 6.34 8C4.78 9.56 4 11.64 4 13.64s.78 4.19 2.34 5.75 3.61 2.34 5.66 2.34 4.1-.78 5.66-2.34S20 15.64 20 13.64 19.22 9.56 17.66 8zM6 14c.01-2 .62-3.27 1.76-4.4L12 5.27l4.24 4.38C17.38 10.77 17.99 12 18 14H6z"/></svg>OPACITY
+  </button>
   <button id="measureBtn" title="Measure distance"><img src="images/length.png" alt="Measure"></button>
   <button id="exportBtn" title="Export the current map view"><img src="images/import-export.png" alt="Export"> </button>
   <button id="zoomSelectedBtn" title="Zoom to selected layers"><img src="images/extend.png" alt="Zoom Selected"></button>
 </div>
+
+<!-- Opacity per-layer popup -->
+<div id="opacity-popup" hidden></div>
 
 <div id="measure-msg" style="display:none;position:fixed;top:50px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.95);padding:8px 18px;border-radius:8px;z-index:3000;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
   Click on the map to draw your measurement. Double click to finish. Press ESC to cancel.

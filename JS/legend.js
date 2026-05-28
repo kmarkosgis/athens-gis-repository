@@ -437,6 +437,21 @@ window.legendConfigs = {
         "90000-150000": { color: "#2E5576", label: "90000-150000" },
         "150000+": { color: "#213D54", label: "150000+" }
       }
+    },
+    "Soil Groups": {
+      field: "SoilGroup",
+      title: "Soil Groups",
+      classes: {
+        "Cambisols": { color: "rgba(139, 0, 0, 0.90)", label: "Cambisols" },
+        "Luvisols": { color: "rgba(255, 140, 0, 0.90)", label: "Luvisols" },
+        "Vertisols": { color: "rgba(0, 100, 0, 0.90)", label: "Vertisols" },
+        "Leptosols": { color: "rgba(139, 0, 139, 0.90)", label: "Leptosols" },
+        "Regosols": { color: "rgba(255, 215, 0, 0.90)", label: "Regosols" },
+        "Calcisols": { color: "rgba(64, 224, 208, 0.90)", label: "Calcisols" },
+        "Kastanozems": { color: "rgba(165, 42, 42, 0.90)", label: "Kastanozems" },
+        "Phaeozems": { color: "rgba(46, 139, 87, 0.90)", label: "Phaeozems" },
+        "Fluvisols": { color: "rgba(0, 0, 139, 0.90)", label: "Fluvisols" }
+      }
     }
   };
 

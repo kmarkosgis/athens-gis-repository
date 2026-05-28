@@ -41,6 +41,11 @@ var layerCategories = {
       { name: "Vegetation Index (Piraeus)", file: "Environment/PiraeusGreen.geojson" }
     ]
   },
+  "Geology": {
+    "_items": [
+      { name: "Soil Groups", file: "Geo/SoilGroups.geojson" }
+    ]
+  },
   "Natural Hazards": {
     "Wildfires": [
       { name: "Wildfires Attica 2015-2025", file: "Disasters/WildfiresAttica2015-2025.geojson" },
@@ -129,7 +134,9 @@ AthensGIS.layerCategories = layerCategories;
 AthensGIS.geojsonLayers = AthensGIS.geojsonLayers || {};
 AthensGIS.activeLayerInfos = AthensGIS.activeLayerInfos || {};
 AthensGIS.selectedFeature = null;
-AthensGIS.currentOpacity = AthensGIS.currentOpacity || 1;
+AthensGIS.layerOpacities  = AthensGIS.layerOpacities  || {};
+AthensGIS.activeLayerOrder = AthensGIS.activeLayerOrder || [];
+AthensGIS.layerKeyByName   = AthensGIS.layerKeyByName   || {};
 AthensGIS.customLayerColors = AthensGIS.customLayerColors || {};
 const GITHUB_SITE_ROOT_URL = 'https://kmarkosgis.github.io/athens-gis-repository/';
 const FIXED_ASSET_ROOTS = { data: 'data', info: 'info' };
@@ -494,7 +501,7 @@ function geojsonOptions(layerName, legendConfig){
   return {
     style: function(feature){
       var baseWeight =1;
-      var fillOpacity = AthensGIS.currentOpacity;
+      var fillOpacity = (AthensGIS.layerOpacities && AthensGIS.layerOpacities[layerName] !== undefined) ? AthensGIS.layerOpacities[layerName] : 1;
       var layerColors = (!legendConfig) ? getLayerColorState(layerName) : null;
       // Special styling for Terrain/Relief: scale-aware contour visibility
       if(layerName==='Terrain' || layerName==='Relief'){
@@ -530,7 +537,7 @@ function geojsonOptions(layerName, legendConfig){
             if(isLargeScale){
               // At scales larger than 1:100000 (denominator < 100000): show only heavy contours
               if(isHeavy){
-                var heavyStyle = { weight: baseWeight, opacity: 1, fillOpacity: fillOpacity };
+                var heavyStyle = { weight: baseWeight, opacity: fillOpacity, fillOpacity: fillOpacity };
                 if(contourColor){ heavyStyle.color = contourColor; }
                 return heavyStyle;
               }
@@ -540,34 +547,35 @@ function geojsonOptions(layerName, legendConfig){
             } else {
               // At smaller scales (denominator >= 100000): show all contours, heavy ones emphasised
               if(isHeavy){
-                var emphStyle = { weight: baseWeight * 2, opacity: 1, fillOpacity: fillOpacity };
+                var emphStyle = { weight: baseWeight * 2, opacity: fillOpacity, fillOpacity: fillOpacity };
                 if(contourColor){ emphStyle.color = contourColor; }
                 return emphStyle;
               }
-              var normalStyle = { weight: baseWeight, opacity: 1, fillOpacity: fillOpacity };
+              var normalStyle = { weight: baseWeight, opacity: fillOpacity, fillOpacity: fillOpacity };
               if(contourColor){ normalStyle.color = contourColor; }
               return normalStyle;
             }
           }
 
           // Non-line geometries (polygons, points): render normally
-          var terrainStyle = { weight: baseWeight, fillOpacity: fillOpacity };
+          var terrainStyle = { weight: baseWeight, opacity: fillOpacity, fillOpacity: fillOpacity };
           if(contourColor){ terrainStyle.color = contourColor; terrainStyle.fillColor = contourColor; }
           return terrainStyle;
         }catch(e){
-          return { weight: baseWeight, fillOpacity: AthensGIS.currentOpacity };
+          return { weight: baseWeight, opacity: fillOpacity, fillOpacity: fillOpacity };
         }
       }
       if(legendConfig && feature.properties && legendConfig.field in feature.properties){
         var cv = feature.properties[legendConfig.field];
         var cs = getLegendClassForValue(legendConfig, cv);
-        if(cs) return { color: cs.color, weight: baseWeight, fillColor: cs.color, fillOpacity: AthensGIS.currentOpacity };
+        if(cs) return { color: cs.color, weight: baseWeight, fillColor: cs.color, opacity: fillOpacity, fillOpacity: fillOpacity };
       }
       return {
         color: (layerColors && layerColors.border) || DEFAULT_LAYER_BORDER_COLOR,
         weight: baseWeight,
         fillColor: (layerColors && layerColors.fill) || DEFAULT_LAYER_FILL_COLOR,
-        fillOpacity: AthensGIS.currentOpacity
+        opacity: fillOpacity,
+        fillOpacity: fillOpacity
       };
     },
     pointToLayer: function(feature, latlng){
@@ -583,7 +591,8 @@ function geojsonOptions(layerName, legendConfig){
           if(csp.color){ fillColor = csp.color; color = csp.color; }
         }
       }
-      return L.circleMarker(latlng,{ radius: radius, fillColor: fillColor, color: color, weight:1, opacity:AthensGIS.currentOpacity, fillOpacity:AthensGIS.currentOpacity });
+      var lyrOpacity = (AthensGIS.layerOpacities && AthensGIS.layerOpacities[layerName] !== undefined) ? AthensGIS.layerOpacities[layerName] : 1;
+      return L.circleMarker(latlng,{ radius: radius, fillColor: fillColor, color: color, weight:1, opacity:lyrOpacity, fillOpacity:lyrOpacity });
     },
     onEachFeature: function(feature, layer){
       layer.on('click', function(e){
@@ -597,7 +606,8 @@ function geojsonOptions(layerName, legendConfig){
         AthensGIS.selectedFeature = e.target;
         var lc = (window.legendConfigs||{})[layerName];
         if(!lc && (layerName==='Terrain' || layerName==='Relief')) lc = (window.legendConfigs||{}).Terrain;
-        var highlight = { weight: 2, fillOpacity: AthensGIS.currentOpacity };
+        var lyrHighlightOpacity = (AthensGIS.layerOpacities && AthensGIS.layerOpacities[layerName] !== undefined) ? AthensGIS.layerOpacities[layerName] : 1;
+        var highlight = { weight: 2, opacity: lyrHighlightOpacity, fillOpacity: lyrHighlightOpacity };
         if(lc && feature.properties){
           var cv2 = (lc.field && lc.field in feature.properties) ? feature.properties[lc.field] : undefined;
           if((typeof cv2 === 'undefined' || cv2 === null || cv2 === '') && (layerName==='Terrain' || layerName==='Relief')){
@@ -964,6 +974,9 @@ function renderLayerControl(){
           });
         loadLayerInfo('Environment/Relief.txt').then(function(t){ AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); })
           .catch(()=>{ AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
+        if(AthensGIS.activeLayerOrder.indexOf(layerName)===-1) AthensGIS.activeLayerOrder.push(layerName);
+        AthensGIS.layerKeyByName[layerName]='Relief';
+        if(typeof AthensGIS.refreshOpacityPopup==='function') AthensGIS.refreshOpacityPopup();
       } else {
         row.classList.remove('selected');
         if(dEl) dEl.style.display='none';
@@ -972,6 +985,9 @@ function renderLayerControl(){
         if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName,'remove');
         delete AthensGIS.activeLayerInfos[layerName];
         ensureInfoBoxUpdate();
+        var idx=(AthensGIS.activeLayerOrder||[]).indexOf(layerName); if(idx!==-1) AthensGIS.activeLayerOrder.splice(idx,1);
+        delete AthensGIS.layerKeyByName[layerName];
+        if(typeof AthensGIS.refreshOpacityPopup==='function') AthensGIS.refreshOpacityPopup();
         var infoDiv=document.getElementById('infoBox'); if(infoDiv) infoDiv.style.display='none';
       }
     });
@@ -1222,6 +1238,9 @@ function renderLayerControl(){
           loadLayerData(file).then(function(data){ var lc2=(window.legendConfigs||{})[layerName]; if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName); var lyr2=createLayerFromGeoJSON(data, layerName, lc2); AthensGIS.geojsonLayers[file]=lyr2; }).catch(function(err){ console.error('Failed to load layer data for "' + layerName + '":', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>'; ensureInfoBoxUpdate(); });
           var txt=file.replace(/\.[^/.]+$/, '')+'.txt'; loadLayerInfo(txt).then(function(t){ AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(){ AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
         }
+        if(AthensGIS.activeLayerOrder.indexOf(layerName)===-1) AthensGIS.activeLayerOrder.push(layerName);
+        AthensGIS.layerKeyByName[layerName]=(layerName==='Relief') ? 'Relief' : (file||layerName);
+        if(typeof AthensGIS.refreshOpacityPopup==='function') AthensGIS.refreshOpacityPopup();
       } else {
         // Remove selected visual style
         row.classList.remove('selected');
@@ -1232,6 +1251,9 @@ function renderLayerControl(){
         delete AthensGIS.activeLayerInfos[layerName]; ensureInfoBoxUpdate(); var infoDiv=document.getElementById('infoBox'); if(infoDiv) infoDiv.style.display='none';
         // Update legend to remove this layer's entry (after state updated)
         if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName,'remove');
+        var idx2=(AthensGIS.activeLayerOrder||[]).indexOf(layerName); if(idx2!==-1) AthensGIS.activeLayerOrder.splice(idx2,1);
+        delete AthensGIS.layerKeyByName[layerName];
+        if(typeof AthensGIS.refreshOpacityPopup==='function') AthensGIS.refreshOpacityPopup();
       }
       // Update category header count badge: show number of active layers in this category
       try{

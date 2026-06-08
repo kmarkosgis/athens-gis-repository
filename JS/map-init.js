@@ -1,5 +1,6 @@
   // === Initialize map ===
   var map = L.map('map', {
+    preferCanvas: true, // better performance for many features
     zoomControl: false,  // turn off default zoom control
     zoomDelta: 0.5,      // smaller zoom step
     zoomSnap: 0.5        // allow half-step zoom levels

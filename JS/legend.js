@@ -219,43 +219,76 @@ window.legendConfigs = {
       "ZONE II": { color: "#cc99b3", label: "Zone ii" }
     },
   },
-    "Corine Land Cover (2018)": {
+    "Land Cover and Land Use (2018)": {
       field: "Code_18",
-      title: "Corine Land Cover (2018)",
+      title: "Land Cover and Land Use (2018)",
       classes: {
-        "111": { color: "#e41a1c", label: "Συνεχής αστική οικοδόµηση" },           // deep red
-        "112": { color: "#fb6a4a", label: "∆ιακεκοµµένη αστική οικοδόµηση" },       // light red
-        "121": { color: "#fec44f", label: "Βιοµηχανικές ή εµπορικές ζώνες" },       // orange
-        "122": { color: "#fd8d3c", label: "Οδικά και σιδηροδροµικά δίκτυα και γειτνιάζουσα γη" }, // orange-red
-        "123": { color: "#6baed6", label: "Ζώνες λιµένων" },                       // blue
-        "124": { color: "#ffffff", label: "Αεροδρόμια" },                          // white
-        "131": { color: "#bdbdbd", label: "Χώροι εξόρυξης ορυκτών" },               // grey
-        "132": { color: "#636363", label: "Χώροι απόρριψης απορριµµάτων" },         // dark grey
-        "141": { color: "#a1d99b", label: "Περιοχές αστικού πρασίνου" },            // light green
-        "142": { color: "#41ab5d", label: "Εγκαταστάσεις αθλητισµού και αναψυχής" },// medium green
-        "211": { color: "#ffffb2", label: "Μη αρδεύσιµη-αρόσιµη γη" },              // pale yellow
-        "212": { color: "#fecc5c", label: "Μόνιµα αρδευόµενη γη" },                 // light orange
-        "221": { color: "#c2e699", label: "Αµπελώνες" },                            // light green
-        "222": { color: "#78c679", label: "Οπωροφόρα δέντρα και φυτείες µε σαρκώδεις καρπούς" }, // green
-        "223": { color: "#238443", label: "Ελαιώνες" },                             // dark green
-        "231": { color: "#d9f0a3", label: "Λιβάδια" },                             // pale green
-        "241": { color: "#addd8e", label: "Ετήσιες καλλιέργειες που συνδέονται µε µόνιµες καλλιέργειες" }, // green
-        "242": { color: "#31a354", label: "Σύνθετα συστήµατα καλλιέργειας" },       // dark green
-        "243": { color: "#006837", label: "Γη που καλύπτεται κυρίως από γεωργία µε σηµαντικές εκτάσεις φυσικής βλάστησης" }, // very dark green
-        "311": { color: "#b8860b", label: "∆άσος πλατύφυλλων" },                    // brown
-        "312": { color: "#a0522d", label: "∆άσος κωνοφόρων" },                      // brown
-        "313": { color: "#8b4513", label: "Μικτό δάσος" },                          // brown
-        "321": { color: "#fdae6b", label: "Φυσικοί βοσκότοποι" },                   // orange
-        "323": { color: "#fd8d3c", label: "Σκληροφυλλική βλάστηση" },               // orange-red
-        "324": { color: "#fdd0a2", label: "Μεταβατικές δασώδεις-θαµνώδεις εκτάσεις" }, // light orange
-        "332": { color: "#cccccc", label: "Απογυµνωµένοι βράχοι" },                 // light grey
-        "333": { color: "#969696", label: "Εκτάσεις µε αραιή βλάστηση" },           // grey
-        "334": { color: "#525252", label: "Αποτεφρωµένες εκτάσεις" },               // dark grey
-        "411": { color: "#c6dbef", label: "Βάλτοι στην ενδοχώρα" },                 // pale blue
-        "421": { color: "#9ecae1", label: "Παραθαλάσσιοι βάλτοι" },                 // light blue
-        "512": { color: "#6baed6", label: "Συλλογές υδάτων" },                      // blue
-        "521": { color: "#4292c6", label: "Παράκτιες λιµνοθάλασσες" },              // blue
-        "523": { color: "#08519c", label: "Θάλασσα" }                               // deep blue
+        "111": { color: "rgba(228, 26, 28, 0.8)", label: "Συνεχής αστική οικοδόµηση" },           // deep red
+        "112": { color: "rgba(251, 106, 74, 0.8)", label: "∆ιακεκοµµένη αστική οικοδόµηση" },       // light red
+        "121": { color: "rgba(254, 196, 79, 0.8)", label: "Βιοµηχανικές ή εµπορικές ζώνες" },       // orange
+        "122": { color: "rgba(253, 141, 60, 0.8)", label: "Οδικά και σιδηροδροµικά δίκτυα και γειτνιάζουσα γη" }, // orange-red
+        "123": { color: "rgba(107, 174, 214, 0.8)", label: "Ζώνες λιµένων" },                       // blue
+        "124": { color: "rgba(255, 255, 255, 0.8)", label: "Αεροδρόμια" },                          // white
+        "131": { color: "rgba(190, 190, 190, 0.8)", label: "Χώροι εξόρυξης ορυκτών" },               // grey
+        "132": { color: "rgba(99, 99, 99, 0.8)", label: "Χώροι απόρριψης απορριµµάτων" },         // dark grey
+        "141": { color: "rgba(161, 217, 155, 0.8)", label: "Περιοχές αστικού πρασίνου" },            // light green
+        "142": { color: "rgba(65, 171, 93, 0.8)", label: "Εγκαταστάσεις αθλητισµoύ και αναψυχής" },// medium green
+        "211": { color: "rgba(255, 255, 178, 0.8)", label: "Μη αρδεύσιµη-αρόσιµη γη" },              // pale yellow
+        "212": { color: "rgba(254, 204, 92, 0.8)", label: "Μόνιµα αρδευόµενη γη" },                 // light orange
+        "221": { color: "rgba(194, 230, 153, 0.8)", label: "Αµπελώνες" },                            // light green
+        "222": { color: "rgba(120, 198, 121, 0.8)", label: "Οπωροφόρα δέντρα και φυτείες µε σαρκώδεις καρπούς" }, // green
+        "223": { color: "rgba(35, 132, 67, 0.8)", label: "Ελαιώνες" },                             // dark green
+        "231": { color: "rgba(217, 240, 163, 0.8)", label: "Λιβάδια" },                             // pale green
+        "241": { color: "rgba(173, 221, 142, 0.8)", label: "Ετήσιες καλλιέργειες που συνδέονται µε µόνιµες καλλιέργειες" }, // green
+        "242": { color: "rgba(49, 163, 84, 0.8)", label: "Σύνθετα συστήµατα καλλιέργειας" },       // dark green
+        "243": { color: "rgba(0, 104, 55, 0.8)", label: "Γη που καλύπτεται κυρίως από γεωργία µε σηµαντικές εκτάσεις φυσικής βλάστησης" }, // very dark green
+        "311": { color: "rgba(184, 134, 11, 0.8)", label: "∆άσος πλατύφυλλων" },                    // brown
+        "312": { color: "rgba(160, 82, 45, 0.8)", label: "∆άσος κωνοφόρων" },                      // brown
+        "313": { color: "rgba(139, 69, 19, 0.8)", label: "Μικτό δάσος" },                          // brown
+        "321": { color: "rgba(253, 174, 107, 0.8)", label: "Φυσικοί βοσκότοποι" },                   // orange
+        "323": { color: "rgba(253, 141, 60, 0.8)", label: "Σκληροφυλλική βλάστηση" },               // orange-red
+        "324": { color: "rgba(253, 208, 162, 0.8)", label: "Μεταβατικές δασώδεις-θαµνώδεις εκτάσεις" }, // light orange
+        "332": { color: "rgba(204, 204, 204, 0.8)", label: "Απογυµνωµένοι βράχοι" },                 // light grey
+        "333": { color: "rgba(150, 150, 150, 0.8)", label: "Εκτάσεις µε αραιή βλάστηση" },           // grey
+        "334": { color: "rgba(82, 82, 82, 0.8)", label: "Αποτεφρωµένες εκτάσεις" },               // dark grey
+        "411": { color: "rgba(198, 219, 239, 0.8)", label: "Βάλτοι στην ενδοχώρα" },                 // pale blue
+        "421": { color: "rgba(158, 202, 225, 0.8)", label: "Παραθαλάσσιοι βάλτοι" },                 // light blue
+        "512": { color: "rgba(107, 174, 214, 0.8)", label: "Συλλογές υδάτων" },                      // blue
+        "521": { color: "rgba(66, 146, 198, 0.8)", label: "Παράκτιες λιµνοθάλασσες" },              // blue
+        "523": { color: "rgba(8, 81, 156, 0.8)", label: "Θάλασσα" }                               // deep blue
+      }
+    },
+    "Land Cover and Land Use (2021)": {
+      field: "class_2021",
+      title: "Land Cover and Land Use (2021)",
+      classes: {
+        "Continuous urban fabric (S.L. : > 80%)": { color: "rgba(228, 26, 28, 0.8)", label: "Continuous urban fabric" },
+        "Discontinuous dense urban fabric (S.L. : 50% -  80%)": { color: "rgba(251, 106, 74, 0.8)", label: "Discontinuous dense urban fabric" },
+        "Discontinuous medium density urban fabric (S.L. : 30% - 50%)": { color: "rgba(254, 196, 79, 0.8)", label: "Discontinuous medium density urban fabric" },
+        "Discontinuous low density urban fabric (S.L. : 10% - 30%)": { color: "rgba(253, 141, 60, 0.8)", label: "Discontinuous low density urban fabric" },
+        "Discontinuous very low density urban fabric (S.L. : < 10%)": { color: "rgba(107, 174, 214, 0.8)", label: "Discontinuous very low density urban fabric" },
+        "Isolated structures": { color: "rgba(255, 255, 255, 0.8)", label: "Isolated structures" },
+        "Industrial, commercial, public, military and private units": { color: "rgba(189, 189, 189, 0.8)", label: "Industrial, commercial, public, military and private units" },
+        "Fast transit roads and associated land": { color: "rgba(99, 99, 99, 0.8)", label: "Fast transit roads and associated land" },
+        "Railways and associated land": { color: "rgba(161, 217, 155, 0.8)", label: "Railways and associated land" },
+        "Port areas": { color: "rgba(65, 171, 93, 0.8)", label: "Port areas" },
+        "Airports": { color: "rgba(255, 255, 178, 0.8)", label: "Airports" },
+        "Mineral extraction and dump sites": { color: "rgba(217, 217, 217, 0.8)", label: "Mineral extraction and dump sites" },
+        "Construction sites": { color: "rgba(204, 204, 204, 0.8)", label: "Construction sites" },
+        "Land without current use": { color: "rgba(238, 238, 238, 0.8)", label: "Land without current use" },
+        "Green urban areas (Public access)": { color: "rgba(161, 217, 155, 0.8)", label: "Green urban areas (Public access)" },
+        "Green urban areas (Private access)": { color: "rgba(65, 171, 93, 0.8)", label: "Green urban areas (Private access)" },
+        "Green urban areas (Unknown access conditions)": { color: "rgba(99, 99, 99, 0.8)", label: "Green urban areas (Unknown access conditions)" },
+        "Sports and leisure facilities": { color: "rgba(253, 188, 180, 0.8)", label: "Sports and leisure facilities" },
+        "Arable land (annual crops)": { color: "rgba(230, 245, 204, 0.8)", label: "Arable land" },
+        "Permanent crops (vineyards, fruit trees, olive groves)": { color: "rgba(194, 230, 153, 0.8)", label: "Permanent crops" },
+        "Pastures": { color: "rgba(120, 198, 121, 0.8)", label: "Pastures" },
+        "Complex and mixed cultivation patterns": { color: "rgba(217, 240, 163, 0.8)", label: "Complex and mixed cultivation patterns" },
+        "Forests": { color: "rgba(49, 163, 84, 0.8)", label: "Forests" },
+        "Herbaceous vegetation associations (natural grassland, moors...)": { color: "rgba(127, 191, 123, 0.8)", label: "Herbaceous vegetation associations" },
+        "Open spaces with little or no vegetation": { color: "rgba(217, 217, 217, 0.8)", label: "Open spaces with little or no vegetation" },
+        "Wetlands": { color: "rgba(174, 199, 232, 0.8)", label: "Wetlands" },
+        "Water": { color: "rgba(49, 130, 189, 0.8)", label: "Water" } 
       }
     },
     "Wildfires Attica 2015-2025": {

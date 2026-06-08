@@ -1398,6 +1398,22 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       vertical-align: bottom;
     }
 
+    /* Layer row loading spinner */
+    .layer-loading-spinner {
+      display: none;
+      width: 12px;
+      height: 12px;
+      border: 2px solid rgba(55, 65, 81, 0.2);
+      border-top-color: rgba(55, 65, 81, 0.85);
+      border-radius: 50%;
+      animation: layer-spin 0.7s linear infinite;
+      margin-left: 6px;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    .layer-loading-spinner.visible { display: inline-block; }
+    @keyframes layer-spin { to { transform: rotate(360deg); } }
+
     /* Pop-up animation keyframes */
     @keyframes popupFadeIn {
       0% {

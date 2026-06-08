@@ -4,10 +4,10 @@
   var printScaleOverlay = null;
   var printLegendOverlay = null;
   var exportMapStyleBackup = null;
-  var EXPORT_LEGEND_MAX_CLASSES = 25;
+  var EXPORT_LEGEND_MAX_CLASSES = 30;
   var A4_BASE_WIDTH = 1045;
   var A4_BASE_HEIGHT = 715;
-  var EXPORT_RESOLUTION_MULTIPLIER = 1.3;
+  var EXPORT_RESOLUTION_MULTIPLIER = 1.25;
 
   function formatScale(value){
     return String(value).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -115,9 +115,10 @@
       legend.style.top = '10px';
       legend.style.right = '10px';
       legend.style.display = 'none';
-      legend.style.maxWidth = '280px';
-      legend.style.maxHeight = '44%';
-      legend.style.overflowY = 'auto';
+      legend.style.maxWidth = '220px';
+      legend.style.maxHeight = '95%';
+      legend.style.overflowY = 'hidden';
+      legend.style.overflowX = 'hidden';
       legend.style.padding = '8px 10px';
       legend.style.borderRadius = '10px';
       legend.style.background = 'rgba(255,255,255,0.95)';
@@ -125,8 +126,8 @@
       legend.style.boxShadow = '0 1px 4px rgba(0,0,0,0.2)';
       legend.style.color = 'rgba(17, 24, 39, 1)';
       legend.style.fontFamily = '"Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif';
-      legend.style.fontSize = '16px';
-      legend.style.lineHeight = '1.5';
+      legend.style.fontSize = '12px';
+      legend.style.lineHeight = '1.1';
       legend.style.pointerEvents = 'none';
       legend.style.zIndex = '1200';
       container.appendChild(legend);
@@ -194,14 +195,14 @@
       return;
     }
 
-    var html = '<div style="font-size:16px; font-weight:700; letter-spacing:0.3px; margin-bottom:8px;">Legend</div>';
+    var html = '<div style="font-size:14px; font-weight:700; letter-spacing:0.3px; margin-bottom:8px;">Legend</div>';
     groups.forEach(function(group){
-      html += '<div style="font-size:16px; font-weight:600; margin:8px 0 5px;">' + group.title + '</div>';
+      html += '<div style="font-size:14px; font-weight:600; margin:8px 0 5px;">' + group.title + '</div>';
       group.order.forEach(function(key){
         var item = group.items[key];
         html += '<div style="display:flex; align-items:flex-start; gap:8px; margin:4px 0;">';
-        html += '<span style="width:14px; height:14px; min-width:14px; border-radius:3px; margin-top:4px; background:' + item.color + ';"></span>';
-        html += '<span style="font-size:16px; line-height:1.35;">' + item.label + '</span>';
+        html += '<span style="width:12px; height:12px; min-width:12px; border-radius:3px; margin-top:4px; background:' + item.color + ';"></span>';
+        html += '<span style="font-size:14px; line-height:1.2;">' + item.label + '</span>';
         html += '</div>';
       });
     });

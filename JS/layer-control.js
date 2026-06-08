@@ -90,7 +90,8 @@ var layerCategories = {
   },
   "Urban Planning": {
     "Land Uses": [
-      { name: "Corine Land Cover (2018)", file: "UrbanPlanning/AthensCorine2018.json" },
+      { name: "Land Cover and Land Use (2021)", file: "UrbanPlanning/Land_Cover_2021.json" },
+      { name: "Land Cover and Land Use (2018)", file: "UrbanPlanning/AthensCorine2018.json" },
       { name: "Municipality of Athens Urban Plan (2012)", file: "UrbanPlanning/Athens Urban Plan 2012.geojson" }
     ],
     "Public Spaces": [
@@ -109,7 +110,7 @@ var layerCategories = {
       { name: "OASA Bus Stops", file: "Transportation/AthensBusStops.geojson" },
       { name: "Highways (Greece)", file: "Transportation/GreeceHighways.geojson" },
       { name: "Street Network Mun. of Athens", file: "Transportation/AthStreets.geojson" },
-      { name: "Toll Stations", file: "Transportation/TollStations.geojson" },
+      { name: "Toll Stations", file: "Transportation/TollStations.geojson" }, 
       { name: "Traffic Accidents 2023-2025", file: "Transportation/TrAccidents.json" },
       { name: "Traffic Lights", file: "Transportation/TrLights.geojson" }
     ],
@@ -121,7 +122,7 @@ var layerCategories = {
       { name: "Metro Boarding Platforms of Line 1", file: "Transportation/MetroPlatforms.geojson" },
       { name: "Railway Network (Greece)", file: "Transportation/GreeceRail.geojson" },
       { name: "Suburban Railway Stations", file: "Transportation/AthensTrain.geojson" },
-      { name: "Tram Stations", file: "Transportation/TramStations.json" },
+      { name: "Tram Stations", file: "Transportation/TramStations.json" },  
       { name: "Tram Lines", file: "Transportation/TramLines.geojson" },
       { name: "Tram Boarding Platforms", file: "Transportation/TramPlatforms.geojson" }
     ]
@@ -208,15 +209,12 @@ function getAssetBaseCandidates(kind){
 
 function buildAssetUrl(kind, relativePath, base){
   var root = kind === 'data' ? FIXED_ASSET_ROOTS.data : FIXED_ASSET_ROOTS.info;
-  var normalizedBase = normalizeAssetBase(base);
-  if(normalizedBase){
-    var lower = normalizedBase.toLowerCase();
-    if(lower === 'data') root = FIXED_ASSET_ROOTS.data;
-    else if(lower === 'info') root = FIXED_ASSET_ROOTS.info;
+  var r2Base = window.CONFIG && window.CONFIG.R2_BASE_URL ? String(window.CONFIG.R2_BASE_URL).replace(/\/+$/, '') : null;
+  if(r2Base){
+    return r2Base + '/' + root + '/' + encodePathSegments(relativePath);
   }
   var runtimeBase = getSiteRootUrl();
   var url = new URL(root + '/' + encodePathSegments(relativePath), runtimeBase);
-  // Defensive normalization in case any upstream value contains duplicated repo segments.
   url.pathname = url.pathname.replace(/(\/athens-gis-repository\/)+/ig, '/athens-gis-repository/');
   return url.toString();
 }
@@ -388,11 +386,11 @@ function buildPropertyTable(feature){
     else if(Object.prototype.hasOwnProperty.call(keyAliases, k)) d = keyAliases[k];
 
     if(k==='shapeleng_'){ v=Number(v).toFixed(2); d='Shape Length (km)'; }
-    else if(k==='shapearea'){ v=Number(v).toFixed(2); d='Shape Area (km²)'; }
+    else if(k==='shapearea'){ v=Number(v).toFixed(4); d='Shape Area (km²)'; }
     else if(['shapeleng_m','shapelengm','length','shape_leng'].includes(k)){ v=Number(v).toFixed(2); d='Shape Length (m)'; }
     else if(['shapearea_m','shapeaream'].includes(k)){ v=Number(v).toFixed(2); d='Shape Area (m²)'; }
     else if(['name','name_el','name_place','gname','uses_gr'].includes(k)){ d='Name (GR)'; }
-    else if(['ename','name_pl_en','name_en','uses_en','name:en'].includes(k)){ d='Name (ENG)'; }
+    else if(['ename','name_pl_en','name_en','uses_en','name:en','class_2021'].includes(k)){ d='Name (ENG)'; }
     else if(k==='bridge') d='Bridge';
     else if(k==='tunnel') d='Tunnel';
     else if(k==='ref') d='Route';
@@ -409,6 +407,7 @@ function buildPropertyTable(feature){
     else if(k==='oneway') d='One-Way Road';
     else if(k==='surface') d='Surface Type';
     else if(k==='fid' || k==='objectid'|| k==='full_id') d='Feature ID';
+    else if(k==='code_2021' || k==='code_18') d='Reference Code';
     else if(k==='popul2011') d='Population';
     else if(k==='wt') d='Wind Turbine';
     else if(k==='power_anem') d='Power (MW)';
@@ -806,6 +805,17 @@ function createLayerFromGeoJSON(data, layerName, legendConfig){
 
   return group;
 }
+function startLoadingSpinner(label){
+  var el = document.createElement('span');
+  el.className = 'layer-loading-spinner';
+  label.appendChild(el);
+  var timer = setTimeout(function(){ el.classList.add('visible'); }, 1000);
+  return function stopSpinner(){
+    clearTimeout(timer);
+    if(el.parentNode) el.parentNode.removeChild(el);
+  };
+}
+
 function renderLayerControl(){
   if(!getMap()) return setTimeout(renderLayerControl,50);
   var controlDiv = document.getElementById('layerControl'); if(!controlDiv) return;
@@ -954,6 +964,8 @@ function renderLayerControl(){
       if(this.checked){
         row.classList.add('selected');
         if(dEl) dEl.style.display='inline-block';
+        var stopTerrainSpinner = startLoadingSpinner(label);
+        row._stopSpinner = stopTerrainSpinner;
         AthensGIS.activeLayerInfos[layerName]='<em>Loading info...</em>';
         ensureInfoBoxUpdate();
         // Show legend immediately
@@ -962,12 +974,14 @@ function renderLayerControl(){
         }
         loadLayerData('Environment/Relief.json')
             .then(function(data){
+            stopTerrainSpinner();
             var lc=(window.legendConfigs||{})[layerName];
             if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName);
             var lyr=createLayerFromGeoJSON(data, layerName, lc);
             // Keep internal key as 'Relief' for cleanup compatibility
             AthensGIS.geojsonLayers['Relief']=lyr;
           }).catch(function(err){
+            stopTerrainSpinner();
             console.error('Failed to load Terrain layer data:', err);
             AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>';
             ensureInfoBoxUpdate();
@@ -978,6 +992,7 @@ function renderLayerControl(){
         AthensGIS.layerKeyByName[layerName]='Relief';
         if(typeof AthensGIS.refreshOpacityPopup==='function') AthensGIS.refreshOpacityPopup();
       } else {
+        if(typeof row._stopSpinner==='function'){ row._stopSpinner(); row._stopSpinner=null; }
         row.classList.remove('selected');
         if(dEl) dEl.style.display='none';
         if(AthensGIS.geojsonLayers['Relief']){ getMap().removeLayer(AthensGIS.geojsonLayers['Relief']); delete AthensGIS.geojsonLayers['Relief']; }
@@ -1226,22 +1241,25 @@ function renderLayerControl(){
         row.classList.add('selected');
         if(dEl) dEl.style.display='inline-block';
         if(colorBtn) updateColorButtonPreview(colorBtn, layerName);
+        var stopRowSpinner = startLoadingSpinner(label);
+        row._stopSpinner = stopRowSpinner;
         AthensGIS.activeLayerInfos[layerName]='<em>Loading info...</em>'; ensureInfoBoxUpdate();
         // Trigger legend update immediately (so user sees legend without waiting for fetch)
         if(typeof window.updateLegendBar==='function' && (window.legendConfigs||{})[layerName]){
           window.updateLegendBar(layerName);
         }
         if(layerName==='Relief'){
-          Promise.all(['relief1.json','relief2.json','relief3.json','relief4.json'].map(function(f){ return loadLayerData('Environment/'+f); })).then(function(parts){ var merged={type:'FeatureCollection', features:parts.flatMap(function(p){ return p.features||[]; })}; var lc=(window.legendConfigs||{})[layerName]; if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName); var lyr=L.geoJSON(merged, geojsonOptions(layerName, lc)).addTo(getMap()); AthensGIS.geojsonLayers['Relief']=lyr; }).catch(function(err){ console.error('Failed to load Relief layer data:', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>'; ensureInfoBoxUpdate(); });
+          Promise.all(['relief1.json','relief2.json','relief3.json','relief4.json'].map(function(f){ return loadLayerData('Environment/'+f); })).then(function(parts){ stopRowSpinner(); var merged={type:'FeatureCollection', features:parts.flatMap(function(p){ return p.features||[]; })}; var lc=(window.legendConfigs||{})[layerName]; if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName); var lyr=L.geoJSON(merged, geojsonOptions(layerName, lc)).addTo(getMap()); AthensGIS.geojsonLayers['Relief']=lyr; }).catch(function(err){ stopRowSpinner(); console.error('Failed to load Relief layer data:', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>'; ensureInfoBoxUpdate(); });
           loadLayerInfo('Environment/Relief.txt').then(function(t){ AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(){ AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
         } else if(file){
-          loadLayerData(file).then(function(data){ var lc2=(window.legendConfigs||{})[layerName]; if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName); var lyr2=createLayerFromGeoJSON(data, layerName, lc2); AthensGIS.geojsonLayers[file]=lyr2; }).catch(function(err){ console.error('Failed to load layer data for "' + layerName + '":', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>'; ensureInfoBoxUpdate(); });
+          loadLayerData(file).then(function(data){ stopRowSpinner(); var lc2=(window.legendConfigs||{})[layerName]; if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName); var lyr2=createLayerFromGeoJSON(data, layerName, lc2); AthensGIS.geojsonLayers[file]=lyr2; }).catch(function(err){ stopRowSpinner(); console.error('Failed to load layer data for "' + layerName + '":', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>'; ensureInfoBoxUpdate(); });
           var txt=file.replace(/\.[^/.]+$/, '')+'.txt'; loadLayerInfo(txt).then(function(t){ AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(){ AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
         }
         if(AthensGIS.activeLayerOrder.indexOf(layerName)===-1) AthensGIS.activeLayerOrder.push(layerName);
         AthensGIS.layerKeyByName[layerName]=(layerName==='Relief') ? 'Relief' : (file||layerName);
         if(typeof AthensGIS.refreshOpacityPopup==='function') AthensGIS.refreshOpacityPopup();
       } else {
+        if(typeof row._stopSpinner==='function'){ row._stopSpinner(); row._stopSpinner=null; }
         // Remove selected visual style
         row.classList.remove('selected');
         if(dEl) dEl.style.display='none';

@@ -496,6 +496,53 @@ function ensureInfoBoxUpdate(){
 }
 
   // 4. Factory for geojson options
+var _highlightRenderer = null;
+var _highlightOverlayLayer = null;
+
+function applyHighlightOverlay(map, geojsonFeature, highlightStyle){
+  if(_highlightOverlayLayer){ try{ _highlightOverlayLayer.remove(); }catch(_){} _highlightOverlayLayer = null; }
+  if(!map || !geojsonFeature) return;
+  if(!_highlightRenderer){
+    try{
+      if(!map.getPane('highlight-pane')){
+        map.createPane('highlight-pane');
+        map.getPane('highlight-pane').style.zIndex = 655;
+        map.getPane('highlight-pane').style.pointerEvents = 'none';
+      }
+    }catch(e){}
+    _highlightRenderer = L.svg({ pane: 'highlight-pane' });
+  }
+  var s = highlightStyle || {};
+  _highlightOverlayLayer = L.geoJSON(geojsonFeature, {
+    renderer: _highlightRenderer,
+    style: function(){ return { color: s.color||'#333', weight: s.weight||2, fillColor: s.fillColor||s.color||'#333', opacity: s.opacity||1, fillOpacity: s.fillOpacity||1 }; },
+    pointToLayer: function(f, latlng){
+      return L.circleMarker(latlng, { renderer: _highlightRenderer, radius: s.radius||6, color: s.color||'#333', weight: s.weight||2, fillColor: s.fillColor||s.color||'#333', opacity: s.opacity||1, fillOpacity: s.fillOpacity||1 });
+    }
+  }).addTo(map);
+  _highlightOverlayLayer.eachLayer(function(l){
+    if(l._path){
+      l._path.style.pointerEvents = 'none';
+      l._path.style.transition = 'filter 0.15s ease';
+      l._path.style.filter = 'drop-shadow(0 6px 18px rgba(0,0,0,0.65)) drop-shadow(0 2px 5px rgba(0,0,0,0.5))';
+    }
+  });
+}
+
+function resetFeatureHighlight(){
+  if(_highlightOverlayLayer){ try{ _highlightOverlayLayer.remove(); }catch(_){} _highlightOverlayLayer = null; }
+  if(AthensGIS.selectedFeature){
+    var sf = AthensGIS.selectedFeature;
+    AthensGIS.selectedFeature = null;
+    Object.keys(AthensGIS.geojsonLayers).forEach(function(key){
+      var lyr = AthensGIS.geojsonLayers[key];
+      if(lyr && typeof lyr.resetStyle === 'function'){
+        try{ lyr.resetStyle(sf); }catch(_){}
+      }
+    });
+  }
+}
+
 function geojsonOptions(layerName, legendConfig){
   return {
     style: function(feature){
@@ -594,14 +641,12 @@ function geojsonOptions(layerName, legendConfig){
       return L.circleMarker(latlng,{ radius: radius, fillColor: fillColor, color: color, weight:1, opacity:lyrOpacity, fillOpacity:lyrOpacity });
     },
     onEachFeature: function(feature, layer){
+      var infoParent = document.getElementById('infoBox');
+      var infoContent = document.getElementById('infoContent');
+      var html = (layerName !== 'Terrain' && layerName !== 'Relief') ? buildPropertyTable(feature) : null;
       layer.on('click', function(e){
-        if(AthensGIS.selectedFeature){
-          Object.keys(AthensGIS.geojsonLayers).forEach(function(key){
-            var lyr = AthensGIS.geojsonLayers[key];
-            if(lyr && typeof lyr.resetStyle==='function'){
-              try{ lyr.resetStyle(AthensGIS.selectedFeature); }catch(_){}}
-          });
-        }
+        L.DomEvent.stopPropagation(e);
+        resetFeatureHighlight();
         AthensGIS.selectedFeature = e.target;
         var lc = (window.legendConfigs||{})[layerName];
         if(!lc && (layerName==='Terrain' || layerName==='Relief')) lc = (window.legendConfigs||{}).Terrain;
@@ -614,32 +659,29 @@ function geojsonOptions(layerName, legendConfig){
           }
           var cs2 = getLegendClassForValue(lc, cv2);
           if(cs2){
-            highlight.color=cs2.color;
-            highlight.fillColor=cs2.color;
+            highlight.color = cs2.color;
+            highlight.fillColor = cs2.color;
           } else {
             var fallbackLegendColors = getLayerColorState(layerName);
-            highlight.color=fallbackLegendColors.border;
-            highlight.fillColor=fallbackLegendColors.fill;
+            highlight.color = fallbackLegendColors.border;
+            highlight.fillColor = fallbackLegendColors.fill;
           }
         } else {
           var fallbackColors = getLayerColorState(layerName);
-          highlight.color=fallbackColors.border;
-          highlight.fillColor=fallbackColors.fill;
+          highlight.color = fallbackColors.border;
+          highlight.fillColor = fallbackColors.fill;
         }
         e.target.setStyle(highlight);
-        if(e.target._path){
-          e.target._path.classList.add('feature-highlight');
-          document.querySelectorAll('path.feature-highlight').forEach(function(p){ if(p!==e.target._path) p.classList.remove('feature-highlight'); });
+        if(layerName !== 'Terrain' && layerName !== 'Relief' && e.target.feature){
+          if(e.target.options && Number.isFinite(e.target.options.radius)) highlight.radius = e.target.options.radius;
+          applyHighlightOverlay(getMap(), e.target.feature, highlight);
         }
         e.target.bringToFront();
+        if(html && infoContent){
+          infoContent.innerHTML = html;
+          if(infoParent) infoParent.style.display = 'block';
+        }
       });
-      var infoParent = document.getElementById('infoBox');
-      var infoContent = document.getElementById('infoContent');
-      var html = buildPropertyTable(feature);
-      // Only attach the infoBox update for non-Relief layers
-      if(layerName!=='Terrain' && layerName!=='Relief'){
-        layer.on('click', function(ev){ if(infoContent){ infoContent.innerHTML=html; if(infoParent) infoParent.style.display='block'; L.DomEvent.stopPropagation(ev);} });
-      }
     }
   };
 }
@@ -797,10 +839,12 @@ function createLayerFromGeoJSON(data, layerName, legendConfig){
     }
   }catch(e){}
 
-  // Add helper resetStyle to be compatible with existing code that calls resetStyle on stored layers
+  // Capture native resetStyle references before overwriting (prevents infinite recursion when group===polyLayer or group===vecLayer)
+  var _polyReset = (polyLayer && typeof polyLayer.resetStyle === 'function') ? polyLayer.resetStyle.bind(polyLayer) : null;
+  var _vecReset  = (vecLayer  && typeof vecLayer.resetStyle  === 'function') ? vecLayer.resetStyle.bind(vecLayer)   : null;
   group.resetStyle = function(feature){
-    try{ if(polyLayer && typeof polyLayer.resetStyle==='function') polyLayer.resetStyle(feature); }catch(_){}
-    try{ if(vecLayer && typeof vecLayer.resetStyle==='function') vecLayer.resetStyle(feature); }catch(_){}
+    if(_polyReset) try{ _polyReset(feature); }catch(_){}
+    if(_vecReset)  try{ _vecReset(feature);  }catch(_){}
   };
 
   return group;
@@ -993,6 +1037,7 @@ function renderLayerControl(){
         if(typeof AthensGIS.refreshOpacityPopup==='function') AthensGIS.refreshOpacityPopup();
       } else {
         if(typeof row._stopSpinner==='function'){ row._stopSpinner(); row._stopSpinner=null; }
+        resetFeatureHighlight();
         row.classList.remove('selected');
         if(dEl) dEl.style.display='none';
         if(AthensGIS.geojsonLayers['Relief']){ getMap().removeLayer(AthensGIS.geojsonLayers['Relief']); delete AthensGIS.geojsonLayers['Relief']; }
@@ -1260,6 +1305,7 @@ function renderLayerControl(){
         if(typeof AthensGIS.refreshOpacityPopup==='function') AthensGIS.refreshOpacityPopup();
       } else {
         if(typeof row._stopSpinner==='function'){ row._stopSpinner(); row._stopSpinner=null; }
+        resetFeatureHighlight();
         // Remove selected visual style
         row.classList.remove('selected');
         if(dEl) dEl.style.display='none';

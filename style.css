@@ -1123,7 +1123,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       box-shadow: 0 2px 4px rgba(0,0,0,0.25);
     }
     .feature-highlight {
-    filter: drop-shadow(1px 1px 5px rgba(0, 0, 0, 0.9));
+      transition: filter 0.15s ease;
     }
 
     #layer-search-container {

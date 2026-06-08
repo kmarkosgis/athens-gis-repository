@@ -286,7 +286,7 @@ window.legendConfigs = {
         "Complex and mixed cultivation patterns": { color: "rgba(217, 240, 163, 0.8)", label: "Complex and mixed cultivation patterns" },
         "Forests": { color: "rgba(49, 163, 84, 0.8)", label: "Forests" },
         "Herbaceous vegetation associations (natural grassland, moors...)": { color: "rgba(127, 191, 123, 0.8)", label: "Herbaceous vegetation associations" },
-        "Open spaces with little or no vegetation": { color: "rgba(217, 217, 217, 0.8)", label: "Open spaces with little or no vegetation" },
+        "Open spaces with little or no vegetation (beaches, dunes, bare rocks, glaciers)": { color: "rgba(217, 217, 217, 0.8)", label: "Open spaces with little or no vegetation" },
         "Wetlands": { color: "rgba(174, 199, 232, 0.8)", label: "Wetlands" },
         "Water": { color: "rgba(49, 130, 189, 0.8)", label: "Water" } 
       }

@@ -123,24 +123,10 @@
   // === End Custom Basemap Dropdown Switcher Logic ===
 
   // === Global map click to clear highlighted feature & info box ===
-  map.on('click', function(e){
-    var ag = window.AthensGIS || {};
-    if(!ag.selectedFeature) return; // nothing to clear
-    // Extra guard: if the original target is a vector path, skip (feature click handled separately)
-    if(e.originalEvent && e.originalEvent.target && e.originalEvent.target.tagName && e.originalEvent.target.tagName.toLowerCase()==='path') return;
-    try {
-      Object.keys(ag.geojsonLayers||{}).forEach(function(key){
-        var lyr = ag.geojsonLayers[key];
-        if(lyr && typeof lyr.resetStyle==='function'){
-          try { lyr.resetStyle(ag.selectedFeature); } catch(_){}
-        }
-      });
-      // Remove any lingering highlight classes
-      document.querySelectorAll('path.feature-highlight').forEach(function(p){ p.classList.remove('feature-highlight'); });
-    } catch(_){}
-    ag.selectedFeature = null;
+  map.on('click', function(){
+    if(typeof resetFeatureHighlight === 'function') resetFeatureHighlight();
     var infoBox = document.getElementById('infoBox');
-    if(infoBox) infoBox.style.display='none';
+    if(infoBox) infoBox.style.display = 'none';
   });
   // === End clear highlight logic ===
 

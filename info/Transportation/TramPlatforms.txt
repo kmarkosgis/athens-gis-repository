@@ -1,5 +1,0 @@
-Boarding platforms of Tram stations.
-
-<p>Uploaded: 27-02-2025<p/>
-<p>Contributors: K. Markos<p/>
-<p>Source: OSM, Stasy,Elliniko Metro<p/>

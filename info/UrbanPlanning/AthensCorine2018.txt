@@ -1,5 +1,0 @@
-Corine Land Cover (2018) in Attica Region.
-
-<p>Uploaded: 01-09-2025<p/>
-<p>Contributors: K. Markos<p/>
-<p>Source: Copernicus Land Monitoring Service<p/>

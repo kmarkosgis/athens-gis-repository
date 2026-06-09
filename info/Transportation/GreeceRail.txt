@@ -1,5 +1,0 @@
-Rail network of Greece.
-
-<p>Uploaded: 16-01-2026<p/>
-<p>Contributors: K. Markos<p/>
-<p>Source: OSM<p/>

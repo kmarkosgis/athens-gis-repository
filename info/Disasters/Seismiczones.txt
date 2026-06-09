@@ -1,5 +1,0 @@
-Seismic hazard zones in Greece based on the Greek antiseismic regulations.
-
-<p>Uploaded: 11-02-2026<p/>
-<p>Contributors: K.Markos<p/>
-<p>Source: EAK<p/>

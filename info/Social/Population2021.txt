@@ -1,5 +1,0 @@
-Official population census for 2021, by municipal district, in Athens and Piraeus.
-
-<p>Uploaded: 20-08-2025<p/>
-<p>Contributors: K. Markos<p/>
-<p>Source: ELSTAT(Hellenic Statistical Authority), Region of Attica<p/>

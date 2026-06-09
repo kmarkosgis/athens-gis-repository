@@ -1,5 +1,0 @@
-Earthquakes with 2.5+ magnitude, which occurred in the region of Attica for the period 1-1-2006 - 30-1-2026.
-
-<p>Uploaded: 11-02-2026<p/>
-<p>Contributors: K.Markos, M. Chatzigeorgiadis<p/>
-<p>Source: USGS<p/>

@@ -1,5 +1,0 @@
-Athens Metro lines 1, 2, and 3.
-
-<p>Uploaded: 17-02-2026<p/>
-<p>Contributors: K. Markos<p/>
-<p>Source: OSM, Stasy, Elliniko Metro<p/>

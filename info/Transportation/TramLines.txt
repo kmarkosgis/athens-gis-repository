@@ -1,5 +1,0 @@
-Athens Tram lines network.
-
-<p>Uploaded: 27-02-2026<p/>
-<p>Contributors: K. Markos<p/>
-<p>Source: OSM, Stasy,Elliniko Metro<p/>

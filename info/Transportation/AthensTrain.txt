@@ -1,6 +1,0 @@
-Train stations of the Athens Suburban and Regional Railway.
-
-<p>Uploaded: 23-06-2025<p/>
-<p>Contributors: K. Markos<p/>
-<p>Source: OSM, Hellenic Train<p/>
- 

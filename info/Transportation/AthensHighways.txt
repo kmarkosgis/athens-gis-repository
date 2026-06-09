@@ -1,5 +1,0 @@
-Center lines of the highways and highway connectors in the region of Attica.
-
-<p>Uploaded: 23-06-2025<p/>
-<p>Contributors: K. Markos<p/>
-<p>Source: OSM<p/>

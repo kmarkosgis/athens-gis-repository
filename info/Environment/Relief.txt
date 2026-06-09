@@ -1,5 +1,0 @@
-Ground relief with contour lines (50m) in Attica region.
-
-<p>Uploaded: 16-09-2025<p/>
-<p>Contributors: K. Markos<p/>
-<p>Source: Esri<p/>

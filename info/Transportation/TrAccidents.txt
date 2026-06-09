@@ -1,5 +1,0 @@
-Traffic accident locations in the region of Attica in the time period January 2023 - May 2025.
-
-<p>Uploaded: 17-02-2026<p/>
-<p>Contributors: K. Markos<p/>
-<p>Source: Road Traffic Collision Map (gov.gr)<p/>

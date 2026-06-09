@@ -1,6 +1,0 @@
-Fuel stations' locations in the region of Attica.
-
-<p>Uploaded: 01-10-2025<p/>
-<p>Contributors: K. Markos<p/>
-<p>Source: OSM<p/>
- 

@@ -1,5 +1,0 @@
-Visualization of green spaces in Athens center sector, using the NDVI function, resulting from the processing of Sentinel satellite images (resolution = 10 m).
-
-<p>Uploaded: 20-08-2025<p/>
-<p>Contributors: K. Markos<p/>
-<p>Source: USGS<p/>

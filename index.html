@@ -56,28 +56,31 @@
   }
   </script>
 
-  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js" defer></script>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <!-- MapLibre GL (for 3D building basemap) -->
-  <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
-  <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
-  <!-- MapLibre-GL Leaflet bridge -->
-  <script src="https://unpkg.com/maplibre-gl-leaflet/dist/MaplibreGLLeaflet.min.js"></script>
-  <!-- Use local copy of leaflet-easyprint (keeps behavior consistent across hosts) -->
-  <script src="JS/leaflet-easyprint.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+<!-- Use local copy of leaflet-easyprint (keeps behavior consistent across hosts) -->
+  <script src="JS/leaflet-easyprint.js" defer></script>
   <!-- jsPDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
-  <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+  <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js" defer></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet">
 
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://pub-2c514cfe5cf845c6a683337a482fd2e7.r2.dev">
+  <link rel="dns-prefetch" href="https://tiles.stadiamaps.com">
+  <link rel="dns-prefetch" href="https://tile.openstreetmap.org">
+  <link rel="dns-prefetch" href="https://server.arcgisonline.com">
+
   <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous" />
   <script>
     // Global object must be available before any module scripts.
     // GitHub Pages uses canonical root; local VS/live-server uses local project root.
@@ -87,9 +90,7 @@
       layerOpacities: {},
       activeLayerOrder: [],
       layerKeyByName: {},
-      selectedFeature: null,
-      // Set to 1 to publish the announcement box, or 0 to hide it for everyone.
-      announcementToggle: 1
+      selectedFeature: null
     }, window.AthensGIS || {});
     var host = String(window.location.hostname || '').toLowerCase();
     var isGitHubPages = host === 'kmarkosgis.github.io';
@@ -137,12 +138,7 @@
   </div>
 </div>
 
-<div class="announcement-box" id="announcement-box" hidden>
-  <h3>NEWS - ANNOUNCEMENTS<button class="close-btn" id="closeAnnouncementBtn">&times;</button></h3>
-  <p><strong>09/06/2026:</strong> Land Cover and Land Use (2021) layers added (Land Uses - Urban Planning).</p>
-  <p><strong>28/05/2026:</strong> Soil groups added (Geology). Reconfigured the opacity function in the toolbar.</p>
-  <p><strong>25/05/2026:</strong> Archaeological Sites added (Public Places - Urban Planning).</p>
-</div>
+<div class="announcement-box" id="announcement-box" hidden></div>
 
 <div id="map"></div>
 
@@ -405,22 +401,23 @@ The repository also uses PostHog, which operates exclusively within the European
 <!-- Reopen Welcome Button -->
 <button id="openWelcome" title="Open Info Message">&#8505;</button>
 <!-- Leaflet JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" defer></script>
 
 <!-- Corrected folder name capitalization (JS instead of js) for case-sensitive hosting -->
-<script src="JS/map-init.js?v=20260218-1"></script>
-<script src="JS/legend.js?v=20260218-1"></script>
-<script src="JS/info-box.js?v=20260218-1"></script>
-<script src="JS/config.js"></script>
-<script src="JS/layer-control.js?v=20260218-1"></script>
-<script src="JS/citation.js?v=20260222-4"></script>
-<script src="JS/legal.js?v=20260222-1"></script>
-<script src="JS/measure.js?v=20260218-1"></script>
-<script src="JS/export.js?v=20260323-1"></script>
-<script src="JS/ui.js?v=20260319-1"></script>
-<script src="JS/utils.js?v=20260218-1"></script>
-<script src="JS/cookies.js?v=20260222-1"></script>
+<script src="JS/map-init.js?v=20260218-1" defer></script>
+<script src="JS/legend.js?v=20260218-1" defer></script>
+<script src="JS/info-box.js?v=20260218-1" defer></script>
+<script src="JS/config.js" defer></script>
+<script src="JS/layer-control.js?v=20260218-1" defer></script>
+<script src="JS/citation.js?v=20260222-4" defer></script>
+<script src="JS/legal.js?v=20260222-1" defer></script>
+<script src="JS/measure.js?v=20260218-1" defer></script>
+<script src="JS/export.js?v=20260323-1" defer></script>
+<script src="JS/ui.js?v=20260319-1" defer></script>
+<script src="JS/announcement.js" defer></script>
+<script src="JS/utils.js?v=20260218-1" defer></script>
+<script src="JS/cookies.js?v=20260222-1" defer></script>
 
 <script>
     !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);

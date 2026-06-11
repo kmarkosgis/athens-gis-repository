@@ -95,9 +95,9 @@ window.legendConfigs = {
     field: "Type",
     title: "Natura 2000 Site Type",
     classes: {
-      "Protected under the Habitats Directive": { color: "#87cefa", label: "Protected under the Habitats Directive" }, // light blue
-      "Protected under the Birds Directive": { color: "#90ee90", label: "Protected under the Birds Directive" },   // light green
-      "Protected under both Birds and Habitats Directives": { color: "#ffd700", label: "Protected under both Birds and Habitats Directives" },     // gold/yellow
+      "Protected under the Habitats Directive": { color: "rgba(135, 206, 250, 0.7)", label: "Protected under the Habitats Directive" }, // light blue
+      "Protected under the Birds Directive": { color: "rgba(144, 238, 144, 0.7)", label: "Protected under the Birds Directive" },   // light green
+      "Protected under both Birds and Habitats Directives": { color: "rgba(255, 215, 0, 0.7)", label: "Protected under both Birds and Habitats Directives" },     // gold/yellow
     },
   },
   "Gardens": {

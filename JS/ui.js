@@ -18,7 +18,12 @@ document.getElementById('menuBtn').addEventListener('click', function() {
 // Ensure consistent vertical gaps between floating boxes:
 // - `infoBox` bottom border is always 10px above top of `layerInfoBox`
 // - `legend-bar` bottom is always 10px above top of `infoBox`
+var _spacingTimer;
 function updateFloatingBoxSpacing() {
+	clearTimeout(_spacingTimer);
+	_spacingTimer = setTimeout(_doUpdateFloatingBoxSpacing, 100);
+}
+function _doUpdateFloatingBoxSpacing() {
 	try {
 		const layer = document.getElementById('layerInfoBox');
 		const info = document.getElementById('infoBox');
@@ -62,7 +67,9 @@ window.addEventListener('resize', updateFloatingBoxSpacing);
 
 // Observe size changes of the boxes and update spacing accordingly
 if (window.ResizeObserver) {
-	const ro = new ResizeObserver(updateFloatingBoxSpacing);
+	const ro = new ResizeObserver(function() {
+		requestAnimationFrame(updateFloatingBoxSpacing);
+	});
 	const layerEl = document.getElementById('layerInfoBox');
 	const infoEl = document.getElementById('infoBox');
 	const legendEl = document.getElementById('legend-bar');
@@ -70,10 +77,6 @@ if (window.ResizeObserver) {
 	if (infoEl) ro.observe(infoEl);
 	if (legendEl) ro.observe(legendEl);
 }
-
-// Also re-run when DOM mutations may change heights (e.g., content injected)
-const docObserver = new MutationObserver(updateFloatingBoxSpacing);
-docObserver.observe(document.body, { childList: true, subtree: true, attributes: false });
 
 // Hide layerControl when clicking outside (mobile)
 document.addEventListener('click', function(e) {
@@ -120,46 +123,4 @@ document.addEventListener("DOMContentLoaded", function () {
 	});
 });
 
-// Announcement box logic with a global 0/1 toggle and per-user dismissal.
-document.addEventListener("DOMContentLoaded", function () {
-	const box = document.getElementById("announcement-box");
-	const closeBtn = document.getElementById("closeAnnouncementBtn");
-	if (!box || !closeBtn) return;
-
-	const announcementToggle = Number((window.AthensGIS || {}).announcementToggle);
-	const dismissalStorageKey = "announcementDismissedSignature";
-	const announcementSignature = Array.from(box.querySelectorAll("p"))
-		.map(function (item) {
-			return (item.textContent || "").replace(/\s+/g, " ").trim();
-		})
-		.join("|");
-
-	function hideAnnouncement() {
-		box.hidden = true;
-		box.setAttribute("aria-hidden", "true");
-	}
-
-	function showAnnouncement() {
-		box.hidden = false;
-		box.setAttribute("aria-hidden", "false");
-	}
-
-	if (announcementToggle !== 1) {
-		localStorage.removeItem(dismissalStorageKey);
-		hideAnnouncement();
-		return;
-	}
-
-	if (localStorage.getItem(dismissalStorageKey) === announcementSignature) {
-		hideAnnouncement();
-		return;
-	}
-
-	showAnnouncement();
-
-	closeBtn.addEventListener("click", function () {
-		localStorage.setItem(dismissalStorageKey, announcementSignature);
-		hideAnnouncement();
-	});
-});
 

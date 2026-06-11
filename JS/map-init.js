@@ -2,8 +2,8 @@
   var map = L.map('map', {
     preferCanvas: true, // better performance for many features
     zoomControl: false,  // turn off default zoom control
-    zoomDelta: 0.5,      // smaller zoom step
-    zoomSnap: 0.5        // allow half-step zoom levels
+    zoomDelta: 0.3,      // smaller zoom step
+    zoomSnap: 0.3        // allow half-step zoom levels
   }).setView([37.98, 23.72], 12);
   if (window.AthensGIS) { window.AthensGIS.map = map; }
 
@@ -148,7 +148,7 @@
       } else { zin.disabled = false; zin.style.opacity = 1; zin.style.cursor='pointer'; }
     }
 
-    var zoomStep = 0.5;
+    var zoomStep = 0.3;
     zin.addEventListener('click', function(e){ e.preventDefault(); if(zin.disabled) return; map.zoomIn(zoomStep); });
     zout.addEventListener('click', function(e){ e.preventDefault(); if(zout.disabled) return; map.zoomOut(zoomStep); });
 

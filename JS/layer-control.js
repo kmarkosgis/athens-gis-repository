@@ -27,6 +27,9 @@ var layerCategories = {
     ]
   },
   "Environment": {
+    "Geology": [
+      { name: "Soil Groups", file: "Geo/SoilGroups.geojson" }
+    ],
     "Hydrology": [
       { name: "Rivers and Streams", file: "Environment/Rivers.geojson" },
     ],
@@ -39,11 +42,6 @@ var layerCategories = {
       { name: "Vegetation Index (South Sector)", file: "Environment/AthensGreenSouth.geojson" },
       { name: "Vegetation Index (West Sector)", file: "Environment/AthensGreenWest.geojson" },
       { name: "Vegetation Index (Piraeus)", file: "Environment/PiraeusGreen.geojson" }
-    ]
-  },
-  "Geology": {
-    "_items": [
-      { name: "Soil Groups", file: "Geo/SoilGroups.geojson" }
     ]
   },
   "Natural Hazards": {
@@ -89,6 +87,13 @@ var layerCategories = {
     ]
   },
   "Urban Planning": {
+    "KAEK": [
+      { name: "KAEK Central Sector", file: "UrbanPlanning/KAEKcenter.geojson" },
+      { name: "KAEK North Sector", file: "UrbanPlanning/KAEKnorth.geojson" },
+      { name: "KAEK South Sector", file: "UrbanPlanning/KAEKsouth.geojson" },
+      { name: "KAEK West Sector", file: "UrbanPlanning/KAEKwest.geojson" },
+      { name: "KAEK Piraeus", file: "UrbanPlanning/KAEKpiraeus.geojson" }
+    ],  
     "Land Uses": [
       { name: "Land Cover and Land Use (2021)", file: "UrbanPlanning/Land_Cover_2021.json" },
       { name: "Land Cover and Land Use (2018)", file: "UrbanPlanning/AthensCorine2018.json" },
@@ -103,13 +108,15 @@ var layerCategories = {
 
   },
   "Transportation Systems": {
-    "Road Transport": [
-      { name: "AI Traffic Cameras", file: "Transportation/AICameras.json" },
+    "Road Network": [
       { name: "Avenues", file: "Transportation/AthensAvenues.json" },
-      { name: "OASA Bus Lanes", file: "Transportation/Bus_Lanes.geojson" },
-      { name: "OASA Bus Stops", file: "Transportation/AthensBusStops.geojson" },
       { name: "Highways (Greece)", file: "Transportation/GreeceHighways.geojson" },
       { name: "Street Network Mun. of Athens", file: "Transportation/AthStreets.geojson" },
+    ],
+    "Road Transport": [
+      { name: "AI Traffic Cameras", file: "Transportation/AICameras.json" },
+      { name: "OASA Bus Lanes", file: "Transportation/Bus_Lanes.geojson" },
+      { name: "OASA Bus Stops", file: "Transportation/AthensBusStops.geojson" },
       { name: "Toll Stations", file: "Transportation/TollStations.geojson" }, 
       { name: "Traffic Accidents 2023-2025", file: "Transportation/TrAccidents.json" },
       { name: "Traffic Lights", file: "Transportation/TrLights.geojson" }
@@ -429,9 +436,35 @@ function buildPropertyTable(feature){
   }
   return '<table class="feature-properties-table">'+rows+'</table>';
 }
+var _layerInfoBox = null;
+var _layerInfoBoxListenerAttached = false;
+var _infoBox = null;
+var _infoContent = null;
+
 function ensureInfoBoxUpdate(){
-  var infoBox = document.getElementById('layerInfoBox'); if(!infoBox) return;
+  if(!_layerInfoBox) _layerInfoBox = document.getElementById('layerInfoBox');
+  var infoBox = _layerInfoBox; if(!infoBox) return;
   var contentEl = document.getElementById('layerInfoContent'); if(!contentEl) contentEl = infoBox;
+
+  // Attach delegated click handler once — survives innerHTML replacements
+  if(!_layerInfoBoxListenerAttached){
+    _layerInfoBoxListenerAttached = true;
+    infoBox.addEventListener('click', function(e){
+      var id = e.target && e.target.id;
+      if(id === 'prevTabBtn'){
+        if(AthensGIS.tabState && AthensGIS.tabState.currentTab > 0){
+          AthensGIS.tabState.currentTab--;
+          ensureInfoBoxUpdate();
+        }
+      } else if(id === 'nextTabBtn'){
+        var names = Object.keys(AthensGIS.activeLayerInfos);
+        if(AthensGIS.tabState && AthensGIS.tabState.currentTab < names.length - 1){
+          AthensGIS.tabState.currentTab++;
+          ensureInfoBoxUpdate();
+        }
+      }
+    });
+  }
   
   var layerNames = Object.keys(AthensGIS.activeLayerInfos);
   
@@ -474,25 +507,6 @@ function ensureInfoBoxUpdate(){
   contentEl.innerHTML = html;
   infoBox.style.display = 'block';
   
-  // Attach arrow handlers
-  var prevBtn = document.getElementById('prevTabBtn');
-  var nextBtn = document.getElementById('nextTabBtn');
-  if(prevBtn){
-    prevBtn.addEventListener('click', function(){
-      if(AthensGIS.tabState.currentTab > 0){
-        AthensGIS.tabState.currentTab--;
-        ensureInfoBoxUpdate();
-      }
-    });
-  }
-  if(nextBtn){
-    nextBtn.addEventListener('click', function(){
-      if(AthensGIS.tabState.currentTab < layerNames.length - 1){
-        AthensGIS.tabState.currentTab++;
-        ensureInfoBoxUpdate();
-      }
-    });
-  }
 }
 
   // 4. Factory for geojson options
@@ -641,8 +655,10 @@ function geojsonOptions(layerName, legendConfig){
       return L.circleMarker(latlng,{ radius: radius, fillColor: fillColor, color: color, weight:1, opacity:lyrOpacity, fillOpacity:lyrOpacity });
     },
     onEachFeature: function(feature, layer){
-      var infoParent = document.getElementById('infoBox');
-      var infoContent = document.getElementById('infoContent');
+      if(!_infoBox) _infoBox = document.getElementById('infoBox');
+      if(!_infoContent) _infoContent = document.getElementById('infoContent');
+      var infoParent = _infoBox;
+      var infoContent = _infoContent;
       var html = (layerName !== 'Terrain' && layerName !== 'Relief') ? buildPropertyTable(feature) : null;
       layer.on('click', function(e){
         L.DomEvent.stopPropagation(e);
@@ -873,8 +889,12 @@ function renderLayerControl(){
     wrap.appendChild(inp);
     controlDiv.appendChild(wrap);
     // Search behavior: show flat list without category titles
+    var _searchTimer;
     inp.addEventListener('input', function(){
-      var term=this.value.toLowerCase().trim();
+      var val = this.value;
+      clearTimeout(_searchTimer);
+      _searchTimer = setTimeout(function(){
+      var term=val.toLowerCase().trim();
       var resultsDiv = controlDiv.querySelector('#searchResults');
       if(!resultsDiv){
         resultsDiv = document.createElement('div');
@@ -914,6 +934,7 @@ function renderLayerControl(){
         resultsDiv.style.display='none';
         resultsDiv.textContent = '';
       }
+      }, 200);
     });
     // Attach the zoom-to-selected behavior to the toolbar button if present
     (function(){ var extBtn = document.getElementById('zoomSelectedBtn'); if(!extBtn) return; extBtn.addEventListener('click', function(){ var group=L.featureGroup(); Object.keys(AthensGIS.geojsonLayers).forEach(function(k){ var lyr=AthensGIS.geojsonLayers[k]; if(lyr && getMap().hasLayer(lyr)) group.addLayer(lyr); }); if(group.getLayers().length) getMap().fitBounds(group.getBounds().pad(0.05)); }); })();
@@ -1048,7 +1069,7 @@ function renderLayerControl(){
         var idx=(AthensGIS.activeLayerOrder||[]).indexOf(layerName); if(idx!==-1) AthensGIS.activeLayerOrder.splice(idx,1);
         delete AthensGIS.layerKeyByName[layerName];
         if(typeof AthensGIS.refreshOpacityPopup==='function') AthensGIS.refreshOpacityPopup();
-        var infoDiv=document.getElementById('infoBox'); if(infoDiv) infoDiv.style.display='none';
+        if(!_infoBox) _infoBox = document.getElementById('infoBox'); if(_infoBox) _infoBox.style.display='none';
       }
     });
   })();
@@ -1312,7 +1333,7 @@ function renderLayerControl(){
         if(colorPanel) colorPanel.classList.remove('open');
         if(layerName==='Relief'){ if(AthensGIS.geojsonLayers['Relief']){ getMap().removeLayer(AthensGIS.geojsonLayers['Relief']); delete AthensGIS.geojsonLayers['Relief']; } }
         else if(file && AthensGIS.geojsonLayers[file]){ getMap().removeLayer(AthensGIS.geojsonLayers[file]); delete AthensGIS.geojsonLayers[file]; }
-        delete AthensGIS.activeLayerInfos[layerName]; ensureInfoBoxUpdate(); var infoDiv=document.getElementById('infoBox'); if(infoDiv) infoDiv.style.display='none';
+        delete AthensGIS.activeLayerInfos[layerName]; ensureInfoBoxUpdate(); if(!_infoBox) _infoBox = document.getElementById('infoBox'); if(_infoBox) _infoBox.style.display='none';
         // Update legend to remove this layer's entry (after state updated)
         if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName,'remove');
         var idx2=(AthensGIS.activeLayerOrder||[]).indexOf(layerName); if(idx2!==-1) AthensGIS.activeLayerOrder.splice(idx2,1);

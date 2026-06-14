@@ -111,7 +111,11 @@ var layerCategories = {
     "Road Network": [
       { name: "Avenues", file: "Transportation/AthensAvenues.json" },
       { name: "Highways (Greece)", file: "Transportation/GreeceHighways.geojson" },
-      { name: "Street Network Mun. of Athens", file: "Transportation/AthStreets.geojson" },
+      { name: "Street Network Central Sector", file: "Transportation/Streets_Center.geojson" },
+      { name: "Street Network North Sector", file: "Transportation/Streets_North.geojson" },
+      { name: "Street Network South Sector", file: "Transportation/Streets_South.geojson" },
+      { name: "Street Network West Sector", file: "Transportation/Streets_West.geojson" },
+      { name: "Street Network Piraeus", file: "Transportation/Streets_Piraeus.geojson" }
     ],
     "Road Transport": [
       { name: "AI Traffic Cameras", file: "Transportation/AICameras.json" },
@@ -254,6 +258,62 @@ function loadLayerData(relativePath){
 function loadLayerInfo(relativePath){
   return fetchAssetWithFallback('info', relativePath, function(resp){ return resp.text(); });
 }
+
+// ── Viewport-based rendering ──────────────────────────────────────────────────
+// Pre-compute flat [minLng, minLat, maxLng, maxLat] for each feature once on load.
+function _computeFeatureBbox(feature){
+  var mn0=Infinity,mn1=Infinity,mx0=-Infinity,mx1=-Infinity;
+  function v(c){ if(c[0]<mn0)mn0=c[0]; if(c[0]>mx0)mx0=c[0]; if(c[1]<mn1)mn1=c[1]; if(c[1]>mx1)mx1=c[1]; }
+  function g(geom){
+    if(!geom) return;
+    var t=geom.type,co=geom.coordinates;
+    if(t==='Point'){ v(co); }
+    else if(t==='LineString'||t==='MultiPoint'){ co.forEach(v); }
+    else if(t==='Polygon'||t==='MultiLineString'){ co.forEach(function(r){ r.forEach(v); }); }
+    else if(t==='MultiPolygon'){ co.forEach(function(p){ p.forEach(function(r){ r.forEach(v); }); }); }
+    else if(t==='GeometryCollection'){ (geom.geometries||[]).forEach(g); }
+  }
+  g(feature.geometry);
+  return [mn0,mn1,mx0,mx1];
+}
+
+function indexLayerData(cacheKey, data){
+  AthensGIS._layerCache = AthensGIS._layerCache || {};
+  var features = (data && data.features) || [];
+  AthensGIS._layerCache[cacheKey] = {
+    features: features,
+    bboxes: features.map(_computeFeatureBbox)
+  };
+}
+
+function getViewportData(cacheKey, mapBounds){
+  var cache = AthensGIS._layerCache && AthensGIS._layerCache[cacheKey];
+  if(!cache) return { type:'FeatureCollection', features:[] };
+  var sw=mapBounds.getSouthWest(), ne=mapBounds.getNorthEast();
+  var wLng=sw.lng, eLng=ne.lng, sLat=sw.lat, nLat=ne.lat;
+  var out=[], features=cache.features, bboxes=cache.bboxes;
+  for(var i=0;i<features.length;i++){
+    var b=bboxes[i];
+    if(b[0]<=eLng && b[2]>=wLng && b[1]<=nLat && b[3]>=sLat) out.push(features[i]);
+  }
+  return { type:'FeatureCollection', features:out };
+}
+
+function setupViewportUpdateHandler(){
+  if(AthensGIS._viewportHandlerBound) return;
+  AthensGIS._viewportHandlerBound = true;
+  getMap().on('moveend zoomend', function(){
+    var bounds = getMap().getBounds();
+    var vl = AthensGIS._viewportLayers || {};
+    Object.keys(vl).forEach(function(cacheKey){
+      var group = vl[cacheKey];
+      if(group && typeof group.updateViewportData === 'function'){
+        group.updateViewportData(getViewportData(cacheKey, bounds));
+      }
+    });
+  });
+}
+// ── End viewport helpers ──────────────────────────────────────────────────────
 
 // Resolve a legend class by exact match or numeric range (e.g. "2.5-3.5", "6.5+").
 function getLegendClassForValue(legendConfig, value){
@@ -863,6 +923,14 @@ function createLayerFromGeoJSON(data, layerName, legendConfig){
     if(_vecReset)  try{ _vecReset(feature);  }catch(_){}
   };
 
+  group.updateViewportData = function(filteredData){
+    var fts = filteredData && filteredData.features || [];
+    var pFts = fts.filter(function(f){ return f&&f.geometry&&(f.geometry.type==='Polygon'||f.geometry.type==='MultiPolygon'); });
+    var vFts = fts.filter(function(f){ return f&&f.geometry&&f.geometry.type!=='Polygon'&&f.geometry.type!=='MultiPolygon'; });
+    if(polyLayer){ try{ polyLayer.clearLayers(); if(pFts.length) polyLayer.addData({type:'FeatureCollection',features:pFts}); }catch(_){} }
+    if(vecLayer){  try{ vecLayer.clearLayers();  if(vFts.length) vecLayer.addData({type:'FeatureCollection',features:vFts});   }catch(_){} }
+  };
+
   return group;
 }
 function startLoadingSpinner(label){
@@ -1315,10 +1383,33 @@ function renderLayerControl(){
           window.updateLegendBar(layerName);
         }
         if(layerName==='Relief'){
-          Promise.all(['relief1.json','relief2.json','relief3.json','relief4.json'].map(function(f){ return loadLayerData('Environment/'+f); })).then(function(parts){ stopRowSpinner(); var merged={type:'FeatureCollection', features:parts.flatMap(function(p){ return p.features||[]; })}; var lc=(window.legendConfigs||{})[layerName]; if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName); var lyr=L.geoJSON(merged, geojsonOptions(layerName, lc)).addTo(getMap()); AthensGIS.geojsonLayers['Relief']=lyr; }).catch(function(err){ stopRowSpinner(); console.error('Failed to load Relief layer data:', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>'; ensureInfoBoxUpdate(); });
+          Promise.all(['relief1.json','relief2.json','relief3.json','relief4.json'].map(function(f){ return loadLayerData('Environment/'+f); })).then(function(parts){
+            stopRowSpinner();
+            var merged={type:'FeatureCollection',features:parts.flatMap(function(p){ return p.features||[]; })};
+            var lc=(window.legendConfigs||{})[layerName];
+            if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName);
+            indexLayerData('Relief', merged);
+            var viewportData = getViewportData('Relief', getMap().getBounds());
+            var lyr=createLayerFromGeoJSON(viewportData, layerName, lc);
+            AthensGIS.geojsonLayers['Relief']=lyr;
+            AthensGIS._viewportLayers = AthensGIS._viewportLayers || {};
+            AthensGIS._viewportLayers['Relief'] = lyr;
+            setupViewportUpdateHandler();
+          }).catch(function(err){ stopRowSpinner(); console.error('Failed to load Relief layer data:', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>'; ensureInfoBoxUpdate(); });
           loadLayerInfo('Environment/Relief.txt').then(function(t){ AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(){ AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
         } else if(file){
-          loadLayerData(file).then(function(data){ stopRowSpinner(); var lc2=(window.legendConfigs||{})[layerName]; if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName); var lyr2=createLayerFromGeoJSON(data, layerName, lc2); AthensGIS.geojsonLayers[file]=lyr2; }).catch(function(err){ stopRowSpinner(); console.error('Failed to load layer data for "' + layerName + '":', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>'; ensureInfoBoxUpdate(); });
+          loadLayerData(file).then(function(data){
+            stopRowSpinner();
+            var lc2=(window.legendConfigs||{})[layerName];
+            if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName);
+            indexLayerData(file, data);
+            var viewportData2 = getViewportData(file, getMap().getBounds());
+            var lyr2=createLayerFromGeoJSON(viewportData2, layerName, lc2);
+            AthensGIS.geojsonLayers[file]=lyr2;
+            AthensGIS._viewportLayers = AthensGIS._viewportLayers || {};
+            AthensGIS._viewportLayers[file] = lyr2;
+            setupViewportUpdateHandler();
+          }).catch(function(err){ stopRowSpinner(); console.error('Failed to load layer data for "' + layerName + '":', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>'; ensureInfoBoxUpdate(); });
           var txt=file.replace(/\.[^/.]+$/, '')+'.txt'; loadLayerInfo(txt).then(function(t){ AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(){ AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
         }
         if(AthensGIS.activeLayerOrder.indexOf(layerName)===-1) AthensGIS.activeLayerOrder.push(layerName);
@@ -1331,8 +1422,13 @@ function renderLayerControl(){
         row.classList.remove('selected');
         if(dEl) dEl.style.display='none';
         if(colorPanel) colorPanel.classList.remove('open');
-        if(layerName==='Relief'){ if(AthensGIS.geojsonLayers['Relief']){ getMap().removeLayer(AthensGIS.geojsonLayers['Relief']); delete AthensGIS.geojsonLayers['Relief']; } }
-        else if(file && AthensGIS.geojsonLayers[file]){ getMap().removeLayer(AthensGIS.geojsonLayers[file]); delete AthensGIS.geojsonLayers[file]; }
+        if(layerName==='Relief'){
+          if(AthensGIS.geojsonLayers['Relief']){ getMap().removeLayer(AthensGIS.geojsonLayers['Relief']); delete AthensGIS.geojsonLayers['Relief']; }
+          if(AthensGIS._viewportLayers) delete AthensGIS._viewportLayers['Relief'];
+        } else if(file && AthensGIS.geojsonLayers[file]){
+          getMap().removeLayer(AthensGIS.geojsonLayers[file]); delete AthensGIS.geojsonLayers[file];
+          if(AthensGIS._viewportLayers) delete AthensGIS._viewportLayers[file];
+        }
         delete AthensGIS.activeLayerInfos[layerName]; ensureInfoBoxUpdate(); if(!_infoBox) _infoBox = document.getElementById('infoBox'); if(_infoBox) _infoBox.style.display='none';
         // Update legend to remove this layer's entry (after state updated)
         if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName,'remove');

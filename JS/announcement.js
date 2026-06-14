@@ -4,9 +4,10 @@
 
   // Add new announcements at the top. Newest entry first.
   var ANNOUNCEMENTS = [
+    { date: '15/06/2026', text: 'Street Network layers added for all sectors (Road Network - Transportation).' },
     { date: '12/06/2026', text: '5 new KAEK layers added (KAEK - Urban Planning).' },
     { date: '09/06/2026', text: 'Land Cover and Land Use (2021) layers added (Land Uses - Urban Planning).' },
-    { date: '28/05/2026', text: 'Soil groups added (Geology). Reconfigured the opacity function in the toolbar.' },
+    
   ];
 
   function buildContent(box) {

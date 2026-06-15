@@ -150,7 +150,7 @@ AthensGIS.layerOpacities  = AthensGIS.layerOpacities  || {};
 AthensGIS.activeLayerOrder = AthensGIS.activeLayerOrder || [];
 AthensGIS.layerKeyByName   = AthensGIS.layerKeyByName   || {};
 AthensGIS.customLayerColors = AthensGIS.customLayerColors || {};
-const GITHUB_SITE_ROOT_URL = 'https://kmarkosgis.github.io/athens-gis-repository/';
+const GITHUB_SITE_ROOT_URL = 'https://athensgis.gr/';
 const FIXED_ASSET_ROOTS = { data: 'data', info: 'info' };
 
 function getMap(){ return AthensGIS.map; }
@@ -203,7 +203,7 @@ function normalizeRootUrl(input){
 
 function getSiteRootUrl(){
   var host = String(window.location.hostname || '').toLowerCase();
-  if(host === 'kmarkosgis.github.io'){
+  if(host === 'athensgis.gr'){
     return GITHUB_SITE_ROOT_URL;
   }
   var configured = AthensGIS && AthensGIS.siteRootUrl;

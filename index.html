@@ -10,9 +10,9 @@
   <meta property="og:title" content="Athens GIS Repository | Open Geospatial Data & Maps">
   <meta property="og:description" content="Open GIS datasets and spatial analysis resources for Athens, Greece.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://kmarkosgis.github.io/athens-gis-repository/">
-  <link rel="canonical" href="https://kmarkosgis.github.io/athens-gis-repository/">
-  <link rel="icon" href="images/favicon.png" type="image/png">
+  <meta property="og:url" content="https://athensgis.gr/">
+  <link rel="canonical" href="https://athensgis.gr/">
+  <link rel="icon" href="images/6.png" type="image/png">
   <meta name="google-site-verification" content="fxtrJ6Zsjm3yh8GZ1ltWQILOA6U0zxt1FD2YVYdz1MU" />
 
   <script type="application/ld+json">
@@ -21,35 +21,35 @@
     "@graph": [
       {
         "@type": "Organization",
-        "@id": "https://kmarkosgis.github.io/athens-gis-repository/#organization",
+        "@id": "https://athensgis.gr/#organization",
         "name": "Athens GIS Repository",
-        "url": "https://kmarkosgis.github.io/athens-gis-repository/",
+        "url": "https://athensgis.gr/",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://kmarkosgis.github.io/athens-gis-repository/images/1EDIT.png"
+          "url": "https://athensgis.gr/images/6.png"
         }
       },
       {
         "@type": "WebSite",
-        "@id": "https://kmarkosgis.github.io/athens-gis-repository/#website",
-        "url": "https://kmarkosgis.github.io/athens-gis-repository/",
+        "@id": "https://athensgis.gr/#website",
+        "url": "https://athensgis.gr/",
         "name": "Athens GIS Repository",
         "alternateName": "Athens GIS Repo",
         "publisher": {
-          "@id": "https://kmarkosgis.github.io/athens-gis-repository/#organization"
+          "@id": "https://athensgis.gr/#organization"
         }
       },
       {
         "@type": "WebPage",
-        "@id": "https://kmarkosgis.github.io/athens-gis-repository/#homepage",
-        "url": "https://kmarkosgis.github.io/athens-gis-repository/",
+        "@id": "https://athensgis.gr/#homepage",
+        "url": "https://athensgis.gr/",
         "name": "Athens GIS Repository | Open Geospatial Data & Maps",
         "description": "Open GIS datasets and spatial analysis resources for Athens, Greece.",
         "isPartOf": {
-          "@id": "https://kmarkosgis.github.io/athens-gis-repository/#website"
+          "@id": "https://athensgis.gr/#website"
         },
         "about": {
-          "@id": "https://kmarkosgis.github.io/athens-gis-repository/#organization"
+          "@id": "https://athensgis.gr/#organization"
         }
       }
     ]
@@ -93,9 +93,9 @@
       selectedFeature: null
     }, window.AthensGIS || {});
     var host = String(window.location.hostname || '').toLowerCase();
-    var isGitHubPages = host === 'kmarkosgis.github.io';
-    window.AthensGIS.siteRootUrl = isGitHubPages
-      ? 'https://kmarkosgis.github.io/athens-gis-repository/'
+    var isProductionSite = host === 'athensgis.gr';
+    window.AthensGIS.siteRootUrl = isProductionSite
+      ? 'https://athensgis.gr/'
       : './';
     window.AthensGIS.assetBasePaths = { data: ['data'], info: ['info'] };
   </script>

@@ -7,7 +7,7 @@ authors:
     type: organization
 identifiers:
   - type: url
-    value: 'https://kmarkosgis.github.io/athens-gis-repository'
+    value: 'https://athensgis.gr'
   - type: doi
     value: 10.5281/zenodo.18727779
 year: 2026

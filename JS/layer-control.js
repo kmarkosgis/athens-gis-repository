@@ -230,7 +230,7 @@ function buildAssetUrl(kind, relativePath, base){
   return url.toString();
 }
 
-function fetchAssetWithFallback(kind, relativePath, parser){
+function fetchAssetWithFallback(kind, relativePath, parser, signal){
   var bases = getAssetBaseCandidates(kind);
   var attempts = [];
   function tryBase(index){
@@ -238,12 +238,14 @@ function fetchAssetWithFallback(kind, relativePath, parser){
       return Promise.reject(new Error('Failed to load "' + relativePath + '" from ' + attempts.join(' | ')));
     }
     var url = buildAssetUrl(kind, relativePath, bases[index]);
-    return fetch(url).then(function(resp){
+    var opts = signal ? { signal: signal } : undefined;
+    return fetch(url, opts).then(function(resp){
       if(!resp.ok){
         throw new Error(resp.status + ' ' + resp.statusText + ' @ ' + url);
       }
       return parser(resp);
     }).catch(function(err){
+      if(err && err.name === 'AbortError') return Promise.reject(err);
       attempts.push((err && err.message) ? err.message : String(err));
       return tryBase(index + 1);
     });
@@ -251,12 +253,12 @@ function fetchAssetWithFallback(kind, relativePath, parser){
   return tryBase(0);
 }
 
-function loadLayerData(relativePath){
-  return fetchAssetWithFallback('data', relativePath, function(resp){ return resp.json(); });
+function loadLayerData(relativePath, signal){
+  return fetchAssetWithFallback('data', relativePath, function(resp){ return resp.json(); }, signal);
 }
 
-function loadLayerInfo(relativePath){
-  return fetchAssetWithFallback('info', relativePath, function(resp){ return resp.text(); });
+function loadLayerInfo(relativePath, signal){
+  return fetchAssetWithFallback('info', relativePath, function(resp){ return resp.text(); }, signal);
 }
 
 // ── Viewport-based rendering ──────────────────────────────────────────────────
@@ -1099,15 +1101,19 @@ function renderLayerControl(){
         if(dEl) dEl.style.display='inline-block';
         var stopTerrainSpinner = startLoadingSpinner(label);
         row._stopSpinner = stopTerrainSpinner;
+        var _terrainAbortCtrl = new AbortController();
+        row._abortController = _terrainAbortCtrl;
+        var _terrainSignal = _terrainAbortCtrl.signal;
         AthensGIS.activeLayerInfos[layerName]='<em>Loading info...</em>';
         ensureInfoBoxUpdate();
         // Show legend immediately
         if(typeof window.updateLegendBar==='function' && (window.legendConfigs||{})[layerName]){
           window.updateLegendBar(layerName);
         }
-        loadLayerData('Environment/Relief.json')
+        loadLayerData('Environment/Relief.json', _terrainSignal)
             .then(function(data){
             stopTerrainSpinner();
+            if(!cb.checked) return;
             var lc=(window.legendConfigs||{})[layerName];
             if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName);
             var lyr=createLayerFromGeoJSON(data, layerName, lc);
@@ -1115,16 +1121,18 @@ function renderLayerControl(){
             AthensGIS.geojsonLayers['Relief']=lyr;
           }).catch(function(err){
             stopTerrainSpinner();
+            if(err && err.name==='AbortError') return;
             console.error('Failed to load Terrain layer data:', err);
             AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>';
             ensureInfoBoxUpdate();
           });
-        loadLayerInfo('Environment/Relief.txt').then(function(t){ AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); })
-          .catch(()=>{ AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
+        loadLayerInfo('Environment/Relief.txt', _terrainSignal).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); })
+          .catch(function(err){ if(err && err.name==='AbortError') return; AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
         if(AthensGIS.activeLayerOrder.indexOf(layerName)===-1) AthensGIS.activeLayerOrder.push(layerName);
         AthensGIS.layerKeyByName[layerName]='Relief';
         if(typeof AthensGIS.refreshOpacityPopup==='function') AthensGIS.refreshOpacityPopup();
       } else {
+        if(row._abortController){ row._abortController.abort(); row._abortController = null; }
         if(typeof row._stopSpinner==='function'){ row._stopSpinner(); row._stopSpinner=null; }
         resetFeatureHighlight();
         row.classList.remove('selected');
@@ -1377,14 +1385,18 @@ function renderLayerControl(){
         if(colorBtn) updateColorButtonPreview(colorBtn, layerName);
         var stopRowSpinner = startLoadingSpinner(label);
         row._stopSpinner = stopRowSpinner;
+        var _abortCtrl = new AbortController();
+        row._abortController = _abortCtrl;
+        var _signal = _abortCtrl.signal;
         AthensGIS.activeLayerInfos[layerName]='<em>Loading info...</em>'; ensureInfoBoxUpdate();
         // Trigger legend update immediately (so user sees legend without waiting for fetch)
         if(typeof window.updateLegendBar==='function' && (window.legendConfigs||{})[layerName]){
           window.updateLegendBar(layerName);
         }
         if(layerName==='Relief'){
-          Promise.all(['relief1.json','relief2.json','relief3.json','relief4.json'].map(function(f){ return loadLayerData('Environment/'+f); })).then(function(parts){
+          Promise.all(['relief1.json','relief2.json','relief3.json','relief4.json'].map(function(f){ return loadLayerData('Environment/'+f, _signal); })).then(function(parts){
             stopRowSpinner();
+            if(!cb.checked) return;
             var merged={type:'FeatureCollection',features:parts.flatMap(function(p){ return p.features||[]; })};
             var lc=(window.legendConfigs||{})[layerName];
             if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName);
@@ -1395,11 +1407,12 @@ function renderLayerControl(){
             AthensGIS._viewportLayers = AthensGIS._viewportLayers || {};
             AthensGIS._viewportLayers['Relief'] = lyr;
             setupViewportUpdateHandler();
-          }).catch(function(err){ stopRowSpinner(); console.error('Failed to load Relief layer data:', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>'; ensureInfoBoxUpdate(); });
-          loadLayerInfo('Environment/Relief.txt').then(function(t){ AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(){ AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
+          }).catch(function(err){ stopRowSpinner(); if(err && err.name==='AbortError') return; console.error('Failed to load Relief layer data:', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>'; ensureInfoBoxUpdate(); });
+          loadLayerInfo('Environment/Relief.txt', _signal).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(err){ if(err && err.name==='AbortError') return; AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
         } else if(file){
-          loadLayerData(file).then(function(data){
+          loadLayerData(file, _signal).then(function(data){
             stopRowSpinner();
+            if(!cb.checked) return;
             var lc2=(window.legendConfigs||{})[layerName];
             if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName);
             indexLayerData(file, data);
@@ -1409,13 +1422,14 @@ function renderLayerControl(){
             AthensGIS._viewportLayers = AthensGIS._viewportLayers || {};
             AthensGIS._viewportLayers[file] = lyr2;
             setupViewportUpdateHandler();
-          }).catch(function(err){ stopRowSpinner(); console.error('Failed to load layer data for "' + layerName + '":', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>'; ensureInfoBoxUpdate(); });
-          var txt=file.replace(/\.[^/.]+$/, '')+'.txt'; loadLayerInfo(txt).then(function(t){ AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(){ AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
+          }).catch(function(err){ stopRowSpinner(); if(err && err.name==='AbortError') return; console.error('Failed to load layer data for "' + layerName + '":', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>'; ensureInfoBoxUpdate(); });
+          var txt=file.replace(/\.[^/.]+$/, '')+'.txt'; loadLayerInfo(txt, _signal).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(err){ if(err && err.name==='AbortError') return; AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
         }
         if(AthensGIS.activeLayerOrder.indexOf(layerName)===-1) AthensGIS.activeLayerOrder.push(layerName);
         AthensGIS.layerKeyByName[layerName]=(layerName==='Relief') ? 'Relief' : (file||layerName);
         if(typeof AthensGIS.refreshOpacityPopup==='function') AthensGIS.refreshOpacityPopup();
       } else {
+        if(row._abortController){ row._abortController.abort(); row._abortController = null; }
         if(typeof row._stopSpinner==='function'){ row._stopSpinner(); row._stopSpinner=null; }
         resetFeatureHighlight();
         // Remove selected visual style

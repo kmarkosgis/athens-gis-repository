@@ -94,7 +94,8 @@ var layerCategories = {
       { name: "KAEK West Sector", file: "UrbanPlanning/KAEKwest.geojson" },
       { name: "KAEK Piraeus", file: "UrbanPlanning/KAEKpiraeus.geojson" }
     ],  
-    "Land Uses": [
+    "Land Cover": [
+      { name: "Buildings height (2021)", file: "UrbanPlanning/Building_height.tif", type: "raster" },
       { name: "Land Cover and Land Use (2021)", file: "UrbanPlanning/Land_Cover_2021.json" },
       { name: "Land Cover and Land Use (2018)", file: "UrbanPlanning/AthensCorine2018.json" },
       { name: "Municipality of Athens Urban Plan (2012)", file: "UrbanPlanning/Athens Urban Plan 2012.geojson" }
@@ -144,6 +145,7 @@ var layerCategories = {
 const AthensGIS = window.AthensGIS = window.AthensGIS || {};
 AthensGIS.layerCategories = layerCategories;
 AthensGIS.geojsonLayers = AthensGIS.geojsonLayers || {};
+AthensGIS.rasterLayers = AthensGIS.rasterLayers || {};
 AthensGIS.activeLayerInfos = AthensGIS.activeLayerInfos || {};
 AthensGIS.selectedFeature = null;
 AthensGIS.layerOpacities  = AthensGIS.layerOpacities  || {};
@@ -259,6 +261,16 @@ function loadLayerData(relativePath, signal){
 
 function loadLayerInfo(relativePath, signal){
   return fetchAssetWithFallback('info', relativePath, function(resp){ return resp.text(); }, signal);
+}
+
+function loadRasterArrayBuffer(relativePath, signal){
+  return fetchAssetWithFallback('data', relativePath, function(resp){ return resp.arrayBuffer(); }, signal);
+}
+
+function loadRasterData(relativePath, signal){
+  return loadRasterArrayBuffer(relativePath, signal).then(function(arrayBuffer){
+    return parseGeoraster(arrayBuffer);
+  });
 }
 
 // ── Viewport-based rendering ──────────────────────────────────────────────────
@@ -619,6 +631,92 @@ function resetFeatureHighlight(){
   }
 }
 
+// ── Raster (GeoTIFF) layer support ─────────────────────────────────────────────
+function createRasterLayer(georaster, layerName, legendConfig){
+  var map = getMap();
+  if(!map || typeof GeoRasterLayer === 'undefined') return null;
+  var opacity = (AthensGIS.layerOpacities && AthensGIS.layerOpacities[layerName] !== undefined) ? AthensGIS.layerOpacities[layerName] : 1;
+  var hasNoData = georaster.noDataValue !== null && typeof georaster.noDataValue !== 'undefined';
+  var layer = new GeoRasterLayer({
+    georaster: georaster,
+    opacity: opacity,
+    resolution: 128,
+    pixelValuesToColorFn: function(values){
+      var v = values[0];
+      if(v === null || typeof v === 'undefined') return null;
+      if(hasNoData && v === georaster.noDataValue) return null;
+      var cs = legendConfig ? getLegendClassForValue(legendConfig, v) : null;
+      return (cs && cs.color) || DEFAULT_LAYER_FILL_COLOR;
+    }
+  });
+  layer.addTo(map);
+  return layer;
+}
+
+// Converts a map click (WGS84 lat/lng) into the raster's native pixel row/col and reads its value.
+function getRasterPixelInfo(entry, latlng){
+  var georaster = entry.georaster;
+  var proj4fn = entry.layer && entry.layer.proj4;
+  var projCode = 'EPSG:' + georaster.projection;
+  var xy = (Number(georaster.projection) === 4326 || typeof proj4fn !== 'function')
+    ? [latlng.lng, latlng.lat]
+    : proj4fn('EPSG:4326', projCode, [latlng.lng, latlng.lat]);
+  var x = xy[0], y = xy[1];
+  if(x < georaster.xmin || x > georaster.xmax || y < georaster.ymin || y > georaster.ymax) return null;
+  var col = Math.min(georaster.width - 1, Math.floor((x - georaster.xmin) / georaster.pixelWidth));
+  var row = Math.min(georaster.height - 1, Math.floor((georaster.ymax - y) / georaster.pixelHeight));
+  if(row < 0 || col < 0) return null;
+  var value = georaster.values[0][row][col];
+  var hasNoData = georaster.noDataValue !== null && typeof georaster.noDataValue !== 'undefined';
+  if(hasNoData && value === georaster.noDataValue) return null;
+  return { value: value, row: row, col: col, projCode: projCode, proj4fn: proj4fn };
+}
+
+// Builds a WGS84 polygon for the clicked pixel's footprint so it can reuse the standard highlight overlay.
+function buildRasterCellFeature(georaster, row, col, projCode, proj4fn){
+  var x0 = georaster.xmin + col * georaster.pixelWidth;
+  var x1 = x0 + georaster.pixelWidth;
+  var y1 = georaster.ymax - row * georaster.pixelHeight;
+  var y0 = y1 - georaster.pixelHeight;
+  var corners = [[x0,y0],[x1,y0],[x1,y1],[x0,y1],[x0,y0]];
+  var isWgs84 = Number(georaster.projection) === 4326 || typeof proj4fn !== 'function';
+  var ring = corners.map(function(c){ return isWgs84 ? c : proj4fn(projCode, 'EPSG:4326', c); });
+  return { type:'Feature', properties:{}, geometry:{ type:'Polygon', coordinates:[ring] } };
+}
+
+function buildRasterPixelHTML(valueLabel, value){
+  return '<table class="feature-properties-table"><tr><th>' + valueLabel + '</th><td>' + value + '</td></tr></table>';
+}
+
+// Called from the map's global click handler before it resets the info box/highlight.
+// Returns true if the click landed on an active raster layer's pixel, in which case the
+// caller should skip its own reset logic (mirrors how vector feature clicks stop propagation).
+function handleRasterClickIfAny(e){
+  var registry = AthensGIS.rasterLayers || {};
+  var keys = Object.keys(registry);
+  for(var i=0;i<keys.length;i++){
+    var entry = registry[keys[i]];
+    if(!entry || !entry.layer || !entry.georaster) continue;
+    var pixel = getRasterPixelInfo(entry, e.latlng);
+    if(!pixel) continue;
+    resetFeatureHighlight();
+    AthensGIS.selectedFeature = null;
+    if(!_infoBox) _infoBox = document.getElementById('infoBox');
+    if(!_infoContent) _infoContent = document.getElementById('infoContent');
+    if(_infoContent) _infoContent.innerHTML = buildRasterPixelHTML(entry.valueLabel, pixel.value);
+    if(_infoBox) _infoBox.style.display = 'block';
+    var cellFeature = buildRasterCellFeature(entry.georaster, pixel.row, pixel.col, pixel.projCode, pixel.proj4fn);
+    var classStyle = entry.legendConfig ? getLegendClassForValue(entry.legendConfig, pixel.value) : null;
+    var color = (classStyle && classStyle.color) || DEFAULT_LAYER_BORDER_COLOR;
+    applyHighlightOverlay(getMap(), cellFeature, { color: color, weight: 2, fillColor: color, opacity: 1, fillOpacity: 0.35 });
+    AthensGIS._rasterClickActive = true;
+    return true;
+  }
+  AthensGIS._rasterClickActive = false;
+  return false;
+}
+// ── End raster layer support ───────────────────────────────────────────────────
+
 function geojsonOptions(layerName, legendConfig){
   return {
     style: function(feature){
@@ -946,13 +1044,28 @@ function startLoadingSpinner(label){
   };
 }
 
+function countTotalLayers(){
+  var count = 0;
+  Object.keys(layerCategories).forEach(function(cat){
+    var catData = layerCategories[cat];
+    Object.keys(catData).forEach(function(key){
+      var val = catData[key];
+      if(Array.isArray(val)) count += val.length;
+    });
+  });
+  return count + 1; // +1 for the Terrain layer
+}
+
 function renderLayerControl(){
   if(!getMap()) return setTimeout(renderLayerControl,50);
   var controlDiv = document.getElementById('layerControl'); if(!controlDiv) return;
 
   if(!controlDiv.querySelector('#layerSearch')){
     var wrap=document.createElement('div'); wrap.id='searchZoomContainer'; wrap.style.display='flex'; wrap.style.flexDirection='column'; wrap.style.alignItems='center'; wrap.style.gap='8px';
-    var title = document.createElement('div'); title.textContent = 'LAYERS'; title.style.fontSize = '14px'; title.style.fontWeight = '500'; title.style.margin = '2px 0 8px 0'; title.style.padding = '6px 10px'; title.style.background = 'rgba(55, 65, 81, 0.85)'; title.style.color = 'white'; title.style.borderRadius = '10px'; title.style.textAlign = 'center'; title.style.letterSpacing = '2px'; title.style.width='93%';
+    var title = document.createElement('div'); title.style.fontSize = '14px'; title.style.fontWeight = '500'; title.style.margin = '2px 0 8px 0'; title.style.padding = '6px 10px'; title.style.background = 'rgba(55, 65, 81, 0.85)'; title.style.color = 'white'; title.style.borderRadius = '10px'; title.style.letterSpacing = '2px'; title.style.width='93%'; title.style.display='flex'; title.style.alignItems='center'; title.style.justifyContent='center'; title.style.position='relative';
+    var titleText = document.createElement('span'); titleText.textContent = 'LAYERS';
+    var countBadge = document.createElement('span'); countBadge.textContent = countTotalLayers(); countBadge.style.position='absolute'; countBadge.style.right='7px'; countBadge.style.fontSize='12px'; countBadge.style.fontWeight='500'; countBadge.style.letterSpacing='0'; countBadge.style.background='rgba(255,255,255,0.2)'; countBadge.style.borderRadius='6px'; countBadge.style.padding='1px 10px';
+    title.appendChild(titleText); title.appendChild(countBadge);
     var inp=document.createElement('input'); inp.type='text'; inp.id='layerSearch'; inp.placeholder='Search layers...'; inp.style.width='93%'; inp.style.height='10px'; inp.style.padding='4px 4px'; inp.style.marginBottom='6px'; inp.style.borderRadius='12px'; inp.style.border='1px solid #ccc'; inp.style.fontSize='13px';
     // The zoom-to-selected button was moved to the main toolbar (index.html). Keep only the search input here.
     wrap.appendChild(title);
@@ -1235,23 +1348,25 @@ function renderLayerControl(){
       console.error('JSZip is not available.');
       return Promise.resolve();
     }
+    var isRaster = info.type === 'raster';
     var sourceFile = String(info.file);
     var sourceName = sourceFile.split('/').pop() || 'layer.geojson';
+    var sourceExt = (sourceName.match(/\.[^/.]+$/) || ['.geojson'])[0];
     var baseName = sourceName.replace(/\.[^/.]+$/, '') || 'layer';
     var txtRelativePath = sourceFile.replace(/\.[^/.]+$/, '') + '.txt';
-    var geojsonFilename = baseName + '.geojson';
+    var dataFilename = baseName + (isRaster ? sourceExt : '.geojson');
     var txtFilename = baseName + '.txt';
     var zipFilename = getLayerZipFileName(info.name);
 
     setDownloadButtonBusy(buttonEl, true);
     return Promise.all([
-      loadLayerData(sourceFile),
+      isRaster ? loadRasterArrayBuffer(sourceFile) : loadLayerData(sourceFile),
       loadLayerInfo(txtRelativePath)
     ]).then(function(results){
       var data = results[0];
       var infoText = results[1];
       var zip = new JSZip();
-      zip.file(geojsonFilename, JSON.stringify(data, null, 2));
+      zip.file(dataFilename, isRaster ? data : JSON.stringify(data, null, 2));
       zip.file(txtFilename, infoText || '');
       return zip.generateAsync({ type: 'blob' });
     }).then(function(blob){
@@ -1393,7 +1508,19 @@ function renderLayerControl(){
         if(typeof window.updateLegendBar==='function' && (window.legendConfigs||{})[layerName]){
           window.updateLegendBar(layerName);
         }
-        if(layerName==='Relief'){
+        if(info.type==='raster'){
+          loadRasterData(file, _signal).then(function(georaster){
+            stopRowSpinner();
+            if(!cb.checked) return;
+            var lcRaster=(window.legendConfigs||{})[layerName];
+            if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName);
+            var rasterLyr=createRasterLayer(georaster, layerName, lcRaster);
+            AthensGIS.geojsonLayers[file]=rasterLyr;
+            AthensGIS.rasterLayers=AthensGIS.rasterLayers || {};
+            AthensGIS.rasterLayers[file]={ layer: rasterLyr, georaster: georaster, legendConfig: lcRaster, layerName: layerName, valueLabel: (lcRaster && lcRaster.title) || layerName };
+          }).catch(function(err){ stopRowSpinner(); if(err && err.name==='AbortError') return; console.error('Failed to load raster layer data for "' + layerName + '":', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>'; ensureInfoBoxUpdate(); });
+          var txtRaster=file.replace(/\.[^/.]+$/, '')+'.txt'; loadLayerInfo(txtRaster, _signal).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(err){ if(err && err.name==='AbortError') return; AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
+        } else if(layerName==='Relief'){
           Promise.all(['relief1.json','relief2.json','relief3.json','relief4.json'].map(function(f){ return loadLayerData('Environment/'+f, _signal); })).then(function(parts){
             stopRowSpinner();
             if(!cb.checked) return;
@@ -1442,6 +1569,7 @@ function renderLayerControl(){
         } else if(file && AthensGIS.geojsonLayers[file]){
           getMap().removeLayer(AthensGIS.geojsonLayers[file]); delete AthensGIS.geojsonLayers[file];
           if(AthensGIS._viewportLayers) delete AthensGIS._viewportLayers[file];
+          if(AthensGIS.rasterLayers) delete AthensGIS.rasterLayers[file];
         }
         delete AthensGIS.activeLayerInfos[layerName]; ensureInfoBoxUpdate(); if(!_infoBox) _infoBox = document.getElementById('infoBox'); if(_infoBox) _infoBox.style.display='none';
         // Update legend to remove this layer's entry (after state updated)

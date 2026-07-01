@@ -37,6 +37,11 @@
 		var key = ag.layerKeyByName[layerName] || layerName;
 		var lyr = ag.geojsonLayers && ag.geojsonLayers[key];
 		if (lyr) {
+			var isVectorStyled = lyr.options && typeof lyr.options.style === 'function';
+			if (!isVectorStyled && typeof lyr.setOpacity === 'function') {
+				try { lyr.setOpacity(opacity); } catch (e) {}
+				return;
+			}
 			refreshSingleLayer(lyr);
 			if (lyr._polyLayer) refreshSingleLayer(lyr._polyLayer);
 			if (lyr._vecLayer)  refreshSingleLayer(lyr._vecLayer);
@@ -117,6 +122,7 @@
 	if (!mapRef || typeof mapRef.on !== 'function') return;
 
 	mapRef.on('click', function () {
+		if (ag._rasterClickActive) return;
 		Object.keys(ag.geojsonLayers || {}).forEach(function (key) {
 			var layer = ag.geojsonLayers[key];
 			if (layer && layer.eachLayer) {

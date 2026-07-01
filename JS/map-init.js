@@ -123,7 +123,8 @@
   // === End Custom Basemap Dropdown Switcher Logic ===
 
   // === Global map click to clear highlighted feature & info box ===
-  map.on('click', function(){
+  map.on('click', function(e){
+    if(typeof handleRasterClickIfAny === 'function' && handleRasterClickIfAny(e)) return;
     if(typeof resetFeatureHighlight === 'function') resetFeatureHighlight();
     var infoBox = document.getElementById('infoBox');
     if(infoBox) infoBox.style.display = 'none';

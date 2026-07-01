@@ -291,6 +291,20 @@ window.legendConfigs = {
         "Water": { color: "rgba(49, 130, 189, 0.8)", label: "Water" } 
       }
     },
+    "Buildings height (2021)": {
+      title: "Building Height (m)",
+      classes: {
+        "0-3": { color: "#FFFFB2", label: "0-3 m" },
+        "3-6": { color: "#FED976", label: "3-6 m" },
+        "6-9": { color: "#FEB24C", label: "6-9 m" },
+        "9-12": { color: "#FD8D3C", label: "9-12 m" },
+        "12-18": { color: "#FC4E2A", label: "12-18 m" },
+        "18-25": { color: "#E31A1C", label: "18-25 m" },
+        "25-40": { color: "#BD0026", label: "25-40 m" },
+        "40-60": { color: "#800026", label: "40-60 m" },
+        "60+": { color: "#4D0013", label: "60+ m" }
+      }
+    },
     "Wildfires Attica 2015-2025": {
       field: "Year",
       title: "Wildfires Attica 2015-2025",

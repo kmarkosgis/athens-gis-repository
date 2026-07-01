@@ -4,10 +4,11 @@
 
   // Add new announcements at the top. Newest entry first.
   var ANNOUNCEMENTS = [
+    { date: '01/07/2026', text: 'Building height data added (Land cover - Urban Planning).' },
     { date: '17/06/2026', text: 'Athens GIS Repository 1 year anniversary!' },
     { date: '16/06/2026', text: 'Domain change : athensgis.gr' },
     { date: '15/06/2026', text: 'Street Network layers added for all sectors (Road Network - Transportation).' },
-    { date: '12/06/2026', text: '5 new KAEK layers added (KAEK - Urban Planning).' }
+    
   ];
 
   function buildContent(box) {

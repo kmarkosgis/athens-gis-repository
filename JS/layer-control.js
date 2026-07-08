@@ -64,7 +64,9 @@ var layerCategories = {
       { name: "Police Stations", file: "Amenities/Police.geojson" },
     ],
     "Commerce": [
+      { name: "Food Shops", file: "Amenities/foodshops.geojson" },
       { name: "Fuel Stations", file: "Amenities/Fuel.geojson" },
+      { name: "Supermarkets", file: "Amenities/markets.geojson" }
     ],
     "Education": [
       { name: "Schools", file: "Amenities/Schools.geojson" },
@@ -503,7 +505,7 @@ function buildPropertyTable(feature){
     else if(k==='basinid_fd') d='Basin ID';
     else if(k==='mag') {v=Number(v).toFixed(1); d='Magnitude';}
     else if(k==='place') d='Place';
-    else if(k==='amenity') d='Amenity';
+    else if(k==='amenity' || k==='shop') d='Type';
     else if(k==='leisure') d='Public space type';
     else if(k==='period') d='Return Period (years)';
     rows += '<tr><th>'+d+'</th><td>'+v+'</td></tr>';

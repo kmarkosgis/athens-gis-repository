@@ -324,35 +324,35 @@ window.legendConfigs = {
     },
     "Banks": {
       field: "amenity",
-      title: "Amenity Type",
+      title: "POI Type",
       classes: {
         "bank": { color: "#ffff00", label: "Bank" } //yellow
       }
     },
     "Fuel Stations": {
       field: "amenity",
-      title: "Amenity Type",
+      title: "POI Type",
       classes: {
         "fuel": { color: "#ffa500", label: "Fuel Station" } //orange
       }
     },
     "Hospitals": {
       field: "amenity",
-      title: "Amenity Type",
+      title: "POI Type",
       classes: {
         "hospital": { color: "#ff0000", label: "Hospital" } //red
       }
     },
     "Pharmacies": {
       field: "amenity",
-      title: "Amenity Type", 
+      title: "POI Type",
       classes: {
         "pharmacy": { color: "#008000", label: "Pharmacy" } //green
       }
     },
     "Police Stations": {
       field: "amenity",
-      title: "Amenity Type",
+      title: "POI Type",
       classes: {
         "police": { color: "#0000ff", label: "Police Station" } //blue
       }
@@ -369,14 +369,14 @@ window.legendConfigs = {
     },
     "Universities": {
       field: "amenity",
-      title: "Amenity Type",
+      title: "POI Type",
       classes: {
         "university": { color: "#b3b3b3ff", label: "University" } //grey
       }
     },
     "Restaurants, Bars, and Cafe": {
       field: "amenity",
-      title: "Amenity Type",
+      title: "POI Type",
       classes: {
         "restaurant": { color: "#ff8c00", label: "Restaurant" },
         "bar": { color: "#008000", label: "Bar" },
@@ -388,16 +388,38 @@ window.legendConfigs = {
     },
     "Theaters": {
       field: "amenity",
-      title: "Amenity Type",
+      title: "POI Type",
       classes: {
-        "theatre": { color: "#800080", label: "Theaters" } //purple
+        "theatre": { color: "#800080", label: "Theaters" } //purple 
       }
     },
     "Cinemas": {
       field: "amenity",
-      title: "Amenity Type",
+      title: "POI Type",
       classes: {
         "cinema": { color: "#ff1493", label: "Cinemas" } //pink
+      }
+    },
+    "Food Shops": {
+      field: "shop",
+      title: "POI Type",
+      classes: {
+        "bakery":        { color: "#c8702a", label: "Bakery" },
+        "butcher":       { color: "#b22222", label: "Butcher" },
+        "greengrocer":   { color: "#3a8c3f", label: "Greengrocer" },
+        "deli":          { color: "#d4a017", label: "Deli" },
+        "cheese":        { color: "#e8c84a", label: "Cheese shop" },
+        "seafood":       { color: "#1a6e9e", label: "Seafood" },
+        "pastry":        { color: "#f4c2c2", label: "Pastry shop" },
+        
+      }
+    },
+    "Supermarkets": {
+      field: "shop",
+      title: "POI Type",
+      classes: {
+        "supermarket":      { color: "#2471a3", label: "Supermarket" },
+        "convenience":      { color: "#e07b2a", label: "Convenience store" },
       }
     },
     "Earthquakes Attica 2006-2026": {

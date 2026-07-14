@@ -23,7 +23,7 @@ var layerCategories = {
     },
   "Energy": {
     "Wind": [
-      { name: "Wind Farms", file: "Energy/WindFarms.json" }
+      { name: "Wind Farms", file: "Energy/WindFarms.json" } 
     ]
   },
   "Environment": {
@@ -123,6 +123,7 @@ var layerCategories = {
     "Road Transport": [
       { name: "AI Traffic Cameras", file: "Transportation/AICameras.json" },
       { name: "OASA Bus Lanes", file: "Transportation/Bus_Lanes.geojson" },
+      { name: "OASA Bus Routes", file: "Transportation/bus_lines.geojson" },
       { name: "OASA Bus Stops", file: "Transportation/AthensBusStops.geojson" },
       { name: "Toll Stations", file: "Transportation/TollStations.geojson" }, 
       { name: "Traffic Accidents 2023-2025", file: "Transportation/TrAccidents.json" },
@@ -470,13 +471,13 @@ function buildPropertyTable(feature){
 
     if(k==='shapeleng_'){ v=Number(v).toFixed(2); d='Shape Length (km)'; }
     else if(k==='shapearea'){ v=Number(v).toFixed(4); d='Shape Area (km²)'; }
-    else if(['shapeleng_m','shapelengm','length','shape_leng'].includes(k)){ v=Number(v).toFixed(2); d='Shape Length (m)'; }
+    else if(['shapeleng_m','shapelengm','length','shape_leng','distance_meters'].includes(k)){ v=Number(v).toFixed(2); d='Shape Length (m)'; }
     else if(['shapearea_m','shapeaream'].includes(k)){ v=Number(v).toFixed(2); d='Shape Area (m²)'; }
-    else if(['name','name_el','name_place','gname','uses_gr'].includes(k)){ d='Name (GR)'; }
-    else if(['ename','name_pl_en','name_en','uses_en','name:en','class_2021'].includes(k)){ d='Name (ENG)'; }
+    else if(['name','name_el','name_place','gname','uses_gr','descr'].includes(k)){ d='Name (GR)'; }
+    else if(['ename','name_pl_en','name_en','uses_en','name:en','class_2021','descr_eng'].includes(k)){ d='Name (ENG)'; }
     else if(k==='bridge') d='Bridge';
     else if(k==='tunnel') d='Tunnel';
-    else if(k==='ref') d='Route';
+    else if(k==='ref'|| k==='line_id') d='Route';
     else if(k==='operator') d='Operator';
     else if(k==='charge') d='Toll Charge';
     else if(k==='int_ref') d='International Route';
@@ -1474,11 +1475,13 @@ function renderLayerControl(){
       colorPanel.addEventListener('click', function(e){ e.stopPropagation(); });
       updateColorButtonPreview(colorBtn, info.name);
     }
-    if(dl || colorBtn){
+    var hasFilterConfig = !!(window.LayerFilter && window.LayerFilter.getConfig(info.name));
+    if(dl || colorBtn || hasFilterConfig){
       actions = document.createElement('div');
       actions.className = 'layer-item-actions';
       if(dl) actions.appendChild(dl);
       if(colorBtn) actions.appendChild(colorBtn);
+      if(hasFilterConfig) window.LayerFilter.buildButton(info.name, info.file || null, row, actions);
     }
     row.appendChild(cb);
     row.appendChild(label);
@@ -1551,6 +1554,7 @@ function renderLayerControl(){
             AthensGIS._viewportLayers = AthensGIS._viewportLayers || {};
             AthensGIS._viewportLayers[file] = lyr2;
             setupViewportUpdateHandler();
+            if(window.LayerFilter) window.LayerFilter.onLayerLoaded(layerName, file, data);
           }).catch(function(err){ stopRowSpinner(); if(err && err.name==='AbortError') return; console.error('Failed to load layer data for "' + layerName + '":', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>'; ensureInfoBoxUpdate(); });
           var txt=file.replace(/\.[^/.]+$/, '')+'.txt'; loadLayerInfo(txt, _signal).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(err){ if(err && err.name==='AbortError') return; AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
         }
@@ -1578,6 +1582,7 @@ function renderLayerControl(){
         if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName,'remove');
         var idx2=(AthensGIS.activeLayerOrder||[]).indexOf(layerName); if(idx2!==-1) AthensGIS.activeLayerOrder.splice(idx2,1);
         delete AthensGIS.layerKeyByName[layerName];
+        if(window.LayerFilter) window.LayerFilter.onLayerRemoved(layerName);
         if(typeof AthensGIS.refreshOpacityPopup==='function') AthensGIS.refreshOpacityPopup();
       }
       // Update category header count badge: show number of active layers in this category
@@ -1750,8 +1755,11 @@ function renderLayerControl(){
         createLayerRow(info, subContent, content, countSpan, arrow, subContent, cat, subcat);
       });
 
+      var _subRafId = null;
       function setSubOpen(open){
+        if(_subRafId !== null){ cancelAnimationFrame(_subRafId); _subRafId = null; }
         if(open){
+          var _p = document.getElementById('layerControl');
           subContent.style.display = 'block';
           void subContent.offsetHeight;
           subContent.style.maxHeight = subContent.scrollHeight + '1px';
@@ -1760,10 +1768,23 @@ function renderLayerControl(){
           subArrow.style.transform = 'rotate(180deg)';
           subHeader.setAttribute('aria-expanded','true');
           subContent.setAttribute('aria-hidden','false');
+          // Track expansion frame-by-frame: nudge panel scrollTop upward whenever
+          // the growing content would overflow the panel's bottom edge.
+          if(_p)(function _track(){
+            var _pp = _p.getBoundingClientRect();
+            var _cb = subContent.getBoundingClientRect().bottom;
+            var _ht = subHeader.getBoundingClientRect().top;
+            if(_cb > _pp.bottom - 4){
+              var _budget = _ht - _pp.top - 4;
+              if(_budget > 0) _p.scrollTop += Math.min(_cb - _pp.bottom + 4, _budget);
+            }
+            _subRafId = requestAnimationFrame(_track);
+          })();
           var onSubExpandEnd = function(e){
             if(e.propertyName === 'max-height'){
               subContent.style.maxHeight = 'none';
               subContent.removeEventListener('transitionend', onSubExpandEnd);
+              if(_subRafId !== null){ cancelAnimationFrame(_subRafId); _subRafId = null; }
             }
           };
           subContent.addEventListener('transitionend', onSubExpandEnd);
@@ -1795,23 +1816,36 @@ function renderLayerControl(){
     });
 
     // Toggle logic
+    var _catRafId = null;
     function setOpen(open){
+      if(_catRafId !== null){ cancelAnimationFrame(_catRafId); _catRafId = null; }
       if(open){
-        // Prepare for animation from collapsed to expanded
+        var _p = document.getElementById('layerControl');
         content.style.display = 'block';
-        // Force a reflow so the next changes transition
         void content.offsetHeight;
         content.style.maxHeight = content.scrollHeight + '1px';
         content.style.opacity = '1';
         header.classList.add('open');
-        // Rotate to point up smoothly
         arrow.style.transform = 'rotate(180deg)';
         header.setAttribute('aria-expanded','true');
         content.setAttribute('aria-hidden','false');
+        // Track expansion frame-by-frame: nudge panel scrollTop upward whenever
+        // the growing content would overflow the panel's bottom edge.
+        if(_p)(function _track(){
+          var _pp = _p.getBoundingClientRect();
+          var _cb = content.getBoundingClientRect().bottom;
+          var _ht = header.getBoundingClientRect().top;
+          if(_cb > _pp.bottom - 4){
+            var _budget = _ht - _pp.top - 4;
+            if(_budget > 0) _p.scrollTop += Math.min(_cb - _pp.bottom + 4, _budget);
+          }
+          _catRafId = requestAnimationFrame(_track);
+        })();
         var onExpandEnd = function(e){
           if(e.propertyName === 'max-height'){
             content.style.maxHeight = 'none';
             content.removeEventListener('transitionend', onExpandEnd);
+            if(_catRafId !== null){ cancelAnimationFrame(_catRafId); _catRafId = null; }
           }
         };
         content.addEventListener('transitionend', onExpandEnd);

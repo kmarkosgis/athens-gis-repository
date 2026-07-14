@@ -2,8 +2,8 @@
   var map = L.map('map', {
     preferCanvas: true, // better performance for many features
     zoomControl: false,  // turn off default zoom control
-    zoomDelta: 0.3,      // smaller zoom step
-    zoomSnap: 0.3        // allow half-step zoom levels
+    zoomDelta: 1  ,      // smaller zoom step
+    zoomSnap: 1        // allow half-step zoom levels
   }).setView([37.98, 23.72], 12);
   if (window.AthensGIS) { window.AthensGIS.map = map; }
 

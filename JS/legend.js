@@ -305,6 +305,21 @@ window.legendConfigs = {
         "60+": { color: "#4D0013", label: "60+ m" }
       }
     },
+    "Tree Cover Density (2024)": {
+      title: "Tree Cover Density (2024)",
+      classes: {
+        "0": { color: "transparent", label: "0%" },
+        "1-10": { color: "#FFFFB2", label: "1-10 %" },
+        "10-20": { color: "#FED976", label: "10-20 %" },
+        "20-30": { color: "#FEB24C", label: "20-30 %" },
+        "30-40": { color: "#FD8D3C", label: "30-40 %" },
+        "40-50": { color: "#FC4E2A", label: "40-50 %" },
+        "50-60": { color: "#E31A1C", label: "50-60 %" },
+        "60-70": { color: "#BD0026", label: "60-70 %" },
+        "70-80": { color: "#800026", label: "70-80 %" },
+        "80+": { color: "#4D0013", label: "80+ %" }
+      }
+    },
     "Wildfires Attica 2015-2025": {
       field: "Year",
       title: "Wildfires Attica 2015-2025",

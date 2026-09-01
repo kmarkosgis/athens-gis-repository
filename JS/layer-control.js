@@ -100,7 +100,8 @@ var layerCategories = {
       { name: "Buildings height (2021)", file: "UrbanPlanning/Building_height.tif", type: "raster" },
       { name: "Land Cover and Land Use (2021)", file: "UrbanPlanning/Land_Cover_2021.json" },
       { name: "Land Cover and Land Use (2018)", file: "UrbanPlanning/AthensCorine2018.json" },
-      { name: "Municipality of Athens Urban Plan (2012)", file: "UrbanPlanning/Athens Urban Plan 2012.geojson" }
+      { name: "Municipality of Athens Urban Plan (2012)", file: "UrbanPlanning/Athens Urban Plan 2012.geojson" },
+      { name: "Tree Cover Density (2024)", file: "UrbanPlanning/tree_density.tif", type: "raster" }
     ],
     "Public Spaces": [
       { name: "Archaeological Sites", file: "UrbanPlanning/Arch_sites.geojson" },

@@ -4,10 +4,10 @@
 
   // Add new announcements at the top. Newest entry first.
   var ANNOUNCEMENTS = [
+    { date: '02/09/2026', text: 'Tree cover density data added (Urban Planning - Land Cover).' },
     { date: '14/07/2026', text: 'Bus routes added (Transportation - Road Transport).' },
-    { date: '08/07/2026', text: 'Supermarkets and food shops added (Commerce - Points of Interest).' },
-    { date: '01/07/2026', text: 'Building height data added (Land cover - Urban Planning).' },
-    { date: '16/06/2026', text: 'Domain change : athensgis.gr' },
+    { date: '08/07/2026', text: 'Supermarkets and food shops added (Points of Interest - Commerce).' },
+    { date: '01/07/2026', text: 'Building height data added (Urban Planning - Land Cover).' }   
         
   ];
 

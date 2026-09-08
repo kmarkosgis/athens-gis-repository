@@ -4,13 +4,11 @@
 
   // Add new announcements at the top. Newest entry first.
   var ANNOUNCEMENTS = [
+    { date: '09/09/2026', text: 'Charging stations added (Points of Interest - Commerce).' },  
     { date: '02/09/2026', text: 'Tree cover density data added (Urban Planning - Land Cover).' },
     { date: '14/07/2026', text: 'Bus routes added (Transportation - Road Transport).' },
-    { date: '08/07/2026', text: 'Supermarkets and food shops added (Points of Interest - Commerce).' },
-    { date: '01/07/2026', text: 'Building height data added (Urban Planning - Land Cover).' }   
-        
+    { date: '08/07/2026', text: 'Supermarkets and food shops added (Points of Interest - Commerce).' }        
   ];
-
   function buildContent(box) {
     var h3 = document.createElement('h3');
     h3.textContent = 'NEWS - ANNOUNCEMENTS';

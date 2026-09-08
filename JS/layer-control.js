@@ -64,6 +64,7 @@ var layerCategories = {
       { name: "Police Stations", file: "Amenities/Police.geojson" },
     ],
     "Commerce": [
+      { name : "Charging Stations", file: "Amenities/charging_stations.geojson" },
       { name: "Food Shops", file: "Amenities/foodshops.geojson" },
       { name: "Fuel Stations", file: "Amenities/Fuel.geojson" },
       { name: "Supermarkets", file: "Amenities/markets.geojson" }
@@ -480,13 +481,16 @@ function buildPropertyTable(feature){
     else if(k==='tunnel') d='Tunnel';
     else if(k==='ref'|| k==='line_id') d='Route';
     else if(k==='operator') d='Operator';
+    else if(k==='owner') d='Owner';
     else if(k==='charge') d='Toll Charge';
     else if(k==='int_ref') d='International Route';
-    else if(k==='geitonia') d='Neighborhood (GR)';
+    else if(k==='geitonia' || k==='city') d='Neighborhood (GR)';
     else if(k==='geiton_en') d='Neighborhood (ENG)';
-    else if(k==='dk') d='Municipal Community (GR)';
+    else if(k==='dk'|| k==='attica_municipal_unit') d='Municipal Community (GR)';
     else if(k==='dk_en') d='Municipal Community (ENG)';
-    else if(k==='sectionnam') d='Section Name';
+    else if(k==='sectionnam'|| k==='attica_section') d='Section Name';
+    else if(k==='postal_code') d='Postal Code';
+    else if(k==='country') d='Country';
     else if(k==='metroline') d='Metro Line';
     else if(k==='highway' || k=='historic') d='Type';
     else if(k==='oneway') d='One-Way Road';
@@ -499,6 +503,9 @@ function buildPropertyTable(feature){
     else if(k==='max_power') d='Max Power (MW)';
     else if(k==='diametros_') d='Diameter (m)';
     else if(k==='ypsos_pylo') d='Height (m)';
+    else if(k==='evse_count') d='EVSE Count';
+    else if(k==='connector_count') d='Connector Count';
+    else if(k==='max_power_kw') d='Max Power (KW)';
     else if(k==='initialdat') d='Initial Date';
     else if(k==='finaldate') d='Final Date';
     else if(k==='stop_id') d='Stop ID';
@@ -510,6 +517,7 @@ function buildPropertyTable(feature){
     else if(k==='amenity' || k==='shop') d='Type';
     else if(k==='leisure') d='Public space type';
     else if(k==='period') d='Return Period (years)';
+    else if(k==='twentyfourseven') d='24/7 Access';
     rows += '<tr><th>'+d+'</th><td>'+v+'</td></tr>';
   }
   return '<table class="feature-properties-table">'+rows+'</table>';

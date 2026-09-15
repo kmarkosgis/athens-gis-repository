@@ -254,7 +254,7 @@
 		});
 	}
 	if(msgModal){
-		// Clicking the dark overlay (not the box itself) cancels, same as #chartModal.
+		// Clicking the dark overlay (not the box itself) cancels, same as #welcomeModal.
 		msgModal.addEventListener('click', function(e){
 			if(e.target === msgModal) hideMeasurePrompt();
 		});

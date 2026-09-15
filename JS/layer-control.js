@@ -301,6 +301,29 @@ function loadRasterData(relativePath, signal){
   });
 }
 
+// ── On-demand external script loader ────────────────────────────────────────
+// Heavy third-party libs used by only some features (e.g. georaster) are
+// no longer loaded eagerly on every page view - callers request them here the
+// first time the relevant feature is actually used. Promises (not just the
+// <script> tag) are cached per URL so concurrent/repeat calls for the same
+// script share one load instead of racing - a plain "does the tag exist yet"
+// DOM check would resolve early for the second caller while the first script
+// is still mid-download.
+var _externalScriptPromises = {};
+function loadExternalScript(url){
+  if(_externalScriptPromises[url]) return _externalScriptPromises[url];
+  var existing = document.querySelector('script[src="' + url + '"]');
+  var promise = existing ? Promise.resolve() : new Promise(function(resolve, reject){
+    var s = document.createElement('script');
+    s.src = url;
+    s.onload = function(){ resolve(); };
+    s.onerror = function(){ reject(new Error('Failed to load script: ' + url)); };
+    document.head.appendChild(s);
+  });
+  _externalScriptPromises[url] = promise;
+  return promise;
+}
+
 // ── Viewport-based rendering ──────────────────────────────────────────────────
 // Pre-compute flat [minLng, minLat, maxLng, maxLat] for each feature once on load.
 function _computeFeatureBbox(feature){
@@ -2020,7 +2043,12 @@ function renderLayerControl(){
           window.updateLegendBar(layerName);
         }
         if(info.type==='raster'){
-          loadRasterData(file, _signal).then(function(georaster){
+          Promise.all([
+            loadExternalScript('https://unpkg.com/georaster'),
+            loadExternalScript('https://unpkg.com/georaster-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js')
+          ]).then(function(){
+            return loadRasterData(file, _signal);
+          }).then(function(georaster){
             stopRowSpinner();
             if(!cb.checked) return;
             var lcRaster=(window.legendConfigs||{})[layerName];

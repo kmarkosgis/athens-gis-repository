@@ -117,15 +117,12 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 <!-- Use local copy of leaflet-easyprint (keeps behavior consistent across hosts) -->
   <script src="JS/leaflet-easyprint.js" defer></script>
-  <!-- jsPDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 
-  
   <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js" defer></script>
 
-  <!-- Raster (GeoTIFF) rendering support -->
-  <script src="https://unpkg.com/georaster" defer></script>
-  <script src="https://unpkg.com/georaster-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js" defer></script>
+  <!-- Raster (GeoTIFF) rendering support: georaster + georaster-layer-for-leaflet
+       are no longer loaded here - JS/layer-control.js's loadExternalScript()
+       fetches them on demand the first time a raster layer is switched on. -->
 
   <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet">
   
@@ -347,17 +344,6 @@
   <div id="datasetSearchResults"></div>
 </div>
 
-<!-- Chart Modal -->
-<div id="chartModal">
-  <div id="chartModalContent">
-    <button id="chartModalClose" title="Close">&times;</button>
-    <h3 id="chartModalTitle"></h3>
-    <div id="chartCanvasWrap">
-      <canvas id="chartCanvas"></canvas>
-    </div>
-  </div>
-</div>
-
 <!-- Leaflet JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" defer></script>
@@ -378,10 +364,9 @@
 <script src="JS/pmtiles-loader.js?v=20260910-2" defer></script>
 
 <script src="JS/layer-filter.js?v=20260907-1" defer></script>
-<script src="JS/layer-control.js?v=20260913-1" defer></script>
+<script src="JS/layer-control.js?v=20260915-1" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/7.0.0/fuse.min.js" defer></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js" defer></script>
-<script src="JS/dataset-search.js?v=20260913-3" defer></script>
+<script src="JS/dataset-search.js?v=20260915-2" defer></script>
 <script src="JS/citation.js?v=20260615-1" defer></script>
 <script src="JS/legal.js?v=20260717-1" defer></script>
 <script src="JS/measure.js?v=20260615-1" defer></script>

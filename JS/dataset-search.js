@@ -21,7 +21,6 @@
   var debounceTimer = null;
   var aiInFlight = false;
   var chatHistory = [];
-  var chartInstance = null;
   var pendingActions = [];
   var resultsMinimized = false;
   var mode = 'search'; // 'search' (fuzzy database search, the default) | 'athena' (ask the AI assistant) - see #datasetSearchModeToggle
@@ -50,7 +49,7 @@
     // Fields/attributeValues/featureCount/bbox, precomputed offline over each
     // dataset's complete data by tools/build-pmtiles.mjs (data/dataset-manifest.json)
     // and loaded once at startup by JS/layer-control.js. Applying it here means every
-    // dataset is searchable/chartable by attribute value from page load - including
+    // dataset is searchable by attribute value from page load - including
     // ones never toggled on this session, and pmtiles-backed ones the render path no
     // longer fully downloads. enrichLoadedEntry() below remains as a fallback for
     // whatever the manifest doesn't cover (not yet regenerated, a brand-new layer).
@@ -131,15 +130,6 @@
         if (mode === 'athena' || !q) showHistoryOnly();
         else runSearch(q);
         input.focus();
-      });
-    }
-
-    var chartModal = document.getElementById('chartModal');
-    var chartCloseBtn = document.getElementById('chartModalClose');
-    if (chartModal && chartCloseBtn) {
-      chartCloseBtn.addEventListener('click', closeChartModal);
-      chartModal.addEventListener('click', function (e) {
-        if (e.target === chartModal) closeChartModal();
       });
     }
   }
@@ -263,9 +253,12 @@
       category: catName,
       subcategory: subcategory,
       file: info.file,
+      // Override for the metadata .txt path when it doesn't match txtPathForFile(file)
+      // (e.g. a data file that got renamed but kept its old info .txt) - see COMMON_LAYERS.
+      infoFile: info.infoFile || null,
       // Original .geojson/.json path, set only for pmtiles-backed layers (see
       // JS/layer-control.js's layerCategories). Used to look up this dataset's
-      // AthensGIS.datasetManifest entry and as the download/chart source - .file
+      // AthensGIS.datasetManifest entry and as the download source - .file
       // is the .pmtiles render source there, not a fetchable JSON document.
       geojson: info.geojson || null,
       type: info.type === 'raster' ? 'raster' : 'vector',
@@ -295,7 +288,11 @@
   // specifically so these need no special-case lookup.
   var COMMON_LAYERS = [
     { name: 'Terrain', file: 'Environment/Relief0.pmtiles', geojson: null, type: 'vector' },
-    { name: 'Shaded Relief', file: 'Environment/shadedrelief.pmtiles', geojson: null, type: 'raster' }
+    // infoFile: shadedrelief.pmtiles' metadata .txt kept its old pre-pmtiles name
+    // (info/Environment/Hillshade.txt) rather than being renamed alongside it -
+    // without this override txtPathForFile() below would derive the wrong
+    // 'Environment/shadedrelief.txt' (404) from the .pmtiles filename.
+    { name: 'Shaded Relief', file: 'Environment/shadedrelief.pmtiles', infoFile: 'Environment/Hillshade.txt', geojson: null, type: 'raster' }
   ];
 
   function buildManifest() {
@@ -399,14 +396,15 @@
       };
 
     return Promise.all(entries.map(function (entry) {
-      return loader(txtPathForFile(entry.file)).then(function (raw) {
+      var txtPath = entry.infoFile || txtPathForFile(entry.file);
+      return loader(txtPath).then(function (raw) {
         var meta = parseMetadataTxtContent(raw);
         entry.description = meta.description;
         entry.uploaded = meta.uploaded;
         entry.contributors = meta.contributors;
         entry.source = meta.source;
       }).catch(function () {
-        console.warn('[dataset-search] No metadata .txt found for "' + entry.name + '" (info/' + txtPathForFile(entry.file) + ').');
+        console.warn('[dataset-search] No metadata .txt found for "' + entry.name + '" (info/' + txtPath + ').');
       });
     }));
   }
@@ -1153,8 +1151,8 @@
 
   // ── AI chat fallback ─────────────────────────────────────────────────────────
   // Triggered on Enter when the user hasn't explicitly arrow-selected a fuzzy
-  // match — lets a full natural-language request ("chart food shops by shop
-  // type") reach the Worker backend, which decides what to load/chart.
+  // match — lets a full natural-language request ("show me the bus routes")
+  // reach the Worker backend, which decides what to load.
   function askAI(query) {
     if (!query || aiInFlight) return;
 
@@ -1252,18 +1250,10 @@
 
   // Runs the resolved actions the user confirmed with "Yes".
   function runPendingActions(resolved) {
-    // Only one chart modal exists. If more than one dataset asked for a chart, only
-    // the last one gets rendered - earlier ones still get loaded onto the map, they
-    // just don't get a chart of their own.
-    var lastChartIndex = -1;
-    resolved.forEach(function (r, i) { if (r.action.type === 'build_chart') lastChartIndex = i; });
-
-    resolved.forEach(function (r, i) {
+    resolved.forEach(function (r) {
       var action = r.action, entry = r.entry;
       if (action.type === 'close_dataset') {
         closeDataset(entry);
-      } else if (action.type === 'build_chart' && action.field && i === lastChartIndex) {
-        loadThenChart(entry, action.field, action.aggregation || 'count', action.chartType || 'bar');
       } else if (action.type === 'download_dataset') {
         downloadDatasetEntry(entry);
       } else if (action.type === 'set_opacity') {
@@ -1348,7 +1338,7 @@
     var confirmEl = document.createElement('div');
     confirmEl.className = 'dataset-ai-confirm';
 
-    var toOpen = resolved.filter(function (r) { return r.action.type === 'load_dataset' || r.action.type === 'build_chart'; }).map(function (r) { return r.entry.name; });
+    var toOpen = resolved.filter(function (r) { return r.action.type === 'load_dataset'; }).map(function (r) { return r.entry.name; });
     var toClose = resolved.filter(function (r) { return r.action.type === 'close_dataset'; }).map(function (r) { return r.entry.name; });
     var toDownload = resolved.filter(function (r) { return r.action.type === 'download_dataset'; }).map(function (r) { return r.entry.name; });
     var toOpacity = resolved.filter(function (r) { return r.action.type === 'set_opacity'; });
@@ -1410,34 +1400,9 @@
     resultsEl.classList.add('open');
   }
 
-  // ── Chart requests: ensure the dataset is loaded, then aggregate + render ─────
-  function loadThenChart(entry, field, aggregation, chartType) {
-    selectDataset(entry);
-    getFeaturesForChart(entry, 15000)
-      .then(function (features) {
-        var agg = aggregateFeatures(features, field, aggregation);
-        renderChart(entry.name + ' by ' + field, agg, chartType);
-      })
-      .catch(function () {
-        renderAIMessage('Loaded "' + entry.name + '" but could not build the chart in time.');
-      });
-  }
-
-  // Chart aggregation needs every feature's exact property values (a numeric
-  // "sum"/"average" chart buckets the true min-max range) - the manifest's
-  // attributeValues are capped at 40 distinct values and the on-map render only
-  // ever holds the current viewport's tiles, so neither is a complete enough
-  // source here. Plain (small, non-pmtiles) layers reuse the render cache as
-  // before; pmtiles-backed layers fetch the original full file directly instead -
-  // the only place the exact per-feature data exists - but only now, on an actual
-  // chart request, not on every layer toggle.
-  function getFeaturesForChart(entry, timeoutMs) {
-    if (entry.geojson && typeof isPmtilesFile === 'function' && isPmtilesFile(entry.file) && typeof loadLayerData === 'function') {
-      return loadLayerData(entry.geojson).then(function (data) { return (data && data.features) || []; });
-    }
-    return waitForLayerCache(entry.file, timeoutMs);
-  }
-
+  // waitForLayerCache() is also used by enrichLoadedEntry() above to fill in
+  // search-manifest field/attribute data once a plain (non-pmtiles) dataset's
+  // full render cache is available.
   function waitForLayerCache(file, timeoutMs) {
     return new Promise(function (resolve, reject) {
       var waited = 0;
@@ -1450,105 +1415,6 @@
         setTimeout(poll, interval);
       })();
     });
-  }
-
-  // Groups features by a property's value. "count" tallies frequency per distinct
-  // value (works for any field). For a numeric field with "sum"/"average", there's
-  // no second value field in the action schema to aggregate, so we fall back to a
-  // histogram-style distribution (count/average count per value range) instead.
-  function aggregateFeatures(features, field, aggregation) {
-    var isNumeric = true;
-    var sampled = 0;
-    for (var i = 0; i < features.length && sampled < 25; i++) {
-      var v = features[i].properties ? features[i].properties[field] : undefined;
-      if (v === undefined || v === null || v === '') continue;
-      sampled++;
-      if (!isFinite(Number(v))) { isNumeric = false; break; }
-    }
-
-    if (aggregation === 'count' || !isNumeric) {
-      var counts = {};
-      features.forEach(function (f) {
-        var val = f.properties ? f.properties[field] : undefined;
-        if (val === undefined || val === null || val === '') return;
-        var key = String(val);
-        counts[key] = (counts[key] || 0) + 1;
-      });
-      var entries = Object.keys(counts).map(function (k) { return [k, counts[k]]; });
-      entries.sort(function (a, b) { return b[1] - a[1]; });
-      var top = entries.slice(0, 12);
-      var restTotal = entries.slice(12).reduce(function (s, e) { return s + e[1]; }, 0);
-      if (restTotal > 0) top.push(['Other', restTotal]);
-      return { labels: top.map(function (e) { return e[0]; }), values: top.map(function (e) { return e[1]; }) };
-    }
-
-    // Numeric field: bucket into ranges.
-    var nums = [];
-    features.forEach(function (f) {
-      var val = f.properties ? Number(f.properties[field]) : NaN;
-      if (isFinite(val)) nums.push(val);
-    });
-    if (!nums.length) return { labels: [], values: [] };
-
-    var min = Math.min.apply(null, nums), max = Math.max.apply(null, nums);
-    var binCount = 7;
-    var binSize = ((max - min) || 1) / binCount;
-    var binSums = new Array(binCount).fill(0);
-    var binCounts = new Array(binCount).fill(0);
-    nums.forEach(function (n) {
-      var idx = Math.min(binCount - 1, Math.floor((n - min) / binSize));
-      binSums[idx] += n;
-      binCounts[idx]++;
-    });
-    var values = (aggregation === 'average')
-      ? binSums.map(function (sum, i) { return binCounts[i] ? +(sum / binCounts[i]).toFixed(2) : 0; })
-      : binCounts;
-    var labels = binCounts.map(function (_, i) {
-      var lo = min + i * binSize, hi = lo + binSize;
-      return lo.toFixed(1) + '-' + hi.toFixed(1);
-    });
-    return { labels: labels, values: values };
-  }
-
-  var CHART_PALETTE = ['#37414f', '#5b7cc4', '#e07b2a', '#3a8c3f', '#b22222', '#7d3c98', '#1a6e9e', '#d4a017', '#2e6b4f', '#c8702a', '#8e44ad', '#17202a', '#e8c84a'];
-
-  function renderChart(title, agg, chartType) {
-    var modal = document.getElementById('chartModal');
-    var canvas = document.getElementById('chartCanvas');
-    var titleEl = document.getElementById('chartModalTitle');
-    if (!modal || !canvas || !titleEl) return;
-    if (typeof Chart === 'undefined') { renderAIMessage('Chart library failed to load.'); return; }
-
-    titleEl.textContent = title;
-    if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
-
-    chartInstance = new Chart(canvas.getContext('2d'), {
-      type: chartType,
-      data: {
-        labels: agg.labels,
-        datasets: [{
-          label: title,
-          data: agg.values,
-          backgroundColor: agg.labels.map(function (_, i) { return CHART_PALETTE[i % CHART_PALETTE.length]; }),
-          borderColor: 'rgba(55,65,81,0.85)',
-          borderWidth: chartType === 'line' ? 2 : 1
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: chartType === 'pie' } },
-        scales: chartType === 'pie' ? {} : { y: { beginAtZero: true } }
-      }
-    });
-
-    modal.style.display = 'flex';
-  }
-
-  function closeChartModal() {
-    var modal = document.getElementById('chartModal');
-    if (modal) modal.style.display = 'none';
-    if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
   }
 
   if (document.readyState === 'loading') {

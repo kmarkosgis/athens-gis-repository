@@ -320,6 +320,13 @@ window.legendConfigs = {
         "80+": { color: "#4D0013", label: "80+ %" }
       }
     },
+    "Dominant Leaf Type (2024)": {
+      title: "Dominant Leaf Type (2024)",
+      classes: {
+        "1": { color: "#008000", label: "Broadleaved Trees" },
+        "2": { color: "#FFD700", label: "Coniferous Trees" }
+      }
+    },
     "Wildfires Attica 2015-2025": {
       field: "Year",
       title: "Wildfires Attica 2015-2025",
@@ -492,12 +499,24 @@ window.legendConfigs = {
       field: "Contour",
       title: "Terrain (50m Contour Lines)",
       classes: {
-        "50-400": { color: "#C4C4C4", label: "50-400m" }, 
-        "400-600": { color: "#A9A9A9", label: "400-600m" }, 
-        "600-800": { color: "#969696", label: "600-800m" }, 
-        "800-1000": { color: "#808080", label: "800-1000m" }, 
-        "1000-1200": { color: "#696969", label: "1000-1200m" }, 
-        "1200+": { color: "#525252", label: "1200m+" } 
+        "50-400": { color: "#C4C4C4", label: "50-400m" },
+        "400-600": { color: "#A9A9A9", label: "400-600m" },
+        "600-800": { color: "#969696", label: "600-800m" },
+        "800-1000": { color: "#808080", label: "800-1000m" },
+        "1000-1200": { color: "#696969", label: "1000-1200m" },
+        "1200+": { color: "#525252", label: "1200m+" }
+      }
+    },
+    "Shaded Relief": {
+      field: "elevation",
+      title: "Elevation",
+      classes: {
+        "0-50":     { color: "#9ec292", label: "0 – 50 m" },
+        "50-250":   { color: "#5f9350", label: "50 – 250 m" },
+        "250-500":  { color: "#8a934e", label: "250 – 500 m" },
+        "500-800":  { color: "#7e7442", label: "500 – 800 m" },
+        "800-1100": { color: "#74603f", label: "800 – 1100 m" },
+        "1100+":    { color: "#8a7666", label: "1100 m +" }
       }
     },
     "2021 Population Census": {

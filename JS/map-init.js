@@ -38,10 +38,10 @@
   })();
   // === End fixed scale ratio label ===
 
-  var positron = L.tileLayer(
-    "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png?api_key=ddbe6f28-1e48-473a-8155-c9669166a43e" ,
-  { attribution: "© OpenMapTiles © Stadia Maps" }
-  ).addTo(map);
+  var positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png?key=cb1_335x_1_4a62ad4f60fcab22da74db28', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>',
+  subdomains: 'abcd', maxZoom: 20
+}).addTo(map);
 
   var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap'
@@ -53,8 +53,9 @@
   
 
   var maptilerStreetsDark = L.tileLayer(
-    "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png?api_key=ddbe6f28-1e48-473a-8155-c9669166a43e",
-  { attribution: "© OpenMapTiles © Stadia Maps" }
+    'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png?key=cb1_335x_1_4a62ad4f60fcab22da74db28', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>',
+  subdomains: 'abcd', maxZoom: 20}
   );
 
   var baseMaps = {

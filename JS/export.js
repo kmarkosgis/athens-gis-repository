@@ -507,6 +507,9 @@
     // wait for image and download; always hide overlay afterwards
     waitForAndDownloadImage().then(function(){ /* success */ }).catch(function(err){ console.error('Export failed', err); }).finally(function(){ hideOverlay(); hidePrintOverlays(); clearExportMapLayoutOverrides(map); });
   }
+  // Exposed so the AI assistant can trigger a map export - mode: 'A4Landscape' |
+  // 'A4Portrait'. Retries itself if the printer isn't ready yet, same as a real click.
+  (window.AthensGIS = window.AthensGIS || {}).exportMap = triggerPrintForMode;
 
   // Wait for the EasyPrint image to appear, then try to fetch and save it using FileSaver (if available).
   // If fetch/save fails (CORS), open the image in a new tab as a fallback.

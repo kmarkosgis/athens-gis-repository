@@ -4,11 +4,12 @@
 
   // Add new announcements at the top. Newest entry first.
   var ANNOUNCEMENTS = [
-    { date: '09/09/2026', text: 'Charging stations added (Points of Interest - Commerce).' },  
+    { date: '16/09/2026', text: 'AI assistant "Athena" added. Shaded Relief layer added. Major performance improvements.' },
+    { date: '09/09/2026', text: 'Charging stations added (Points of Interest - Commerce).' },
     { date: '02/09/2026', text: 'Tree cover density data added (Urban Planning - Land Cover).' },
-    { date: '14/07/2026', text: 'Bus routes added (Transportation - Road Transport).' },
-    { date: '08/07/2026', text: 'Supermarkets and food shops added (Points of Interest - Commerce).' }        
+    { date: '14/07/2026', text: 'Bus routes added (Transportation - Road Transport).' }
   ];
+
   function buildContent(box) {
     var h3 = document.createElement('h3');
     h3.textContent = 'NEWS - ANNOUNCEMENTS';
@@ -46,11 +47,13 @@
     function hide() {
       box.hidden = true;
       box.setAttribute('aria-hidden', 'true');
+      document.body.classList.add('announcement-hidden');
     }
 
     function show() {
       box.hidden = false;
       box.setAttribute('aria-hidden', 'false');
+      document.body.classList.remove('announcement-hidden');
     }
 
     if (ANNOUNCEMENT_ENABLED !== 1) {

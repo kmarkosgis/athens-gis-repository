@@ -44,39 +44,43 @@
 			}
 			refreshSingleLayer(lyr);
 			if (lyr._polyLayer) refreshSingleLayer(lyr._polyLayer);
+			if (lyr._lineLayer) refreshSingleLayer(lyr._lineLayer);
 			if (lyr._vecLayer)  refreshSingleLayer(lyr._vecLayer);
 		}
 	}
 	ag.setLayerOpacity = setLayerOpacity;
 
-	function buildOpacityPopup() {
-		var popup = document.getElementById('opacity-popup');
-		if (!popup) return;
+	// Renders into the shared opacity/draw-order popup body (JS/draw-order.js
+	// owns the popup shell itself - the header, the arrows to cycle panels, and
+	// which panel is currently showing).
+	function buildOpacityPopup(container) {
 		var layers = (ag.activeLayerOrder || []).slice();
 
-		var html = '<div class="opacity-popup-header">OPACITY</div>';
-
 		if (layers.length === 0) {
-			html += '<div class="opacity-popup-empty">No active layers</div>';
-		} else {
-			html += '<ul id="opacity-layer-list">';
-			layers.forEach(function (layerName) {
-				var op  = getLayerOpacity(layerName);
-				var pct = Math.round(op * 100);
-				var safeId = layerName.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
-				var safeAttr = layerName.replace(/"/g, '&quot;');
-				html += '<li class="opacity-layer-item">';
-				html += '<span class="opacity-layer-name" title="' + safeAttr + '">' + layerName + '</span>';
-				html += '<input type="range" class="opacity-layer-slider" id="osl-' + safeId + '" data-layer="' + safeAttr + '" min="0" max="100" step="5" value="' + pct + '">';
-				html += '<span class="opacity-layer-value" id="osv-' + safeId + '">' + pct + '%</span>';
-				html += '</li>';
-			});
-			html += '</ul>';
+			var empty = document.createElement('div');
+			empty.className = 'layer-popup-empty';
+			empty.textContent = 'No active layers';
+			container.appendChild(empty);
+			return;
 		}
 
-		popup.innerHTML = html;
+		var html = '<ul id="opacity-layer-list">';
+		layers.forEach(function (layerName) {
+			var op  = getLayerOpacity(layerName);
+			var pct = Math.round(op * 100);
+			var safeId = layerName.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+			var safeAttr = layerName.replace(/"/g, '&quot;');
+			html += '<li class="opacity-layer-item">';
+			html += '<span class="opacity-layer-name" title="' + safeAttr + '">' + layerName + '</span>';
+			html += '<input type="range" class="opacity-layer-slider" id="osl-' + safeId + '" data-layer="' + safeAttr + '" min="0" max="100" step="5" value="' + pct + '">';
+			html += '<span class="opacity-layer-value" id="osv-' + safeId + '">' + pct + '%</span>';
+			html += '</li>';
+		});
+		html += '</ul>';
 
-		popup.querySelectorAll('.opacity-layer-slider').forEach(function (slider) {
+		container.innerHTML = html;
+
+		container.querySelectorAll('.opacity-layer-slider').forEach(function (slider) {
 			slider.addEventListener('input', function () {
 				var name = this.dataset.layer;
 				var val  = parseFloat(this.value) / 100;
@@ -87,24 +91,23 @@
 		});
 	}
 
-	// Only rebuild if the popup is currently visible
+	// Only rebuild if the opacity panel is the one currently visible
 	function refreshOpacityPopupIfOpen() {
-		var popup = document.getElementById('opacity-popup');
-		if (popup && !popup.hidden) buildOpacityPopup();
+		if (ag.layerPopup) ag.layerPopup.refreshIfOpen('opacity');
 	}
 	ag.refreshOpacityPopup = refreshOpacityPopupIfOpen;
 
 	function initOpacityButton() {
-		var btn   = document.getElementById('opacityBtn');
-		var popup = document.getElementById('opacity-popup');
-		if (!btn || !popup) return;
+		var btn = document.getElementById('opacityBtn');
+		if (!btn || !ag.layerPopup) return;
 
+		ag.layerPopup.registerPanel('opacity', { label: 'OPACITY', render: buildOpacityPopup });
+
+		btn.classList.add('layer-popup-trigger');
+		btn.dataset.panel = 'opacity';
 		btn.addEventListener('click', function (e) {
 			e.stopPropagation();
-			var isOpen = !popup.hidden;
-			popup.hidden = isOpen;
-			btn.classList.toggle('active', !isOpen);
-			if (!isOpen) buildOpacityPopup();
+			ag.layerPopup.toggle('opacity');
 		});
 	}
 

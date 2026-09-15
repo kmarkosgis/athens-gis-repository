@@ -309,7 +309,11 @@
 <div id="map-scale-ratio" aria-live="polite">Scale 1:100.000</div>
 
 <a href="https://doi.org/10.5281/zenodo.18727779">
-  <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.18727779.svg" alt="DOI" style="left: 10px; position: absolute; bottom: 0px; z-index: 1500; height: 19px;">
+  <!-- Self-hosted snapshot of Zenodo's own badge SVG (https://zenodo.org/badge/DOI/...) -
+       that endpoint intermittently 403s plain requests and rate-limits at 120 req/window
+       (see its own response headers), and hotlinking it costs an uncached cross-origin
+       round trip for an image that never changes once this DOI is published. -->
+  <img src="images/zenodo-doi-badge.svg" alt="DOI" style="left: 10px; position: absolute; bottom: 0px; z-index: 1500; height: 19px;">
 </a>
 
 <div id="footer">

@@ -69,8 +69,9 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
     /* Modal content box */
     #welcomeContent {
       background-color: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(7px);
+      
       -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
       padding: 30px;
       border-radius: 14px;
       max-width: 500px;
@@ -148,6 +149,651 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       border: 2px solid rgba(55, 65, 81, 0.85);
     }
 
+    /* Dataset Search / Athena Widget - bottom center, above #map-scale-ratio */
+    #datasetSearchWidget {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 320px;
+      z-index: 1100;
+      font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
+    }
+    /* Small "BETA" tag pinned to the widget's bottom-right, sitting half below
+       the pill's edge so it reads as a badge on the box rather than inside it -
+       moved here (was top-left) so it stays clear of the mode switch instead of
+       needing extra padding to separate the two. */
+    #datasetSearchBetaBadge {
+      position: absolute;
+      bottom: -7px;
+      right: 10px;
+      z-index: 1101;
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      line-height: 1.4;
+      color: #e5e7eb;
+      background: rgba(31, 41, 55, 0.9);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      pointer-events: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    #datasetSearchInput {
+      box-sizing: border-box;
+      display: block;
+      width: 100%;
+      height: 34px;
+      min-height: 34px;
+      max-height: 134px;
+      line-height: 20px;
+      resize: none;
+      overflow-y: hidden;
+      font-family: inherit;
+      border: 0;
+      border-radius: 17px;
+      padding: 7px 34px 7px 50px;
+      font-size: 14px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(238, 241, 246, 0.7) 45%, rgba(223, 230, 240, 0.7 ) 100%);
+      -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      /* No transition on height: autoGrowInput() in dataset-search.js measures
+         scrollHeight right after writing a new height, and an animated height
+         would still be mid-transition at that instant, making the measurement
+         (and any offsetHeight-based positioning) read a stale, pre-change value. */
+      transition: border 0.2s, box-shadow 0.2s, border-radius 0.2s ease;
+    }
+    /* 17px = half of the single-line height (34px), so it still reads as a full
+       pill on one line; once dataset-search.js grows the box past one line, the
+       same fixed radius becomes a normal rounded-rectangle chat box instead of
+       stretching into an oversized capsule. */
+    #datasetSearchInput:hover,
+    #datasetSearchInput:focus {
+      background: linear-gradient(135deg, #ffffff 0%, #eef1f6 45%, #dfe6f0 100%);
+      outline: none;
+    }
+    /* The minimized results lip sits flush on the input's top border (see
+       #datasetSearchResults.minimized) - squaring these two corners off makes the
+       lip and input read as one continuous connected shape instead of a mismatched
+       seam between two separately-rounded pieces. Bottom corners keep the normal
+       17px pill radius. Toggled from dataset-search.js alongside .minimized. */
+    #datasetSearchInput.results-minimized {
+      border-radius: 0 0 17px 17px;
+    }
+    /* Mode toggle - switches the box between fuzzy database search and asking
+       Athena directly (see the `mode` state in dataset-search.js). An iOS-style
+       slide switch: this button is the track (darkens when "on", like every
+       other active/selected state in this widget - .dataset-result-item.active,
+       the confirm "Yes" button on hover - rather than introducing a new accent
+       color); .mode-switch-knob slides between its two resting spots and the two
+       .mode-switch-icon spans (monochrome SVGs, not emoji) sit fixed on top of
+       those same two spots (so the knob parks right behind whichever one is
+       current), each fading to a soft, muted opacity while its side isn't the
+       active mode. The knob itself flips from white (search side) to the same
+       dark tone as the darkened track (athena side), so each icon's own fixed
+       colour always reads correctly against whichever it's parked on: the dark
+       search glyph over the white knob, the light owl glyph over the dark one.
+       Always visible (unlike #datasetSearchClear on the opposite side), since
+       it's a persistent mode switch, not a contextual action tied to whether
+       there's text. */
+    #datasetSearchModeToggle {
+      position: absolute;
+      top: 17px; /* pinned to the first line's center, matches #datasetSearchClear */
+      left: 6px;
+      transform: translateY(-50%);
+      width: 40px;
+      /* 22: the pill is 34px tall and this track is vertically centered on it via
+         the transform above, so (34-22)/2 = 6px above/below - matching the 6px
+         left offset, so the gap around the track reads equal on all three sides
+         instead of looking taller than it is wide. */
+      height: 22px;
+      padding: 0;
+      border: none;
+      border-radius: 14px;
+      background: rgba(31, 41, 55, 0.15);
+      cursor: pointer;
+      transition: background-color 0.2s;
+      z-index: 1; /* above the input's background but below the text and caret */
+    }
+    #datasetSearchModeToggle:hover {
+      background: rgba(31, 41, 55, 0.25);
+    }
+    #datasetSearchModeToggle.athena-mode {
+      background: rgba(31, 41, 55, 0.35);
+    }
+    #datasetSearchModeToggle.athena-mode:hover {
+      background: rgba(31, 41, 55, 0.55);
+    }
+    .mode-switch-knob {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+    /* Travel distance = track width (40) - knob width (18) - both 2px margins.
+       Darkens to match the track so the light owl icon it now sits behind
+       reads against a dark backdrop (see the comment above). */
+    #datasetSearchModeToggle.athena-mode .mode-switch-knob {
+      transform: translateX(18px);
+      background: rgba(43, 57, 77, 0.7);
+    }
+    /* Fixed at the knob's two resting spots (left: 2px.."search", left: 20px.."athena"
+       - same math as the knob's own travel distance above), painted after the
+       knob in DOM order so they stay legible on top of it rather than covered.
+       pointer-events:none keeps clicks landing on the button/track, not an icon. */
+    .mode-switch-icon {
+      position: absolute;
+      top: 2px;
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      opacity: 0.4;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+    .mode-switch-icon svg { display: block; }
+    /* Fixed, monochrome colours (not emoji, which can't be recoloured) - each
+       one is picked for the backdrop it always parks on, see .mode-switch-knob. */
+    .mode-switch-icon.search-icon { left: 2px; color: #1f2937; }
+    /* The owl is the user's own artwork (data.athensgis.gr/owl.png), not a
+       hand-drawn SVG - reproduced exactly by using it as a mask (its alpha
+       channel: opaque owl / transparent background) painted with
+       background-color, so it still recolours the same way the SVG icons do. */
+    .mode-switch-icon.athena-icon {
+      left: 20px;
+      background-color: #f9fafb;
+      -webkit-mask-image: url('https://data.athensgis.gr/owl.png');
+      mask-image: url('https://data.athensgis.gr/owl.png');
+      /* Without this, "match-source" (the default) resolves to luminance for a
+         plain raster image - and since the owl is solid black-on-transparent,
+         both the opaque owl (black, luminance 0) and the transparent
+         background (usually RGB-zeroed too, luminance 0) read as fully masked
+         out, rendering nothing at all. Forcing alpha makes it use the PNG's
+         actual transparency instead. */
+      -webkit-mask-mode: alpha;
+      mask-mode: alpha;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      mask-position: center;
+      -webkit-mask-size: 80%;
+      mask-size: 80%;
+    }
+    /* The active side's icon reads at full strength (and sits on the knob's
+       white backdrop); the other stays soft/muted. */
+    #datasetSearchModeToggle:not(.athena-mode) .mode-switch-icon.search-icon,
+    #datasetSearchModeToggle.athena-mode .mode-switch-icon.athena-icon {
+      opacity: 1;
+    }
+    /* Drawn as two rotated bars rather than the "×" glyph, since font metrics for
+       that character rarely center perfectly even inside a flex-centered box. */
+    #datasetSearchClear {
+      display: none;
+      position: absolute;
+      top: 17px; /* pinned to the first line's center, not the whole (possibly grown) box */
+      right: 8px;
+      transform: translateY(-50%);
+      width: 22px;
+      height: 22px;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      background: transparent;
+      cursor: pointer;
+      transition-duration: 0.2s;
+    }
+    #datasetSearchClear::before,
+    #datasetSearchClear::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 12px;
+      height: 2px;
+      border-radius: 1px;
+      background: rgba(31, 41, 55, 0.55);
+    }
+    #datasetSearchClear::before {
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+    #datasetSearchClear::after {
+      transform: translate(-50%, -50%) rotate(-45deg);
+    }
+    #datasetSearchClear:hover {
+      background: rgba(55, 65, 81, 0.15);
+    }
+    #datasetSearchClear:hover::before,
+    #datasetSearchClear:hover::after {
+      background: rgba(31, 41, 55, 0.9);
+    }
+    #datasetSearchInput:not(:placeholder-shown) ~ #datasetSearchClear {
+      display: block;
+    }
+    #datasetSearchResults {
+      display: none;
+      position: absolute;
+      /* Fallback for the single-line height; dataset-search.js overrides this
+         inline whenever the input grows, so the dropdown keeps sitting flush
+         above it. width:100% already tracks #datasetSearchWidget's own width
+         (its containing block), so the two stay in sync automatically. */
+      bottom: 51px;
+      left: 0;
+      width: 100%;
+      /* Generous enough to comfortably fit either .dataset-history-scroll alone
+         (up to 320px, see .full below) or both panes stacked together (up to
+         130px + 230px + their padding/divider) - this value only matters as the
+         numeric "from" side of the minimize transition below; neither pane ever
+         actually grows large enough to hit it, since each caps and scrolls on
+         its own. */
+      max-height: 400px;
+      /* This box no longer scrolls itself - .dataset-history-scroll and
+         .dataset-live-scroll (see below) do, independently of each other. That
+         keeps the corner toggle button, which is an absolutely-positioned
+         sibling of both rather than a descendant of either, fixed in place on
+         screen while either pane's content scrolls underneath it. */
+      overflow: hidden;
+      box-sizing: border-box;
+      /* Soft grey, fading to transparent at the top - so once there's enough
+         history to scroll, older entries blend away instead of cutting off
+         sharply. Individual entries below are white cards on top of this. */
+      background: linear-gradient(to bottom,
+        rgba(223, 227, 234, 0) 0%,
+        rgba(223, 227, 234, 0.52) 35%,
+        rgba(213, 218, 226, 0.76) 100%);
+      -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
+      border-radius: 17px;
+      transition: max-height 0.2s ease;
+    }
+    /* Stacks .dataset-history-scroll above .dataset-live-scroll (when both are
+       present) as two independent flex items, each free to cap its own height
+       and scroll on its own - scrolling one never moves the other. */
+    #datasetSearchResults.open {
+      display: flex;
+      flex-direction: column;
+    }
+    /* Minimized: collapses to just enough height for the corner toggle button. The
+       box's `bottom` stays pinned just above the input regardless of height (see
+       the comment above), so shrinking it always collapses upward into a small lip
+       sitting right on the input's top border, rather than moving the input
+       itself. Content underneath stays in the DOM (just clipped), so re-expanding
+       is instant - no re-render needed. */
+    #datasetSearchResults.minimized {
+      background: rgba(213, 218, 226, 0.5);
+      -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
+      max-height: 36px;
+      border-radius: 17px 17px 0 0; /* touching the input's top border - square off the bottom */
+    }
+    /* Hide (not just clip) everything but the toggle button and the "minimized"
+       label - otherwise the top edge of a pane's content (white card background,
+       first line of text) peeks through the collapsed height instead of a clean
+       plain lip. */
+    #datasetSearchResults.minimized > *:not(.dataset-results-toggle):not(.dataset-results-minimized-label) {
+      visibility: hidden;
+    }
+    /* Chat history - its own scrolling pane, independent of whatever "live"
+       content (below) is currently showing. Capped modestly (130px) when a live
+       pane is also present so it doesn't crowd that out; renderResults() below
+       needs the two adjacent panes to size predictably, so this is a fixed cap
+       rather than a flex-grow share. */
+    .dataset-history-scroll {
+      flex: 0 1 auto;
+      min-height: 0;
+      max-height: 130px;
+      overflow-y: auto;
+      box-sizing: border-box;
+      padding: 10px 0 6px;
+    }
+    /* Only shown once there's at least one real history turn above it - avoids an
+       orphaned hairline/gap when a session has no history yet. Set from
+       dataset-search.js right after rendering the history preview. */
+    .dataset-history-scroll.has-history {
+      border-bottom: 1px solid rgba(55, 65, 81, 0.12);
+    }
+    /* Used only when history is the sole content (showHistoryOnly() - no live
+       pane exists alongside it) - free to use the full box height instead of
+       leaving room for a live pane that isn't there. */
+    .dataset-history-scroll.full {
+      max-height: 320px;
+    }
+    /* Dataset suggestions / thinking / AI reply / confirm card - whatever's
+       "live" right now. Its own scrolling pane and cap, entirely separate from
+       the history pane above it, so a long suggestions list scrolls on its own
+       without dragging history along with it (and vice versa). */
+    .dataset-live-scroll {
+      flex: 0 1 auto;
+      min-height: 0;
+      max-height: 230px;
+      overflow-y: auto;
+      box-sizing: border-box;
+      padding: 6px 0 6px;
+    }
+    /* "Chat history is minimized" - only shown in the lip itself, sitting to the
+       left of the expand button. Always in the DOM (re-added every render like the
+       toggle button); display:none unless the box is actually minimized. */
+    .dataset-results-minimized-label {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 14px;
+      transform: translateY(-50%);
+      font-size: 10.5px;
+      color: rgba(31, 41, 55, 0.5);
+      white-space: nowrap;
+    }
+    #datasetSearchResults.minimized .dataset-results-minimized-label {
+      display: block;
+    }
+    /* Corner button, overlaid on top of the content rather than a full-width bar -
+       "-" to minimize when expanded, "↗" to expand when minimized. Same top-right
+       spot in both states, so the click target never moves. */
+    .dataset-results-toggle {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1;
+      color: rgba(31, 41, 55, 0.7);
+      background: rgba(255, 255, 255, 0.4);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+      -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
+      cursor: pointer;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .dataset-results-toggle:hover {
+      color: rgba(31, 41, 55, 1);
+      background: rgba(255, 255, 255, 0.7);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+    }
+
+    /* Dataset matches and the live AI reply/confirm card - the "recommendations
+       and results" - sit as small white cards on the grey gradient. Chat history
+       (below) deliberately stays plain text directly on the gradient instead, so
+       it reads as background context rather than another actionable card. */
+    .dataset-result-item,
+    .dataset-ai-card,
+    .dataset-ai-message,
+    .dataset-result-empty {
+      background: #ffffff;
+      border-radius: 10px;
+      margin: 5px 10px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16);
+    }
+
+    .dataset-result-item {
+      padding: 7px 12px;
+      cursor: pointer;
+    }
+    .dataset-result-item:hover,
+    .dataset-result-item.active {
+      background: #eef1f6;
+    }
+    .dataset-result-name {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #1F2937;
+    }
+    .dataset-result-meta {
+      font-size: 10.5px;
+      color: rgba(31, 41, 55, 0.6);
+      margin-top: 2px;
+    }
+    .dataset-result-hint {
+      font-size: 10px;
+      font-style: italic;
+      color: rgba(55, 65, 81, 0.8);
+      margin-top: 3px;
+    }
+    .dataset-result-empty {
+      padding: 9px 12px;
+      font-size: 11.5px;
+      color: rgba(31, 41, 55, 0.6);
+    }
+
+    /* Session chat history - the 5 most recent prompts, always visible (see
+       renderHistoryPreview in dataset-search.js). Never persisted: chatHistory
+       is a plain in-memory array, so this resets on every page reload. Plain
+       text directly on the gradient (not a card) - each turn separated by a
+       hairline; lines wrap and show in full, no truncation. */
+    .dataset-ai-history-turn {
+      padding: 7px 14px;
+      border-bottom: 1px solid rgba(55, 65, 81, 0.12);
+    }
+    .dataset-ai-history-turn:last-child {
+      border-bottom: none;
+    }
+    .dataset-ai-history-line {
+      font-size: 11px;
+      line-height: 1.45;
+      white-space: normal;
+      overflow-wrap: break-word;
+      color: rgba(31, 41, 55, 0.65);
+    }
+    .dataset-ai-history-line.user {
+      color: rgba(31, 41, 55, 0.95);
+      font-weight: 600;
+      margin-bottom: 1px;
+    }
+
+    /* AI chat reply / thinking state */
+    .dataset-ai-message {
+      padding: 11px 12px;
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: #1F2937;
+    }
+    .dataset-ai-message.thinking {
+      font-style: italic;
+      color: rgba(31, 41, 55, 0.6);
+      display: flex;
+      align-items: center;
+    }
+    /* Athena's owl, perched next to "Thinking..." - a static icon (knowledge.gif
+       doesn't itself animate, see JS/dataset-search.js). */
+    .dataset-ai-thinking-owl {
+      display: inline-block;
+      width: 34px;
+      height: 34px;
+      margin-right: 7px;
+      object-fit: contain;
+    }
+
+    /* A reply that comes with a Yes/No confirm shares one card instead of two -
+       the nested .dataset-ai-message drops its own box so it merges flush with
+       .dataset-ai-confirm below it. */
+    .dataset-ai-card {
+      padding: 0;
+    }
+    .dataset-ai-card .dataset-ai-message {
+      background: none;
+      box-shadow: none;
+      margin: 0;
+      padding-bottom: 6px;
+    }
+    .dataset-ai-confirm {
+      padding: 0 12px 10px 12px;
+    }
+    .dataset-ai-confirm-text {
+      font-size: 12px;
+      color: rgba(31, 41, 55, 0.85);
+      margin-bottom: 8px;
+    }
+    .dataset-ai-confirm-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .dataset-ai-confirm-btn {
+      flex: 1;
+      border: 1px solid rgba(55, 65, 81, 0.85);
+      border-radius: 8px;
+      background: white;
+      color: #1F2937;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      padding: 5px 0;
+      cursor: pointer;
+      transition-duration: 0.2s;
+    }
+    .dataset-ai-confirm-btn.yes:hover {
+      background: rgba(55, 65, 81, 0.85);
+      color: white;
+    }
+    .dataset-ai-confirm-btn.no {
+      border-color: rgba(55, 65, 81, 0.3);
+      color: rgba(31, 41, 55, 0.7);
+    }
+    .dataset-ai-confirm-btn.no:hover {
+      background: rgba(55, 65, 81, 0.08);
+    }
+
+    /* Chart Modal (matches #welcomeModal overlay pattern) */
+    #chartModal {
+      position: fixed;
+      z-index: 9999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    #chartModalContent {
+      position: relative;
+      background-color: rgba(255, 255, 255, 0.95);
+      
+      -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
+      padding: 30px;
+      border-radius: 14px;
+      width: min(640px, 90vw);
+      font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    }
+    #chartModalTitle {
+      margin: 0 0 16px 0;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: #1F2937;
+      padding-right: 24px;
+    }
+    #chartCanvasWrap {
+      position: relative;
+      width: 100%;
+      height: min(400px, 55vh);
+    }
+    #chartModalClose {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      border: none;
+      background: transparent;
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+      color: rgba(31, 41, 55, 0.7);
+      transition-duration: 0.2s;
+    }
+    #chartModalClose:hover {
+      color: #1F2937;
+    }
+
+    /* Measure tool vertex markers - rounds leaflet-draw's default square
+       vertex icon (see JS/measure.js: beginMeasureDrawing's icon/touchIcon
+       options) into a circle; size comes from those options' iconSize, not
+       from here. */
+    .measure-vertex-icon {
+      border-radius: 50%;
+    }
+
+    /* Measure Instructions / Result Modals (matches #welcomeModal overlay
+       pattern) - shared by #measureMsgModal (shown before drawing starts) and
+       #measureResultModal (shown with the finished distance), so the prompt
+       and its result read as the same UI. */
+    .measure-modal {
+      position: fixed;
+      z-index: 9999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .measure-modal-content {
+      background-color: rgba(255, 255, 255, 0.8);
+      -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
+      padding: 30px;
+      border-radius: 14px;
+      max-width: 380px;
+      text-align: center;
+      font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
+      font-weight: 400;
+      font-size: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    }
+    .measure-modal-content p {
+      margin: 0 0 20px 0;
+      font-size: 16px;
+    }
+    .measure-modal-content button {
+      padding: 8px 20px;
+      background-color: white;
+      border: 2px solid transparent;
+      color: black;
+      font-size: 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition-duration: 0.2s;
+      letter-spacing: 1px;
+      font-weight: 500;
+    }
+    .measure-modal-content button:hover {
+      background: rgba(55, 65, 81, 0.85);
+      color: white;
+    }
+
+    /* Brief pulse to draw the eye to a layer row found via dataset search */
+    @keyframes datasetSearchPulse {
+      0%   { box-shadow: 0 0 0 0 rgba(55, 65, 81, 0.55); }
+      70%  { box-shadow: 0 0 0 10px rgba(55, 65, 81, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(55, 65, 81, 0); }
+    }
+    .dataset-search-highlight {
+      animation: datasetSearchPulse 0.7s ease-out 2;
+    }
+
     header {
       position: absolute;
       top: 0;
@@ -156,8 +802,9 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       background: rgba(55, 65, 81, 0.7);
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
       color: rgb(246, 247, 245);
-      backdrop-filter: blur(7px);
+      
       -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
       text-align: center;
       font-weight: 400;
       letter-spacing: 2px;
@@ -191,8 +838,9 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       max-width: 400px;
       height: auto;
       background-color: rgba(246, 247, 245 ,0.8);
-      backdrop-filter: blur(7px);
+      
       -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
       color: #1F2937;
       border: 0px solid transparent;
       padding: 0px 26px 4px 26px;
@@ -253,8 +901,8 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       padding:  0 10px 10px 10px;
       border-radius: 14px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      backdrop-filter: blur(7px);
       -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
       overflow-y: auto;     /* makes it scrollable */
       overflow-x: hidden;   /* avoid horizontal scroll due to negative margins */
       scroll-behavior: smooth;
@@ -273,8 +921,8 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       overflow-y: auto;
       overflow-x: hidden;
       background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(7px);
       -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
       border-radius: 14px;
       padding: 0px 10px 0px 10px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
@@ -325,8 +973,8 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       overflow-y: auto;
       overflow-x: hidden;
       background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(7px);
       -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
       border-radius: 14px;
       padding: 0px 10px 10px 10px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
@@ -393,8 +1041,9 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       left: 10px;
       width: 300px;
       background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(7px);
+      
       -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
       border: none;
       border-radius: 14px;
       padding: 8px 10px;
@@ -425,13 +1074,23 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       letter-spacing: 2px;
     }
 
-    /* Opacity button — second row, full width */
-    #opacityBtn {
+    /* Second row: opacity + draw-order buttons, side by side. Wrapped in a flex
+       row (rather than each button placed directly via grid) so both can share
+       the row at equal width regardless of the 3-column template row 3 uses.
+       On mobile this wrapper is unwrapped (display:contents) so the buttons go
+       back to being direct grid children - see the max-width:900px block. */
+    .toolbar-row2 {
       grid-column: 1 / -1;
       grid-row: 2;
+      display: flex;
+      gap: 8px;
+    }
+
+    #opacityBtn, #drawOrderBtn {
+      flex: 1;
       background-color: rgba(255, 255, 255, 0.95);
       color: black;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 500;
       font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       letter-spacing: 1px;
@@ -444,17 +1103,17 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       align-items: center;
       justify-content: center;
     }
-    #opacityBtn:hover {
+    #opacityBtn:hover, #drawOrderBtn:hover {
       border: 2px solid rgba(55, 65, 81, 0.85);
     }
-    #opacityBtn.active {
+    #opacityBtn.active, #drawOrderBtn.active {
       background: rgba(55, 65, 81, 0.85);
       color: white;
       border-color: transparent;
     }
-    #opacityBtn svg { margin-right: 5px; }
+    #opacityBtn svg, #drawOrderBtn svg { margin-right: 5px; flex-shrink: 0; }
 
-    /* Tool buttons on third row */
+    /* Tool buttons on the third row */
     #measureBtn     { grid-row: 3; grid-column: 1; justify-self: start; }
     #exportBtn      { grid-row: 3; grid-column: 2; justify-self: start; }
     #zoomSelectedBtn{ grid-row: 3; grid-column: 3; justify-self: end; }
@@ -480,27 +1139,33 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
 
     #measureBtn img, #exportBtn img, #zoomSelectedBtn img { height: 18px; width: auto; vertical-align: middle; }
 
-    /* Opacity popup — appears to the right of the toolbar */
-    #opacity-popup {
+    /* Combined Opacity / Draw Order popup — appears to the right of the toolbar.
+       One box, one panel shown at a time; JS/draw-order.js swaps the body content
+       and the header title/active-button state when the header arrows are used. */
+    #layer-popup {
       position: fixed;
       bottom: 30px;
       left: 340px;
-      width: 330px;
+      width: 300px;
       max-height: 320px;
       background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(7px);
+
       -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
       border-radius: 14px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       overflow: hidden;
       z-index: 5000;
       font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
-      font-size: 13px;
+      font-size: 12px;
     }
-    #opacity-popup[hidden] { display: none !important; }
+    #layer-popup[hidden] { display: none !important; }
 
-    .opacity-popup-header {
-      padding: 7px 12px;
+    .layer-popup-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 6px;
       background: rgba(55, 65, 81, 0.85);
       color: white;
       font-size: 13px;
@@ -509,8 +1174,21 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       text-align: center;
       border-radius: 14px 14px 0 0;
     }
+    .layer-popup-header span { flex: 1; }
+    .layer-popup-arrow {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 15px;
+      line-height: 1;
+      padding: 4px 10px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition-duration: 0.2s;
+    }
+    .layer-popup-arrow:hover { background: rgba(255, 255, 255, 0.2); }
 
-    .opacity-popup-empty {
+    .layer-popup-empty {
       padding: 16px 14px;
       color: rgba(55, 65, 81, 0.6);
       font-size: 13px;
@@ -561,6 +1239,86 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       flex-shrink: 0;
     }
 
+    /* Draw Order panel — same popup shell/list rhythm as Opacity, arrows instead
+       of a slider. Grouped into POINTS/LINES/POLYGONS/OTHER sections (each only
+       reorderable against its own group); displayed front-most first within
+       each group (see draw-order.js). The body itself scrolls since several
+       groups stacked can easily exceed the popup's fixed max-height. */
+    #layerPopupBody {
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .draw-order-hint {
+      padding: 8px 12px;
+      font-size: 11px;
+      font-style: italic;
+      color: rgba(55, 65, 81, 0.65);
+      text-align: center;
+      border-bottom: 1px solid rgba(171, 199, 222, 0.25);
+    }
+
+    .draw-order-group-header {
+      padding: 5px 12px;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      color: rgba(55, 65, 81, 0.85);
+      background: rgba(171, 199, 222, 0.15);
+    }
+
+    .draw-order-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .draw-order-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(171, 199, 222, 0.25);
+    }
+    .draw-order-item:last-child { border-bottom: none; }
+
+    .draw-order-name {
+      flex: 1;
+      font-size: 12px;
+      font-weight: 400;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: rgba(17, 24, 39, 1);
+    }
+
+    .draw-order-controls {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .draw-order-arrow-btn {
+      width: 24px;
+      height: 24px;
+      border: 1px solid rgba(171, 199, 222, 0.4);
+      border-radius: 6px;
+      background: white;
+      color: rgba(55, 65, 81, 0.9);
+      font-size: 11px;
+      line-height: 1;
+      cursor: pointer;
+      transition-duration: 0.2s;
+    }
+    .draw-order-arrow-btn:hover:not(:disabled) {
+      border-color: rgba(55, 65, 81, 0.85);
+      background: rgba(55, 65, 81, 0.85);
+      color: white;
+    }
+    .draw-order-arrow-btn:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+
       /* Hide zoom controls when exporting */
     .leaflet-control-container { display: block; }
     .hide-controls .leaflet-control-container { display: none !important; }
@@ -606,8 +1364,9 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       width: 360px;
       max-width: calc(100vw - 20px);
       background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(7px);
+      
       -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
       border-radius: 14px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       padding: 10px;
@@ -715,8 +1474,9 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, 0.45);
-      backdrop-filter: blur(3px);
+      
       -webkit-backdrop-filter: blur(3px);
+      backdrop-filter: blur(3px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -733,8 +1493,9 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       width: min(900px, calc(100vw - 28px));
       max-height: min(82vh, 860px);
       background: rgba(255, 255, 255, 0.97);
-      backdrop-filter: blur(7px);
+      
       -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
       border-radius: 14px;
       box-shadow: 0 8px 28px rgba(0,0,0,0.3);
       display: flex;
@@ -839,12 +1600,15 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
 
     #map-scale-ratio {
       position: fixed;
-      left: 50%;
+      /* Bottom-right, above the footer - #layerInfoBox's own resting spot
+         (right:10px) works here too since the box is hidden (display:none)
+         whenever there's no active layer info to show. */
+      right: 10px;
       bottom: 30px;
-      transform: translateX(-50%);
       background: rgba(255, 255, 255, 0.6);
-      backdrop-filter: blur(7px);
+
       -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
       color: rgba(17, 24, 39, 1);
       border: 0px solid rgba(171, 199, 222, 0.8);
       border-radius: 10px;
@@ -857,12 +1621,27 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       z-index: 1250;
       pointer-events: none;
       white-space: nowrap;
+      transition: right 0.2s ease;
+    }
+    /* #layerInfoBox is open (ensureInfoBoxUpdate() in JS/layer-control.js toggles
+       this class on <body> alongside its own display:block/none) - shift the
+       scale badge left to clear it. layerInfoBox sits at right:10px, and its
+       *rendered* width is 345px, not the 325px in its `width` declaration -
+       box-sizing there is content-box, so the 0/10/0/10 padding adds 20px.
+       left edge = 10 + 345 = 355px in; +10px gap = 365px. */
+    body.layer-info-open #map-scale-ratio {
+      right: 365px;
     }
 
     #cookie-consent-box {
       position: fixed;
-      right: 360px;
-      bottom: 30px;
+      /* Same horizontal anchor as .announcement-box, stacked directly below it */
+      top: 270px;
+      left: 50%;
+      right: 400px;
+      transform: translateX(-50%);
+      min-width: 300px;
+      max-width: 400px;
       z-index: 1249;
       display: flex;
       flex-direction: column;
@@ -871,17 +1650,22 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       padding: 8px 10px;
       border-radius: 12px;
       background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(7px);
       -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       border: 1px solid rgba(171, 199, 222, 0.45);
       font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       font-size: 12px;
       color: rgba(17, 24, 39, 1);
       letter-spacing: 0.3px;
-      width: 285px;
-      max-width: calc(50vw - 40px);
       z-index: 9000;
+      transition: top 0.3s ease;
+    }
+
+    /* Announcement box dismissed/hidden -> cookie box rises to sit below the header,
+       same horizontal position (left/right/transform unchanged above). */
+    body.announcement-hidden #cookie-consent-box {
+      top: 50px;
     }
 
     #cookie-consent-box[hidden] {
@@ -1136,7 +1920,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       padding: 6px;
       font-size: 14px;
     }
-    #searchZoomContainer {
+    #layerControlContainer {
       position: sticky;
       top: 0;
       /* Extend to full visual width of container (counteract side padding) */
@@ -1153,9 +1937,21 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       gap: 8px;
     }
 
-    /* Inputs inside header should flex nicely */
-    #searchZoomContainer input[type="text"] { flex: 1; }
-
+    .layer-panel-btn {
+      border: 1px solid #ccc;
+      background: white;
+      color: rgba(55, 65, 81, 0.9);
+      transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+    }
+    /* Inactive: nothing to act on - lighter border, muted text, no hover feedback */
+    .layer-panel-btn:not(.is-active) {
+      border-color: #eee;
+      color: rgba(55, 65, 81, 0.25);
+    }
+    .layer-panel-btn.is-active:hover {
+      background: rgba(55, 65, 81, 0.7);
+      color: white;
+    }
 
     .leaflet-control-layers {
       bottom: -75px !important; 
@@ -1218,8 +2014,9 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       justify-content: center;
       transition-duration: 0.4s;
       padding:2px;
-      backdrop-filter: blur(7px);
+      
       -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
     }
     
     #basemap-btn:hover {
@@ -1303,8 +2100,9 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       border: none;
       border-radius: 14px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      backdrop-filter: blur(7px);
+      
       -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
       min-width: 130px;
       max-width: 310px;
       max-height: 240px;
@@ -1541,7 +2339,8 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
     #welcomeContent,
     #citation-popup,
     #legal-content,
-    #opacity-popup {
+    #layer-popup,
+    .measure-modal-content {
       animation: popupFadeIn 0.3s cubic-bezier(.25,.8,.25,1);
     }
     @media (max-width: 1265px) {
@@ -1562,7 +2361,8 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       .announcement-box,
       #legend-bar,
       #map-scale-ratio,
-      .leaflet-control-scale {
+      .leaflet-control-scale,
+      #datasetSearchWidget {
         display: none !important;
       }
 
@@ -1570,7 +2370,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       #cookie-consent-box {
         left: 50%;
         top: 20%;
-        transform: translate(-50%, -50%);
+        transform: translate(-50%,50%);
         right: auto;
         bottom: auto;
         height: auto;
@@ -1754,7 +2554,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
         bottom: 28px;
         padding: 6px 8px;
         gap: 6px;
-        grid-template-columns: auto auto auto auto;
+        grid-template-columns: auto auto auto auto auto;
         grid-template-rows: auto;
         align-items: center;
         justify-content: center;
@@ -1763,6 +2563,12 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       #toolbar::before,
       #toolbar h1 {
         display: none;
+      }
+      /* Let opacityBtn/drawOrderBtn go back to being direct grid children of
+         #toolbar on mobile, so the grid-column rules below apply as if the
+         desktop-only flex wrapper (.toolbar-row2) weren't there. */
+      .toolbar-row2 {
+        display: contents;
       }
       #opacityBtn {
         grid-column: 1;
@@ -1779,6 +2585,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
 
       #opacityBtn svg { width: 18px; height: 18px; margin-left: 4px; margin-right: -3px; }
 
+      #drawOrderBtn,
       #measureBtn,
       #exportBtn,
       #zoomSelectedBtn {
@@ -1790,23 +2597,34 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
         margin: 0;
         border-radius: 9999px;
         border: 2px solid rgba(171, 199, 222, 0.45);
+        font-size: 0;
+        justify-content: center;
       }
-      #measureBtn {
+      #drawOrderBtn {
         grid-column: 2;
       }
-      #exportBtn {
+      #measureBtn {
         grid-column: 3;
       }
-      #zoomSelectedBtn {
+      #exportBtn {
         grid-column: 4;
+      }
+      #zoomSelectedBtn {
+        grid-column: 5;
         float: none;
+      }
+      #drawOrderBtn svg {
+        width: 16px;
+        height: 16px;
+        margin-left: 4px;
+        margin-right: -3px;
       }
       #measureBtn img,
       #exportBtn img,
       #zoomSelectedBtn img {
         height: 16px;
       }
-      #opacity-popup {
+      #layer-popup {
         bottom: 88px;
         left: 50%;
         transform: translateX(-50%);
@@ -1885,11 +2703,11 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       float: right;
     }
 
-    /* Move Leaflet scale bar above the toolbar */
+    /* Leaflet scale bar - in the cookie box's old slot, left of #infoBox */
 .leaflet-control-scale {
   position: absolute !important;
-  right: 550px;
-  bottom: 25px; /* Adjust so it's above your toolbar */
+  right: 360px;
+  bottom: 30px;
   z-index: 1001;
 }
 /* Custom style for markercluster spiderfy polygon */

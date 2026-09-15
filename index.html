@@ -32,7 +32,7 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="preconnect" href="https://cdnjs.cloudflare.com">
   <link rel="preconnect" href="https://unpkg.com">
-  <link rel="preconnect" href="https://pub-2c514cfe5cf845c6a683337a482fd2e7.r2.dev">
+  <link rel="preconnect" href="https://data.athensgis.gr">
   <link rel="dns-prefetch" href="https://tiles.stadiamaps.com">
   <link rel="dns-prefetch" href="https://tile.openstreetmap.org">
   <link rel="dns-prefetch" href="https://server.arcgisonline.com">
@@ -124,7 +124,11 @@
        are no longer loaded here - JS/layer-control.js's loadExternalScript()
        fetches them on demand the first time a raster layer is switched on. -->
 
-  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet">
+  <!-- Newsreader is only used for the bold "+"/"-" glyphs in #custom-zoom-controls
+       (style.css) - weight 700 via <strong>, never italic, no other weight/style
+       used anywhere else on the site - so only that one static instance is requested,
+       instead of the full variable range (both ital axes, wght 200-800, opsz 6-72). -->
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@700&display=swap" rel="stylesheet">
   
   <script>
     // Global object must be available before any module scripts.

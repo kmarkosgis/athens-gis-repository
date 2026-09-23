@@ -35,7 +35,7 @@ var layerCategories = {
   },
   "Environment": {
     "Geology": [
-      { name: "Soil Groups", file: "Geo/SoilGroups.pmtiles", geojson: "Geo/SoilGroups.geojson" }
+      { name: "Soil Groups", file: "Environment/SoilGroups.pmtiles", geojson: "Environment/SoilGroups.geojson" }
     ],
     "Hydrology": [
       { name: "Rivers and Streams", file: "Environment/Rivers.pmtiles", geojson: "Environment/Rivers.geojson" },

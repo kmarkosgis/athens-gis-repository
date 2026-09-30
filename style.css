@@ -909,6 +909,43 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       z-index: 3;
     }
 
+    /* Layer info title carousel (JS/layer-control.js's ensureInfoBoxUpdate) - the
+       viewport clips the track to one item's width of "peek" on either side of the
+       centered active title; the track itself is slid via an inline transform so it
+       can be positioned per-render (see LAYER_TITLE_ITEM_WIDTH there - keep in sync
+       with the width below) and animated smoothly on prev/next. */
+    .layer-titles-viewport {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+    #layerTitlesTrack {
+      display: flex;
+    }
+    .layer-title-item {
+      flex: 0 0 108px;
+      width: 108px;
+      box-sizing: border-box;
+      padding: 0 6px;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 12px;
+      font-weight: 400;
+      color: #888;
+      opacity: 0.5;
+      transform: scale(0.88);
+      transition: opacity 0.35s ease, transform 0.35s ease, color 0.35s ease;
+    }
+    .layer-title-item.active {
+      font-size: 14px;
+      font-weight: 600;
+      color: #222;
+      opacity: 1;
+      transform: scale(1);
+    }
+
     #infoBox {
       position: fixed;
       bottom: 310px;
@@ -1670,6 +1707,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       border-radius: 10px;
       letter-spacing: 0.5px;
       font-weight: 400;
+      cursor: pointer;
       font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       transition: border 0.2s, max-height 0.4s ease, padding 0.4s ease;
       flex-direction: column; /* stack vertically: download above label */
@@ -1699,7 +1737,8 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
     }
 
     .layer-item:hover {
-      border: 2px solid rgba(55, 65, 81, 0.2);
+      border: 2px solid transparent;
+      background: rgba(55, 65, 81, 0.07);
       border-radius: 10px;
       transition: border 0.2s;
     }
@@ -1718,7 +1757,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       transition: border 0.2s, max-height 0.4s, padding 0.15s ;
     }
     .layer-item.selected:hover {
-      border: 2px solid rgba(55, 65, 81, 0.6);
+      border: 2px solid rgba(55, 65, 81, 0.4);
     }
 
     .layer-item label {

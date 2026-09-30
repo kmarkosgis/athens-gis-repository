@@ -93,6 +93,7 @@ var layerCategories = {
   "Population and social conditions": {
     "Population Census": [
       { name: "2021 Population Census", file: "Social/Population2021.json" },
+      { name: "2021 Population Census Density", file: "Social/population_density_2021.tif", type: "raster" },
       { name: "2011 Population Census", file: "Social/Population2011.json" }
     ]
   },
@@ -636,7 +637,12 @@ var _layerInfoBoxListenerAttached = false;
 var _infoBox = null;
 var _infoContent = null;
 
-function ensureInfoBoxUpdate(){
+// Fixed per-item width (px) for the title carousel track - kept in sync with the
+// ".layer-title-item" width rule in style.css. Centering math (trackTransform below)
+// relies on both sides agreeing on this number.
+var LAYER_TITLE_ITEM_WIDTH = 108;
+
+function ensureInfoBoxUpdate(opts){
   if(!_layerInfoBox) _layerInfoBox = document.getElementById('layerInfoBox');
   var infoBox = _layerInfoBox; if(!infoBox) return;
   var contentEl = document.getElementById('layerInfoContent'); if(!contentEl) contentEl = infoBox;
@@ -648,19 +654,21 @@ function ensureInfoBoxUpdate(){
       var id = e.target && e.target.id;
       if(id === 'prevTabBtn'){
         if(AthensGIS.tabState && AthensGIS.tabState.currentTab > 0){
+          var fromIdx = AthensGIS.tabState.currentTab;
           AthensGIS.tabState.currentTab--;
-          ensureInfoBoxUpdate();
+          ensureInfoBoxUpdate({ animateFrom: fromIdx });
         }
       } else if(id === 'nextTabBtn'){
         var names = Object.keys(AthensGIS.activeLayerInfos);
         if(AthensGIS.tabState && AthensGIS.tabState.currentTab < names.length - 1){
+          var fromIdx2 = AthensGIS.tabState.currentTab;
           AthensGIS.tabState.currentTab++;
-          ensureInfoBoxUpdate();
+          ensureInfoBoxUpdate({ animateFrom: fromIdx2 });
         }
       }
     });
   }
-  
+
   var layerNames = Object.keys(AthensGIS.activeLayerInfos);
 
   if(layerNames.length === 0){
@@ -670,42 +678,82 @@ function ensureInfoBoxUpdate(){
     document.body.classList.remove('layer-info-open');
     return;
   }
-  
+
   // Initialize tab state if not exists
   if(!AthensGIS.tabState){
     AthensGIS.tabState = { currentTab: 0 };
   }
-  
+
   // Ensure current tab is within bounds
   if(AthensGIS.tabState.currentTab >= layerNames.length){
     AthensGIS.tabState.currentTab = layerNames.length - 1;
   }
-  
-  // Build compact tabs container: show only the active layer title and arrows
-  var activeName = layerNames[AthensGIS.tabState.currentTab] || '';
-  var countLabel = '';
-  if(layerNames.length > 1){ countLabel = ' <span style="font-size:11px; color:#555;">(' + (AthensGIS.tabState.currentTab + 1) + '/' + layerNames.length + ')</span>'; }
+  var toIdx = AthensGIS.tabState.currentTab;
+  // Where the track should render BEFORE the animation kicks in. Defaults to its
+  // final resting spot (no slide) for every ordinary re-render (layer added/removed,
+  // info finished loading, etc.) - only the prev/next click handler above passes
+  // animateFrom, so only a genuine carousel navigation actually slides.
+  var fromIdx = (opts && typeof opts.animateFrom === 'number') ? opts.animateFrom : toIdx;
+
+  // Centers item `idx` in the viewport: shift the track left by everything before
+  // it plus half its own width, then recenter via the viewport's own 50%.
+  function trackTransform(idx){
+    return 'translateX(calc(50% - ' + (idx * LAYER_TITLE_ITEM_WIDTH + LAYER_TITLE_ITEM_WIDTH / 2) + 'px))';
+  }
+
+  // Build compact tabs container: arrows + a small title carousel (current title
+  // centered and emphasized, neighbors peeking in on either side in a softer style -
+  // see .layer-title-item / .active in style.css). Each arrow only renders when it
+  // would actually do something - no prev at the first tab, no next at the last (and
+  // neither when there's just one layer open, since both are false then).
+  var canPrev = toIdx > 0;
+  var canNext = toIdx < layerNames.length - 1;
   var tabsHtml = '<div id="tabsContainer" style="position:sticky; top:55px; display:flex; gap:8px; align-items:center; padding:8px 10px; border-bottom:1px solid #ccc; background-color:white;">';
-  tabsHtml += '<button id="prevTabBtn" style="background:rgba(55, 65, 81, 0.85); color:white; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:14px;">❮</button>';
-  tabsHtml += '<div id="activeLayerTitle" style="flex:1; text-align:center; font-weight:500; font-size:14px; color:#222;">' + activeName + countLabel + '</div>';
-  tabsHtml += '<button id="nextTabBtn" style="background:rgba(55, 65, 81, 0.85); color:white; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:14px;">❯</button>';
+  if(canPrev){
+    tabsHtml += '<button id="prevTabBtn" style="background:rgba(55, 65, 81, 0.85); color:white; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:14px; flex:0 0 auto;">❮</button>';
+  }
+  if(layerNames.length > 1){
+    tabsHtml += '<div class="layer-titles-viewport">';
+    tabsHtml += '<div id="layerTitlesTrack" style="transform:' + trackTransform(fromIdx) + ';">';
+    layerNames.forEach(function(name, idx){
+      tabsHtml += '<div class="layer-title-item' + (idx===toIdx ? ' active' : '') + '" title="' + name.replace(/"/g,'&quot;') + '">' + name + '</div>';
+    });
+    tabsHtml += '</div></div>';
+  } else {
+    tabsHtml += '<div style="flex:1; text-align:center; font-weight:500; font-size:14px; color:#222;">' + (layerNames[0] || '') + '</div>';
+  }
+  if(canNext){
+    tabsHtml += '<button id="nextTabBtn" style="background:rgba(55, 65, 81, 0.85); color:white; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:14px; flex:0 0 auto;">❯</button>';
+  }
   tabsHtml += '</div>';
-  
+
   // Build content areas (only show active tab)
   var contentHtml = '<div id="contentContainer" style="padding:10px; max-height:250px; overflow-y:auto;">';
   layerNames.forEach(function(name, idx){
-    var isActive = idx === AthensGIS.tabState.currentTab;
+    var isActive = idx === toIdx;
     var display = isActive ? 'block' : 'none';
     contentHtml += '<div class="layer-tab-content" data-tab-index="'+idx+'" style="display:'+display+';">'+AthensGIS.activeLayerInfos[name]+'</div>';
   });
   contentHtml += '</div>';
-  
+
   // Combine all HTML
   var html = tabsHtml + contentHtml;
   contentEl.innerHTML = html;
   infoBox.style.display = 'block';
   document.body.classList.add('layer-info-open');
 
+  // Slide the freshly-rendered track from its old position to its new one: it's
+  // rendered above already at fromIdx with no transition, so forcing a layout flush
+  // here before switching to toIdx makes the browser genuinely animate the move
+  // instead of just snapping straight to the end state.
+  if(fromIdx !== toIdx){
+    var trackEl = document.getElementById('layerTitlesTrack');
+    if(trackEl){
+      void trackEl.offsetWidth; // force reflow so the starting transform above is committed
+      trackEl.style.transition = 'transform 0.35s ease';
+      trackEl.style.transform = trackTransform(toIdx);
+    }
+  }
 }
 
   // 4. Factory for geojson options
@@ -938,7 +986,7 @@ function clusterPointFeatures(features){
     var key = Math.floor(px.x / CLUSTER_CELL_PX) + ':' + Math.floor(px.y / CLUSTER_CELL_PX);
     var cell = cells[key];
     if(!cell){
-      cell = cells[key] = { count:0, sumLng:0, sumLat:0, minLng:Infinity, minLat:Infinity, maxLng:-Infinity, maxLat:-Infinity, feature:f };
+      cell = cells[key] = { count:0, sumLng:0, sumLat:0, minLng:Infinity, minLat:Infinity, maxLng:-Infinity, maxLat:-Infinity, feature:f, sources:Object.create(null) };
       order.push(key);
     }
     cell.count++;
@@ -947,6 +995,11 @@ function clusterPointFeatures(features){
     if(lng > cell.maxLng) cell.maxLng = lng;
     if(lat < cell.minLat) cell.minLat = lat;
     if(lat > cell.maxLat) cell.maxLat = lat;
+    // Which dataset(s) this cell's points came from - see
+    // AthensGIS._pointLayerRegistry below, which stamps this on every raw feature
+    // before pooling several layers' points together. A cell fed by more than one
+    // source layer becomes a shared/merged bubble instead of a per-layer one.
+    cell.sources[(f.properties && f.properties.__sourceLayer) || ''] = true;
   });
 
   var out = passthrough;
@@ -958,13 +1011,87 @@ function clusterPointFeatures(features){
       properties: {
         __cluster: true,
         __clusterCount: cell.count,
-        __clusterBBox: [cell.minLng, cell.minLat, cell.maxLng, cell.maxLat]
+        __clusterBBox: [cell.minLng, cell.minLat, cell.maxLng, cell.maxLat],
+        __clusterSources: Object.keys(cell.sources)
       },
       geometry: { type: 'Point', coordinates: [cell.sumLng / cell.count, cell.sumLat / cell.count] }
     });
   });
   return out;
 }
+
+function zoomToClusterBBox(feature){
+  var bb = feature && feature.properties && feature.properties.__clusterBBox;
+  if(!bb) return;
+  var map = getMap(); if(!map) return;
+  try{ map.fitBounds(L.latLngBounds([[bb[1],bb[0]],[bb[3],bb[2]]]).pad(0.3), { maxZoom: 18 }); }catch(err){}
+}
+
+// ── Cross-layer point clustering ────────────────────────────────────────────────
+// Point features from every currently-active point-producing layer are pooled and
+// clustered TOGETHER (see recomputeSharedPointClusters), so two layers with points
+// landing in the same screen cell merge into one bubble instead of each drawing its
+// own overlapping one. A layer registers itself here (see createLayerFromGeoJSON)
+// with its current raw (unclustered) point features plus an `apply` callback that
+// pushes a rendered feature list into its own point sub-layer - individual points
+// and any bubble made of just that layer's own points keep rendering there, with
+// their normal per-layer color/legend/click behavior untouched. Bubbles made of
+// more than one layer's points render once, generically, in the shared overlay
+// layer below instead.
+AthensGIS._pointLayerRegistry = AthensGIS._pointLayerRegistry || {};
+var _sharedClusterLayer = null;
+
+function ensureSharedClusterLayer(){
+  if(_sharedClusterLayer) return _sharedClusterLayer;
+  var map = getMap(); if(!map) return null;
+  try{ if(!map.getPane('vector-top')){ map.createPane('vector-top'); map.getPane('vector-top').style.zIndex = 650; } }catch(e){}
+  _sharedClusterLayer = L.layerGroup([], { pane:'vector-top' }).addTo(map);
+  return _sharedClusterLayer;
+}
+
+function recomputeSharedPointClusters(){
+  var registry = AthensGIS._pointLayerRegistry;
+  var names = Object.keys(registry);
+  var pooled = [];
+  names.forEach(function(name){
+    var entry = registry[name];
+    if(entry && entry.rawFeatures && entry.rawFeatures.length) pooled = pooled.concat(entry.rawFeatures);
+  });
+  var clustered = clusterPointFeatures(pooled);
+  var perLayerOut = Object.create(null);
+  names.forEach(function(n){ perLayerOut[n] = []; });
+  var mergedBubbles = [];
+  clustered.forEach(function(f){
+    if(!f || !f.properties) return;
+    if(f.properties.__cluster){
+      var sources = f.properties.__clusterSources || [];
+      if(sources.length > 1){ mergedBubbles.push(f); return; }
+      var only = sources[0];
+      if(perLayerOut[only]) perLayerOut[only].push(f);
+      return;
+    }
+    var src = f.properties.__sourceLayer;
+    if(perLayerOut[src]) perLayerOut[src].push(f);
+  });
+  names.forEach(function(name){
+    var entry = registry[name];
+    if(entry && typeof entry.apply === 'function') entry.apply(perLayerOut[name]);
+  });
+
+  var shared = ensureSharedClusterLayer();
+  if(shared){
+    shared.clearLayers();
+    if(mergedBubbles.length){
+      shared.addLayer(L.geoJSON({ type:'FeatureCollection', features: mergedBubbles }, {
+        pointToLayer: function(feature, latlng){ return makeClusterMarker(feature, latlng); },
+        onEachFeature: function(feature, layer){
+          layer.on('click', function(e){ L.DomEvent.stopPropagation(e); zoomToClusterBBox(feature); });
+        }
+      }));
+    }
+  }
+}
+// ── End cross-layer point clustering ────────────────────────────────────────────
 
 function makeClusterMarker(feature, latlng){
   var count = feature.properties.__clusterCount || 0;
@@ -1093,10 +1220,7 @@ function geojsonOptions(layerName, legendConfig){
         // has no properties table or highlight state of its own, just zoom in on
         // the area it summarizes, same as clicking a cluster on any other map.
         if(isCluster){
-          var bb = feature.properties.__clusterBBox;
-          if(bb && getMap()){
-            try{ getMap().fitBounds(L.latLngBounds([[bb[1],bb[0]],[bb[3],bb[2]]]).pad(0.3), { maxZoom: 18 }); }catch(err){}
-          }
+          zoomToClusterBBox(feature);
           return;
         }
         resetFeatureHighlight();
@@ -1264,7 +1388,12 @@ function createLayerFromGeoJSON(data, layerName, legendConfig){
   }) : [];
   var polyFeatures = { type: 'FeatureCollection', features: features.filter(function(f){ return f && f.geometry && (f.geometry.type==='Polygon' || f.geometry.type==='MultiPolygon'); }) };
   var lineFeatures = { type: 'FeatureCollection', features: features.filter(function(f){ return f && f.geometry && (f.geometry.type==='LineString' || f.geometry.type==='MultiLineString'); }) };
-  var pointFeatures = { type: 'FeatureCollection', features: clusterPointFeatures(features.filter(function(f){ return f && f.geometry && (f.geometry.type==='Point' || f.geometry.type==='MultiPoint'); })) };
+  // Point features are pooled with every other active point layer and clustered
+  // together instead of on their own - see AthensGIS._pointLayerRegistry /
+  // recomputeSharedPointClusters below. __sourceLayer is how a pooled feature finds
+  // its way back to this dataset's own sub-layer/style/legend after that shared pass.
+  var rawPointFeatures = features.filter(function(f){ return f && f.geometry && (f.geometry.type==='Point' || f.geometry.type==='MultiPoint'); });
+  rawPointFeatures.forEach(function(f){ if(f.properties) f.properties.__sourceLayer = layerName; });
 
   var layers = [];
   var polyLayer = null, lineLayer = null, pointLayer = null;
@@ -1277,17 +1406,19 @@ function createLayerFromGeoJSON(data, layerName, legendConfig){
     layers.push(lineLayer);
   }
   var _preparedLabelLayer = buildContourLabelLayer(lineFeatures.features);
-  if(pointFeatures.features.length){
-    pointLayer = makePointLayer(pointFeatures);
-    layers.push(pointLayer);
-  }
+  // pointLayer is created lazily by applyPointRender() below, once the shared
+  // cluster recompute knows what (if anything) this layer should render itself.
 
   var group = null;
   if(layers.length===1){
     group = layers[0];
     group.addTo(map);
-  } else {
+  } else if(layers.length){
     group = L.layerGroup(layers).addTo(map);
+  } else {
+    // Pure point dataset (or empty) - still needs a group to hang the lazily-created
+    // point sub-layer off of.
+    group = L.layerGroup([]).addTo(map);
   }
   // Attach convenience references regardless of how the group was assembled, so
   // setLayerOpacity() (JS/utils.js), JS/draw-order.js, and updateViewportData()
@@ -1331,11 +1462,36 @@ function createLayerFromGeoJSON(data, layerName, legendConfig){
     if(_pointReset) try{ _pointReset(feature); }catch(_){}
   };
 
+  // Pushes this layer's slice of the shared cluster recompute (its own individual
+  // points, plus any bubble made purely of its own points) into its point
+  // sub-layer, creating that sub-layer lazily the first time it actually has
+  // something to draw - same lazy-create pattern updateViewportData below uses for
+  // its poly/line sub-layers.
+  function applyPointRender(feats){
+    if(pointLayer){
+      try{ pointLayer.clearLayers(); if(feats && feats.length) pointLayer.addData({type:'FeatureCollection',features:feats}); }catch(_){}
+    } else if(feats && feats.length){
+      try{
+        pointLayer = makePointLayer({type:'FeatureCollection',features:feats});
+        group.addLayer(pointLayer);
+        group._vecLayer = pointLayer;
+        _pointReset = pointLayer.resetStyle.bind(pointLayer);
+      }catch(_){}
+    }
+  }
+  AthensGIS._pointLayerRegistry[layerName] = { rawFeatures: rawPointFeatures, apply: applyPointRender };
+  // Recompute now (synchronously) so this layer's own point sub-layer is already in
+  // place by the time createLayerFromGeoJSON returns - and so any OTHER already-
+  // active point layer whose bubbles now merge with this one's points gets redrawn
+  // immediately too, not just on the next pan/zoom.
+  recomputeSharedPointClusters();
+
   group.updateViewportData = function(filteredData){
     var fts = filteredData && filteredData.features || [];
     var pFts = fts.filter(function(f){ return f&&f.geometry&&(f.geometry.type==='Polygon'||f.geometry.type==='MultiPolygon'); });
     var lFts = fts.filter(function(f){ return f&&f.geometry&&(f.geometry.type==='LineString'||f.geometry.type==='MultiLineString'); });
-    var vFts = clusterPointFeatures(fts.filter(function(f){ return f&&f.geometry&&(f.geometry.type==='Point'||f.geometry.type==='MultiPoint'); }));
+    var vFts = fts.filter(function(f){ return f&&f.geometry&&(f.geometry.type==='Point'||f.geometry.type==='MultiPoint'); });
+    vFts.forEach(function(f){ if(f.properties) f.properties.__sourceLayer = layerName; });
     if(polyLayer){
       try{ polyLayer.clearLayers(); if(pFts.length) polyLayer.addData({type:'FeatureCollection',features:pFts}); }catch(_){}
     } else if(pFts.length){
@@ -1358,16 +1514,13 @@ function createLayerFromGeoJSON(data, layerName, legendConfig){
         _lineReset = lineLayer.resetStyle.bind(lineLayer);
       }catch(_){}
     }
-    if(pointLayer){
-      try{ pointLayer.clearLayers(); if(vFts.length) pointLayer.addData({type:'FeatureCollection',features:vFts}); }catch(_){}
-    } else if(vFts.length){
-      try{
-        pointLayer = makePointLayer({type:'FeatureCollection',features:vFts});
-        group.addLayer(pointLayer);
-        group._vecLayer = pointLayer;
-        _pointReset = pointLayer.resetStyle.bind(pointLayer);
-      }catch(_){}
-    }
+    // Re-cluster across every active point layer, not just this one's fresh data -
+    // see AthensGIS._pointLayerRegistry / recomputeSharedPointClusters above. This
+    // both re-renders this layer's own point sub-layer (via applyPointRender) and
+    // refreshes every other active point layer's bubbles, since panning/zooming can
+    // change which cells merge across layers even when only this one's data changed.
+    if(AthensGIS._pointLayerRegistry[layerName]) AthensGIS._pointLayerRegistry[layerName].rawFeatures = vFts;
+    recomputeSharedPointClusters();
     // Terrain: rebuild contour labels for the features now in view.
     if(layerName==='Terrain'){
       try{
@@ -1613,15 +1766,20 @@ function renderLayerControl(){
       commonWrap.id = 'common-layers-wrap';
       controlDiv.appendChild(commonWrap);
     }
-    var row=document.createElement('div'); row.className='layer-item';
+    var row=document.createElement('div'); row.className='layer-item'; row.title='Activate layer';
     var cb=document.createElement('input'); cb.type='checkbox'; cb.id=id;
     cb.dataset.layername='Terrain'; cb.dataset.filename=TERRAIN_PMTILES;
     var label=document.createElement('label'); label.htmlFor=id; label.textContent='Terrain';
     row.appendChild(cb); row.appendChild(label);
     commonWrap.appendChild(row);
+    row.addEventListener('click', function(e){
+      if(e.target===cb || e.target===label) return;
+      cb.click();
+    });
 
     cb.addEventListener('change', function(){
       var layerName=this.dataset.layername;
+      row.title = this.checked ? 'Deactivate layer' : 'Activate layer';
       if(this.checked){
         row.classList.add('selected');
         var stopTerrainSpinner = startLoadingSpinner(label);
@@ -1686,6 +1844,10 @@ function renderLayerControl(){
           delete AthensGIS.geojsonLayers[TERRAIN_PMTILES];
         }
         if(AthensGIS._viewportLayers) delete AthensGIS._viewportLayers[TERRAIN_PMTILES];
+        if(AthensGIS._pointLayerRegistry && AthensGIS._pointLayerRegistry[layerName]){
+          delete AthensGIS._pointLayerRegistry[layerName];
+          if(typeof recomputeSharedPointClusters==='function') recomputeSharedPointClusters();
+        }
         // Update legend to remove this layer's entry
         if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName,'remove');
         delete AthensGIS.activeLayerInfos[layerName];
@@ -1713,12 +1875,16 @@ function renderLayerControl(){
       commonWrap.id = 'common-layers-wrap';
       controlDiv.appendChild(commonWrap);
     }
-    var row=document.createElement('div'); row.className='layer-item';
+    var row=document.createElement('div'); row.className='layer-item'; row.title='Activate layer';
     var cb=document.createElement('input'); cb.type='checkbox'; cb.id=id;
     cb.dataset.layername='Shaded Relief'; cb.dataset.filename=SHADED_RELIEF_PMTILES;
     var label=document.createElement('label'); label.htmlFor=id; label.textContent='Shaded Relief';
     row.appendChild(cb); row.appendChild(label);
     commonWrap.appendChild(row); // appended after the Terrain row => sits below it
+    row.addEventListener('click', function(e){
+      if(e.target===cb || e.target===label) return;
+      cb.click();
+    });
 
     function ensureHillshadePane(){
       var map=getMap(); if(!map) return;
@@ -1735,6 +1901,7 @@ function renderLayerControl(){
 
     cb.addEventListener('change', function(){
       var layerName=this.dataset.layername;
+      row.title = this.checked ? 'Deactivate layer' : 'Activate layer';
       if(this.checked){
         row.classList.add('selected');
         var stopHsSpinner = startLoadingSpinner(label);
@@ -1946,7 +2113,7 @@ function renderLayerControl(){
     if(!info || !parentEl || !categoryContent) return;
     var id=info.name.replace(/\s+/g,'_');
     var hasLegend = !!((window.legendConfigs||{})[info.name]);
-    var row=document.createElement('div'); row.className='layer-item';
+    var row=document.createElement('div'); row.className='layer-item'; row.title='Activate layer';
     var cb=document.createElement('input'); cb.type='checkbox'; cb.id=id; cb.dataset.layername=info.name; if(info.file) cb.dataset.filename=info.file;
     var label=document.createElement('label'); label.htmlFor=id; label.textContent=info.name;
     var actions = null;
@@ -2018,6 +2185,15 @@ function renderLayerControl(){
     if(actions) row.appendChild(actions);
     if(colorPanel) row.appendChild(colorPanel);
     parentEl.appendChild(row);
+    // Make the whole row toggle the layer, not just the label text - action buttons
+    // (download/color/filter) and the color panel already call stopPropagation() in
+    // their own click handlers, so clicks there never reach this listener. Skip the
+    // checkbox/label themselves so a direct click on either isn't double-toggled (the
+    // native <label for> click already fires one toggle on its own).
+    row.addEventListener('click', function(e){
+      if(e.target===cb || e.target===label) return;
+      cb.click();
+    });
     // Tag category/subcategory for active-layer counting
     row.dataset.categoryId = categoryContent.id;
     if(subcategoryContent && subcategoryContent.id){
@@ -2027,6 +2203,7 @@ function renderLayerControl(){
     if(subcategoryName) row.dataset.subcategoryName = subcategoryName;
     cb.addEventListener('change', function(){
       var layerName=this.dataset.layername; var file=this.dataset.filename; var dEl=this.parentElement.querySelector('.download-button');
+      row.title = this.checked ? 'Deactivate layer' : 'Activate layer';
       if(this.checked){
         // Visually mark row as selected so .layer-item.selected CSS applies
         row.classList.add('selected');
@@ -2135,6 +2312,13 @@ function renderLayerControl(){
           getMap().removeLayer(AthensGIS.geojsonLayers[file]); delete AthensGIS.geojsonLayers[file];
           if(AthensGIS._viewportLayers) delete AthensGIS._viewportLayers[file];
           if(AthensGIS.rasterLayers) delete AthensGIS.rasterLayers[file];
+        }
+        // Drop this layer's points from the shared cross-layer cluster pool and
+        // recompute immediately, so any bubble it was merged into shrinks back down
+        // (or un-merges entirely) right away instead of waiting for the next pan/zoom.
+        if(AthensGIS._pointLayerRegistry && AthensGIS._pointLayerRegistry[layerName]){
+          delete AthensGIS._pointLayerRegistry[layerName];
+          if(typeof recomputeSharedPointClusters==='function') recomputeSharedPointClusters();
         }
         delete AthensGIS.activeLayerInfos[layerName]; ensureInfoBoxUpdate(); if(!_infoBox) _infoBox = document.getElementById('infoBox'); if(_infoBox) _infoBox.style.display='none';
         // Update legend to remove this layer's entry (after state updated)

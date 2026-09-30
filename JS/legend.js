@@ -530,6 +530,23 @@ window.legendConfigs = {
         "150000+": { color: "#213D54", label: "150000+" }
       }
     },
+    "2021 Population Census Density": {
+      title: "Population Density (people/km²)",
+      classes: {
+        "0-250": { color: "#e8f0f8d2", label: "0 – 250" },
+        "250-750": { color: "#cbddeed2", label: "250 – 750" },
+        "750-1500": { color: "#bdd6eed2", label: "750 – 1,500" },
+        "1500-3000": { color: "#9cc9e2cc", label: "1,500 – 3,000" },
+        "3000-5000": { color: "#6bafd6d0", label: "3,000 – 5,000" },
+        "5000-8000": { color: "#4291c6d0", label: "5,000 – 8,000" },
+        "8000-12500": { color: "#2170b5d5", label: "8,000 – 12,500" },
+        "12500-15000": { color: "#084594d2", label: "12,500 – 15,000" },
+        "15000-20000": { color: "#053b81d3", label: "15,000 – 20,000" },
+        "20000-25000": { color: "#01306dd5", label: "20,000 – 25,000" },
+        "25000+": { color: "#011531d5", label: "25,000+" }
+      }
+    },
+
     "2011 Population Census": {
       field: "Popul2011",
       title: "Population",

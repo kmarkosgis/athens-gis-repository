@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>About | Athens GIS Repository</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="About the Athens GIS Repository: an open-access web map and geospatial data platform for Athens and the wider Attica region of Greece. What it contains, where the data comes from, how to use it, how to cite it, and who maintains it.">
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="Konstantinos Markos">
+  <meta property="og:title" content="About | Athens GIS Repository">
+  <meta property="og:description" content="What the Athens GIS Repository is, what it contains, where its data comes from, and how to use and cite it.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://athensgis.gr/about">
+  <meta property="og:image" content="https://athensgis.gr/images/64.png">
+  <meta property="og:image:alt" content="Athens GIS Repository - Open Geospatial Data">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="About | Athens GIS Repository">
+  <meta name="twitter:description" content="What the Athens GIS Repository is, what it contains, where its data comes from, and how to use and cite it.">
+  <meta name="twitter:image" content="https://athensgis.gr/images/64.png">
+  <link rel="canonical" href="https://athensgis.gr/about">
+  <link rel="icon" href="images/6.png" type="image/png">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "@id": "https://athensgis.gr/about#aboutpage",
+    "url": "https://athensgis.gr/about",
+    "name": "About | Athens GIS Repository",
+    "description": "About the Athens GIS Repository: an open-access web map and geospatial data platform for Athens and the wider Attica region of Greece.",
+    "isPartOf": {
+      "@type": "WebSite",
+      "@id": "https://athensgis.gr/#website",
+      "url": "https://athensgis.gr/",
+      "name": "Athens GIS Repository"
+    },
+    "about": {
+      "@type": "Organization",
+      "@id": "https://athensgis.gr/#organization",
+      "name": "Athens GIS Repository",
+      "url": "https://athensgis.gr/"
+    }
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg: rgb(246, 247, 245);
+      --surface: #ffffff;
+      --ink: #1f2937;
+      --ink-soft: #4b5563;
+      --brand: rgb(55, 65, 81);
+      --brand-ink: rgb(246, 247, 245);
+      --link: #2c5f8a;
+      --link-hover: #1d4468;
+      --rule: rgba(55, 65, 81, 0.18);
+      --header-h: 48px;
+      /* Page title: --title-big at the top of the page, shrinks to --title-docked in the header */
+      --title-big: 44px;
+      --title-docked: 20px;
+      --title-h: calc(var(--title-big) * 1.2);
+      --title-pad: 28px;               /* space above and below the title inside its band */
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html {
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      html { scroll-behavior: smooth; }
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+    }
+
+    a { color: var(--link); text-underline-offset: 2px; }
+    a:hover { color: var(--link-hover); }
+    a:focus-visible, button:focus-visible {
+      outline: 3px solid #4682b4;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    .skip-link {
+      position: absolute;
+      left: 12px;
+      top: -48px;
+      z-index: 3000;
+      padding: 8px 14px;
+      background: var(--surface);
+      color: var(--ink);
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+    .skip-link:focus { top: 8px; }
+
+    /* ── Header (same look as the map page) ─────────────────────────────── */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: var(--header-h);
+      padding: 4px 12px;
+      background: var(--brand);
+      color: var(--brand-ink);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+    }
+    .site-header .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      color: inherit;
+      text-decoration: none;
+    }
+    .site-header .brand img { display: block; height: 40px; width: auto; }
+    .header-actions {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header-btn {
+      display: inline-flex;
+      align-items: center;
+      height: 28px;
+      padding: 0 20px;
+      border: 1px solid rgba(246, 247, 245, 0.7);
+      border-radius: 10px;
+      color: var(--brand-ink);
+      font-size: 16px;
+      font-weight: 500;
+      letter-spacing: 1.5px;
+      text-decoration: none;
+      text-transform: uppercase;
+      white-space: nowrap;
+      transition-duration: 0.2s;
+    }
+    .header-btn:hover {
+      background: rgba(246, 247, 245, 0.95);
+      color: #111827;
+    }
+    .header-linkedin img { display: block; height: 28px; width: auto; }
+
+    /* ── Page title: sits in the middle of a band between the header and the menu bar,
+       and docks into the header as the page scrolls ─────────────────────────────────
+       The band is a normal element in the page, in the same colour as the menu bar, and scrolls
+       away. The title is pulled up over the middle of it with a negative margin. Without JS that
+       is all there is. With JS (.js-title on <html>) the title becomes sticky at the header's
+       vertical centre: it scrolls up with the page, shrinks as it travels (the script sets its
+       scale), and once it reaches the header it stays there, centred. Its text is light, which
+       is right on the band and on the header alike. */
+    .title-band {
+      height: calc(var(--title-h) + 2 * var(--title-pad));
+      background: rgba(55, 65, 81, 0.85);
+      -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
+    }
+    .site-title {
+      height: var(--title-h);
+      margin: calc(-1 * (var(--title-h) + var(--title-pad))) 0 var(--title-pad);
+      text-align: center;
+      pointer-events: none;
+    }
+    .js-title .site-title {
+      position: sticky;
+      top: calc(var(--header-h) / 2 - var(--title-h) / 2);
+      z-index: 1001;
+    }
+    .site-title-inner {
+      display: block;
+      width: max-content;
+      margin: 0 auto;
+      color: var(--brand-ink);
+      font-size: var(--title-big);
+      font-weight: 400;
+      line-height: 1.2;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      transform-origin: 50% 50%;
+      will-change: transform;
+    }
+
+    /* ── Page layout ────────────────────────────────────────────────────── */
+    .page {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      gap: 48px;
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 28px 24px 64px;
+    }
+
+    .toc {
+      position: sticky;
+      top: calc(var(--header-h) + 24px);
+      align-self: start;
+      max-height: calc(100vh - var(--header-h) - 48px);
+      overflow-y: auto;
+      font-size: 14px;
+    }
+    .toc h2 {
+      margin: 0 0 10px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+    }
+    .toc ol { margin: 0; padding: 0; list-style: none; }
+    .toc li + li { margin-top: 2px; }
+    /* Menu groups: a main entry (Introduction, Repository structure, ...) with its sub-entries indented below it.
+       The main entries are the only ones shown in the bar at the top of the page (see the min-width block below). */
+    .toc .toc-group + .toc-group { margin-top: 12px; }
+    .toc .toc-parent { font-weight: 600; color: var(--ink); }
+    .toc .toc-sub { margin-top: 2px; }
+    .toc .toc-sub a { padding-left: 26px; font-size: 12.5px; }
+    /* The group whose sub-entry is being read keeps its main entry marked too (set by the scroll-spy script). */
+    .toc .toc-parent.is-group-active { border-left-color: var(--brand); }
+    .toc a {
+      display: block;
+      padding: 4px 0 4px 12px;
+      border-left: 2px solid var(--rule);
+      color: var(--ink-soft);
+      text-decoration: none;
+      transition: color 0.15s, border-color 0.15s, background-color 0.15s;
+    }
+    .toc a:hover {
+      border-left-color: var(--brand);
+      color: var(--ink);
+    }
+    /* Section currently being read - set by the scroll-spy script at the end of the page */
+    .toc a[aria-current="location"] {
+      border-left-color: var(--brand);
+      background: rgba(55, 65, 81, 0.08);
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    /* ── Menu that starts as a horizontal row and moves into the left sidebar ────
+       On wide screens (with JS) the script lays the same menu links out in a single
+       row under the page title, and as the reader scrolls they glide into their
+       places in the sidebar. #nav-band is an invisible copy of that row: it only
+       reserves the space and tells the script where each link starts. Below 900px
+       there is no sidebar: the menu stays a bar of the four main entries (see the tablet / phone block). */
+    .nav-band { display: none; }
+    .nav-band span {
+      display: block;
+      flex: 0 0 auto;
+      padding: 0.2857em 1.3em;       /* em, so the row can be scaled to fit the screen (see measureNav); the script's barPad must match the sideways value */
+      white-space: nowrap;
+      visibility: hidden;             /* only marks where each real link starts */
+    }
+    @media (min-width: 901px) {
+      /* The row: a full-width bar in the header's colour, one line when the labels fit. */
+      .js-nav .nav-band {
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: center;               /* the links sit together in the middle of the bar, not across its full width */
+        align-items: center;
+        gap: 0;                                /* touching, so their hover highlights have no gaps between them */
+        margin-top: 0;                          /* meets the title band above it */
+        padding: 8px 14px;
+        border-top: 1px solid rgba(246, 247, 245, 0.14);
+        background: rgba(55, 65, 81, 0.6);    /* the header colour, slightly see-through (as on the map page) */
+        -webkit-backdrop-filter: blur(7px);
+        backdrop-filter: blur(7px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+        font-size: 14px;
+        pointer-events: none;
+      }
+      /* Too narrow for one line: two centred lines instead. */
+      .js-nav .nav-band.is-wrapped { flex-wrap: wrap; justify-content: center; gap: 0; }
+      .js-nav .toc { z-index: 5; overflow: visible; }
+      .js-nav .toc.is-docked { overflow-y: auto; }
+      /* While the links travel, the script sets their colour, background, padding and scale directly. */
+      .js-nav .toc a { white-space: nowrap; will-change: transform; transform-origin: 0 0; }
+      .js-nav .toc:not(.is-docked) a { transition: none; }
+      /* In the bar at the top: a hovered link gets a lighter background on the dark bar. The background is
+         drawn by ::before, which the script stretches (--hx-t/r/b/l) to the full height of the bar and halfway
+         across the gap to each neighbour, so the highlight has no gaps between links. The text colour needs
+         !important because the script sets it inline while the link travels. */
+      .js-nav .toc:not(.is-docked) a { position: relative; }
+      .js-nav .toc:not(.is-docked) a::before {
+        content: "";
+        position: absolute;
+        z-index: -1;
+        top: calc(-1 * var(--hx-t, 0px));
+        right: calc(-1 * var(--hx-r, 0px));
+        bottom: calc(-1 * var(--hx-b, 0px));
+        left: calc(-1 * var(--hx-l, 0px));
+      }
+      /* Thin light dividers on the left and right edge of each main link: half the link's height, centred
+         vertically. They fade out as the link sets off (the script sets --sep). */
+      .js-nav .toc:not(.is-docked) .toc-parent::after {
+        content: "";
+        position: absolute;
+        top: 25%;
+        bottom: 25%;
+        left: 0;
+        right: 0;
+        border-left: 1px solid rgba(246, 247, 245, 0.45);
+        border-right: 1px solid rgba(246, 247, 245, 0.45);
+        opacity: var(--sep, 1);
+        pointer-events: none;
+      }
+      .js-nav .toc:not(.is-docked) a:hover::before { background: rgba(246, 247, 245, 0.75); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);}
+      .js-nav .toc:not(.is-docked) a:hover { color: var(--ink) !important; }
+      /* The bar shows only the main entries. The sub-entries stay in the layout (so the main entries travel
+         to their final places) but are hidden, and fade in once the menu is docked in the sidebar. */
+      .js-nav .toc-sub { transition: opacity 0.2s; }
+      .js-nav .toc:not(.is-docked) .toc-sub { visibility: hidden; opacity: 0; }
+      /* The label widths in the bar are measured at normal weight, so keep that until docked. */
+      .js-nav .toc:not(.is-docked) .toc-parent { font-weight: 400; }
+      /* Docked in the sidebar: a hovered link lights up with a lighter (white) background. */
+      .js-nav .toc.is-docked a:not([aria-current="location"]):hover { background: var(--surface); }
+    }
+
+    main { min-width: 0; max-width: 720px; }
+
+    .hero { margin-bottom: 40px; }
+    .hero h1 {
+      scroll-margin-top: calc(var(--header-h) + 16px);   /* "Introduction" in the menu scrolls here */
+      margin: 0 0 16px;
+      font-size: 36px;
+      line-height: 1.2;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .hero .lead {
+      margin: 0;
+      font-size: 19px;
+      line-height: 1.6;
+      color: var(--ink-soft);
+    }
+    .hero .meta {
+      margin: 20px 0 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .hero .meta li {
+      padding: 3px 12px;
+      border: 1px solid var(--rule);
+      border-radius: 999px;
+      background: var(--surface);
+      font-size: 13px;
+      letter-spacing: 0.3px;
+    }
+
+    section { scroll-margin-top: calc(var(--header-h) + 16px); }
+    section + section {
+      margin-top: 44px;
+      padding-top: 36px;
+      border-top: 1px solid var(--rule);
+    }
+    h2 {
+      margin: 0 0 14px;
+      font-size: 22px;
+      line-height: 1.25;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    /* Category headings (Introduction, Repository structure, Sources and Citation, Contact): larger than the
+       section headings under them. Same spacing and rule as between two sections. */
+    .category-title {
+      scroll-margin-top: calc(var(--header-h) + 16px);
+      margin: 44px 0 24px;
+      padding-top: 36px;
+      border-top: 1px solid var(--rule);
+      font-size: 32px;
+      line-height: 1.2;
+      letter-spacing: 0.3px;
+    }
+    .hero + .category-title, section > .category-title { margin-top: 0; padding-top: 0; border-top: 0; }
+    section > .category-title { margin-bottom: 16px; }
+    h3 {
+      margin: 28px 0 8px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    p { margin: 0 0 16px; }
+    ul, ol { margin: 0 0 16px; padding-left: 22px; }
+    li { margin-bottom: 6px; }
+    strong { font-weight: 600; }
+
+    dl { margin: 0 0 16px; }
+    dt { margin-top: 14px; font-weight: 600; }
+    dd { margin: 2px 0 0; color: var(--ink); }
+
+    .callout {
+      margin: 20px 0;
+      padding: 14px 18px;
+      background: var(--surface);
+      border-left: 4px solid var(--brand);
+      border-radius: 0 10px 10px 0;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+    .callout p:last-child { margin-bottom: 0; }
+
+    /* "About me" LinkedIn button, in LinkedIn's brand blue */
+    .linkedin-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 4px;
+      padding: 9px 20px;
+      border-radius: 999px;
+      background: #0a66c2;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background-color 0.2s;
+    }
+    .linkedin-btn:hover { background: #004182; color: #ffffff; }
+    .linkedin-btn:focus-visible { outline-color: #0a66c2; }
+    .linkedin-btn svg { display: block; width: 20px; height: 20px; }
+
+    /* ── Running text is justified ─────────────────────────────────────────────────
+       Paragraphs, the intro, list items and definitions in the main column. Not the table, the
+       layer lists, the chart, the labels or the citation line: short or narrow pieces of text
+       would only get ugly gaps. Hyphenation keeps the word spacing even on narrow screens. */
+    main .hero > p,
+    main section > p:not(.citation),
+    main section > ul > li,
+    main section > ol > li,
+    main section > dl > dd,
+    main .callout p {
+      text-align: justify;
+      -webkit-hyphens: auto;
+      hyphens: auto;
+    }
+    code { -webkit-hyphens: manual; hyphens: manual; }
+
+    /* ── Layers-per-category pie chart (built by the script at the end of the page) ── */
+    .layer-chart {
+      margin: 20px 0 28px;
+      padding: 18px 20px 14px;
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: 12px;
+    }
+    .layer-chart figcaption {
+      margin: 0 0 14px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+    }
+    .chart-status { margin: 0; padding: 40px 0; text-align: center; color: var(--ink-soft); }
+    .chart-body {
+      display: grid;
+      grid-template-columns: minmax(190px, 270px) minmax(0, 1fr);
+      gap: 24px;
+      align-items: center;
+    }
+    .pie { display: block; width: 100%; height: auto; overflow: visible; }
+    .pie .slice {
+      stroke: var(--surface);
+      stroke-width: 2;
+      stroke-linejoin: round;
+      cursor: pointer;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+    .pie .slice.is-active { transform: translate(var(--dx), var(--dy)); }
+    .pie.has-focus .slice:not(.is-active) { opacity: 0.4; }
+    .chart-legend { margin: 0; padding: 0; list-style: none; }
+    .chart-legend li { margin: 0; }
+    .legend-btn {
+      display: grid;
+      grid-template-columns: 14px minmax(0, 1fr) auto 42px;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 7px 10px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      font-size: 14.5px;
+      line-height: 1.35;
+      text-align: left;
+      cursor: pointer;
+    }
+    .legend-btn:hover, .legend-btn.is-active { background: rgba(55, 65, 81, 0.08); }
+    .legend-btn[aria-pressed="true"] { font-weight: 600; background: rgba(55, 65, 81, 0.12); }
+    .legend-swatch { width: 14px; height: 14px; border-radius: 4px; }
+    .legend-count { font-variant-numeric: tabular-nums; font-weight: 600; }
+    .legend-pct { color: var(--ink-soft); font-variant-numeric: tabular-nums; text-align: right; font-size: 13px; }
+    .chart-detail {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--rule);
+      font-size: 14.5px;
+    }
+    .chart-detail .detail-hint { margin: 0; color: var(--ink-soft); }
+    .chart-detail h3 { margin: 0 0 4px; font-size: 16px; }
+    .chart-detail .detail-note { margin: 0 0 10px; color: var(--ink-soft); font-size: 13.5px; }
+    .chart-detail h4 {
+      margin: 12px 0 6px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+    }
+    .layer-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+    .layer-chips li {
+      margin: 0;
+      padding: 2px 10px;
+      border: 1px solid var(--rule);
+      border-radius: 999px;
+      background: var(--bg);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .chart-note { margin: 14px 0 0; font-size: 12.5px; color: var(--ink-soft); }
+    @media (max-width: 640px) {
+      .layer-chart { padding: 16px 14px 12px; }
+      .chart-body { grid-template-columns: 1fr; gap: 14px; }
+      .pie { max-width: 250px; margin: 0 auto; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .pie .slice { transition: none; }
+    }
+
+    .table-wrap {
+      margin: 8px 0 20px;
+      overflow-x: auto;
+      border: 1px solid var(--rule);
+      border-radius: 10px;
+      background: var(--surface);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 14.5px; line-height: 1.5; }
+    caption { text-align: left; padding: 12px 14px 0; font-size: 13px; color: var(--ink-soft); }
+    th, td { padding: 12px 14px; text-align: left; vertical-align: top; }
+    thead th {
+      background: var(--brand);
+      color: var(--brand-ink);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    tbody tr + tr th, tbody tr + tr td { border-top: 1px solid var(--rule); }
+    tbody th { font-weight: 600; min-width: 150px; }
+    td:nth-child(2) { width: 56%; }
+    td:nth-child(3) { width: 22%; }
+    /* Numbered list of layers inside the "What you will find" cells. Each item holds the layer's name
+       and the date it was uploaded or last updated; the date sits in a column of its own on the right
+       (absolutely placed, so the list numbers stay and a long name just wraps in the space left). */
+    .layer-list { margin: 0; padding-left: 1.6em; }
+    .layer-list li { position: relative; margin: 0 0 2px; padding: 0 7em 0 2px; }
+    .layer-list li:last-child { margin-bottom: 0; }
+    .layer-date {
+      position: absolute;
+      top: 0;
+      right: 0;
+      color: var(--ink-soft);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    /* Header cell: the column title on the left, the date column's title above the dates */
+    .th-split { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .th-date { max-width: 6.5em; text-align: right; line-height: 1.3; }
+
+    pre {
+      margin: 0 0 16px;
+      padding: 14px 16px;
+      overflow-x: auto;
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: 10px;
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+    code, pre { font-family: Consolas, "SFMono-Regular", Menlo, monospace; }
+    code { font-size: 0.92em; }
+    .citation {
+      margin: 0 0 16px;
+      padding: 14px 18px;
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: 10px;
+    }
+
+    .site-footer {
+      padding: 20px 16px;
+      background: var(--brand);
+      color: var(--brand-ink);
+      text-align: center;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+    }
+    .site-footer a { color: inherit; }
+
+    .hero h1:focus { outline: none; }
+
+    /* ── Back to top ────────────────────────────────────────────────────── */
+    .back-to-top {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border: 2px solid transparent;
+      border-radius: 50%;
+      background: var(--brand);
+      color: var(--brand-ink);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(8px);
+      transition: opacity 0.2s, transform 0.2s, visibility 0.2s, background-color 0.2s;
+    }
+    .back-to-top.is-visible {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+    }
+    .back-to-top:hover { background: #1f2937; }
+    .back-to-top svg { display: block; width: 20px; height: 20px; }
+    @media (prefers-reduced-motion: reduce) {
+      .back-to-top, .toc a, .toc::before { transition: none; }
+    }
+
+    /* ── Tablet / phone ─────────────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .page {
+        display: block;
+        padding: 24px 16px 48px;
+      }
+      /* Menu: no sidebar here. The bar of the four main entries sits under the title at the top of the page
+         (the same look as the wide-screen bar before it docks) and, as the page scrolls, floats below the
+         header as a separate rounded bar (the script adds .is-floating). Sub-entries are not shown.
+         The bar's look is drawn by ::before, so switching to the floating look never changes the layout. */
+      .toc {
+        position: sticky;
+        top: calc(var(--header-h) + 10px);   /* leaves a gap under the header once it floats */
+        z-index: 900;
+        max-height: none;
+        margin: -24px -16px 28px;          /* meets the title band above, and runs edge to edge */
+        padding: 0;
+        overflow: visible;
+        font-size: 13px;
+      }
+      .toc::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: -1;
+        background: rgba(55, 65, 81, 0.85);
+        -webkit-backdrop-filter: blur(7px);
+        backdrop-filter: blur(7px);
+        border-top: 1px solid rgba(246, 247, 245, 0.14);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+        transition: left 0.2s, right 0.2s, border-radius 0.2s, box-shadow 0.2s;
+      }
+      /* Floating: the bar shrinks to the width of its links (the script measures them into --pill-l / --pill-r),
+         the dividers go, and the links get a small gap. Each link gives up a little padding to pay for the gap,
+         so the row is as wide as before and the page below does not move. */
+      .toc.is-floating::before {
+        left: var(--pill-l, 12px);
+        right: var(--pill-r, 12px);
+        border: 1px solid rgba(246, 247, 245, 0.18);
+        border-radius: 14px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+      }
+      .toc.is-floating > ol { gap: 4px; }
+      .toc.is-floating .toc-parent { padding-left: calc(0.9em - 1.5px); padding-right: calc(0.9em - 1.5px); }
+      .toc.is-floating .toc-parent::after { display: none; }
+      .toc h2, .toc .toc-sub { display: none; }
+      .toc > ol { display: flex; justify-content: center; align-items: stretch; padding: 4px 12px; }
+      .toc > ol > li, .toc .toc-group + .toc-group { display: flex; margin: 0; }
+      .toc .toc-parent {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 0.9em;
+        border-left: 0;
+        border-radius: 10px;
+        color: var(--brand-ink);
+        font-weight: 400;
+        line-height: 1.3;
+        text-align: center;
+      }
+      /* thin light dividers on the left and right edge of each entry, as in the wide-screen bar */
+      .toc .toc-parent::after {
+        content: "";
+        position: absolute;
+        top: 25%;
+        bottom: 25%;
+        left: 0;
+        right: 0;
+        border-left: 1px solid rgba(246, 247, 245, 0.45);
+        border-right: 1px solid rgba(246, 247, 245, 0.45);
+        pointer-events: none;
+      }
+      .toc .toc-parent.is-group-active, .toc .toc-parent[aria-current="location"] {
+        background: rgba(246, 247, 245, 0.2);
+        color: var(--brand-ink);
+        font-weight: 400;
+      }
+      .toc .toc-parent:hover { background: rgba(246, 247, 245, 0.75); color: var(--ink); }
+      /* Anchors scroll to below the header and the floating bar */
+      :root { --bar-h: 52px; }          /* floating bar plus the gap above it */
+      section, .category-title, .hero h1 { scroll-margin-top: calc(var(--header-h) + var(--bar-h) + 16px); }
+      /* "Open map" leaves the header and floats at the bottom right; "back to top" moves up above it */
+      .header-btn {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 1000;
+        height: 44px;
+        padding: 0 22px;
+        border-color: transparent;
+        background: var(--brand);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        font-size: 14px;
+      }
+      .header-btn:hover { background: #1f2937; color: var(--brand-ink); }
+      .back-to-top { bottom: 76px; }
+      .hero h1 { font-size: 28px; }
+      .hero .lead { font-size: 17px; }
+      h2 { font-size: 20px; }
+      .category-title { font-size: 26px; }
+      :root { --title-big: 32px; --title-docked: 15px; --title-pad: 22px; }
+    }
+    @media (max-width: 600px) {
+      /* Narrow phones: smaller menu labels, which may wrap onto two lines, so all four entries fit */
+      .toc { font-size: 12px; }
+      .toc .toc-parent { padding: 6px 0.5em; }
+      .toc > ol { padding: 4px 8px; }
+      .toc.is-floating .toc-parent { padding-left: calc(0.5em - 1.5px); padding-right: calc(0.5em - 1.5px); }
+      :root { --bar-h: 62px; }
+      /* Stack the category table as cards: a 3-column table is unreadable at phone width */
+      .table-wrap { overflow: visible; border: 0; background: none; }
+      table, tbody, tr, th, td { display: block; }
+      caption { display: block; padding: 0 0 10px; }
+      thead { position: absolute; left: -9999px; }
+      tbody tr {
+        margin-bottom: 12px;
+        overflow: hidden;
+        background: var(--surface);
+        border: 1px solid var(--rule);
+        border-radius: 10px;
+      }
+      tbody tr + tr th, tbody tr + tr td { border-top: 0; }
+      tbody th { min-width: 0; padding: 10px 14px; background: var(--brand); color: var(--brand-ink); }
+      td { padding: 10px 14px; }
+      td + td { padding-top: 0; }
+      td:nth-child(2), td:nth-child(3) { width: auto; }
+      td::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 2px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+      }
+    }
+    @media (max-width: 520px) {
+      .site-header { gap: 8px; padding: 4px 10px; }
+      .site-header .brand { gap: 8px; }
+      .site-header .brand img { height: 30px; }
+      .header-actions { gap: 8px; }
+      .header-btn { right: 14px; bottom: 14px; }
+      .back-to-top { right: 14px; bottom: 70px; }
+      :root { --title-big: clamp(18px, 6.6vw, 26px); --title-docked: 12px; --title-pad: 16px; }
+    }
+    @media (max-width: 360px) {
+      /* keep the docked title clear of the logo on the smallest phones */
+      :root { --title-docked: 10.5px; }
+    }
+
+    @media print {
+      .site-header, .toc, .skip-link, .back-to-top, .nav-band { display: none !important; }
+      .title-band { display: none; }
+      .site-title { position: static !important; margin: 0 0 12px; }
+      .site-title-inner { transform: none !important; color: var(--ink); }
+      body { background: #fff; }
+      .page { display: block; padding: 0; }
+      section + section { break-inside: avoid-page; }
+    }
+  </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <a class="brand" href="./" title="Back to the map">
+    <img src="images/63.png" alt="Athens GIS Repository logo">
+  </a>
+  <div class="header-actions">
+    <a class="header-btn" href="./" title="Open the interactive map">Open map</a>
+    <a class="header-linkedin" href="https://www.linkedin.com/company/athens-gis-repo/" title="LinkedIn Page" target="_blank" rel="noopener">
+      <img src="images/linkedin_icon.png" alt="LinkedIn">
+    </a>
+  </div>
+</header>
+
+<div class="title-band" id="title-band"></div>
+<div class="site-title" id="site-title" aria-hidden="true">
+  <span class="site-title-inner" id="site-title-inner">Athens GIS Repository</span>
+</div>
+<nav class="nav-band" id="nav-band" aria-hidden="true"></nav>
+
+<div class="page">
+
+  <nav class="toc" aria-label="On this page">
+    <h2>On this page</h2>
+    <ol>
+      <li class="toc-group">
+        <a class="toc-parent" href="#introduction">Introduction</a>
+        <ol class="toc-sub">
+          <li><a href="#what-it-is">What it is</a></li>
+          <li><a href="#about-me">About me</a></li>
+          <li><a href="#story">The story</a></li>
+        </ol>
+      </li>
+      <li class="toc-group">
+        <a class="toc-parent" href="#repository-structure">Repository structure</a>
+        <ol class="toc-sub">
+          <li><a href="#how-its-built">How it&rsquo;s built</a></li>
+          <li><a href="#whats-inside">What&rsquo;s inside</a></li>
+          <li><a href="#using-the-map">Using the map</a></li>
+          <li><a href="#search-and-athena">Search and Athena</a></li>
+          <li><a href="#data-and-documentation">Data and documentation</a></li>
+        </ol>
+      </li>
+      <li class="toc-group">
+        <a class="toc-parent" href="#sources-and-citation">Sources and Citation</a>
+        <ol class="toc-sub">
+          <li><a href="#sources">Sources and acknowledgments</a></li>
+          <li><a href="#licence-and-citation">License and citation</a></li>
+          <li><a href="#limitations">Accuracy and limitations</a></li>
+        </ol>
+      </li>
+      <li class="toc-group">
+        <a class="toc-parent" href="#contact">Contact</a>
+      </li>
+    </ol>
+  </nav>
+
+  <main id="main">
+
+    <div class="hero">
+      <h1 id="top" tabindex="-1">About the Athens GIS Repository</h1>
+      <p class="lead">
+        An open-access web map and geospatial data platform for Athens and the wider region of Greece.
+        Explore administrative boundaries, transportation networks, points of interest, environment, natural hazards,
+        land cover, cadastral parcels, and population statistics together in one interactive map.
+        Every layer is documented, viewable in the browser, and <strong>free to download</strong>.
+      </p>
+      <ul class="meta" aria-label="Key facts">
+        <li>Open data &middot; CC BY 4.0</li>
+        <li><span data-stat="total">81</span> layers in <span data-stat="categories">8</span> categories</li>
+        <li>Athens &amp; Attica, with selected nationwide layers</li>
+        <li>Work in progress</li>
+      </ul>
+    </div>
+
+    <h2 class="category-title" id="introduction" tabindex="-1">Introduction</h2>
+
+    <section id="what-it-is" aria-labelledby="what-it-is-h">
+      <h2 id="what-it-is-h">What it is</h2>
+      <p>
+        The Athens GIS Repository is a lightweight, browser-based GIS for the Athens Metropolitan Area, the Attica region,
+        and Greece. Nothing needs to be installed, and no account is required: open the map, switch on the layers you want,
+        inspect their attributes, and download the underlying data for use in your own GIS software, spreadsheet, or
+        analysis scripts.
+      </p>
+      <p>
+        The repository is published under a Creative Commons Attribution 4.0 license and archived on Zenodo with a
+        permanent DOI so that it can be cited. It is a work in progress: layers and features are added over time, so it is
+        worth checking back.
+      </p>
+    </section>
+
+    <section id="about-me" aria-labelledby="about-me-h">
+      <h2 id="about-me-h">About me</h2>
+      <p>
+        I&rsquo;m Konstantinos Markos, founder of the Athens GIS Repository, and a PhD student in Transportation Engineering at the School of Rural, Surveying and Geoinformatics Engineering (SRSGE) of the National Technical University of Athens (NTUA). I hold a bachelor’s and master’s degree in Civil Engineering from the National Technical University of Athens (NTUA) and a master’s degree in Climate Crisis and ICT from Uni. Pi.
+      </p>
+      <a class="linkedin-btn" href="https://www.linkedin.com/in/konstantinos-markos/" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+        <span>Connect on LinkedIn</span>
+      </a>
+    </section>
+
+    <section id="story" aria-labelledby="story-h">
+      <h2 id="story-h">The story behind Athens GIS Repository</h2>
+      <p>
+        A great deal of open access data describes Athens and the wider region of Greece. Still, it is spread across many
+        different bodies &mdash; ministries, regional and municipal authorities, transport operators, European agencies and
+        community mapping projects &mdash; each publishing in its own place, format and level of detail. Anyone who wanted to
+        look at the city as a whole first had to find the right sources, download them one by one, and clean and convert them
+        before drawing a single useful map. The Athens GIS Repository was created to make that first, repetitive step
+        easier for users. These are the main reasons behind it:
+      </p>
+      <ul>
+        <li><strong>One place instead of many.</strong> A useful selection of that scattered data &mdash; boundaries, transport,
+          points of interest, environment, energy, natural hazards, land cover, cadastral parcels, population &mdash; brought
+          together so the layers can be viewed side by side on a single map.</li>
+        <li><strong>Data that is ready to use.</strong> Every layer is web-ready and described consistently, with its source,
+          coverage area, date, and contributors, so users can quickly understand what they are looking at and download it in
+          an open format (GeoJSON or GeoTIFF for rasters).</li>
+        <li><strong>Open and citable.</strong> The data is published under a Creative Commons Attribution 4.0 license and
+          archived on Zenodo with a DOI. Sources are credited, so you can reuse, build on, and properly cite it in research,
+          teaching, and professional work.</li>
+        <li><strong>Nothing to install.</strong> It runs in the browser, with no account and no GIS software, so students,
+          researchers, planners, journalists, developers, and curious residents can all explore the city easily &mdash; and
+          anyone who wants to go further can download the data and continue in their own tools.</li>
+        <li><strong>Easy to find what you need.</strong> A search box and the Athena assistant help users find datasets by what
+          they are looking for, not only by knowing in advance where the data lives.</li>
+        <li><strong>Built to keep growing.</strong> It is a work in progress, designed so that new layers and features can be
+          added over time, and shaped by the questions and suggestions of the people who use it.</li>
+      </ul>
+      <p>
+        In short, the repository aims to be a dependable starting point for any study, project, or story about Athens: the data
+        already gathered, described, and free to use.
+      </p>
+    </section>
+
+    <h2 class="category-title" id="repository-structure" tabindex="-1">Repository structure</h2>
+
+    <section id="how-its-built" aria-labelledby="how-its-built-h">
+      <h2 id="how-its-built-h">How it&rsquo;s built</h2>
+      <p>
+        The site is a static web application: HTML, CSS, and JavaScript with no server-side database. The map is built on
+        Leaflet; vector tiles are read directly in the browser with PMTiles, and GeoTIFF layers are rendered on demand. Spatial
+        calculations such as distance measurement use Turf.js. The web pages are hosted on GitHub, the datasets are served from
+        Cloudflare R2 storage, and the Athena assistant runs as a Cloudflare Worker that only accepts requests from this website
+        and limits how often it can be called.
+      </p>
+      <p>
+        The project&rsquo;s structure &mdash; the page, its styles and scripts, the dataset files and the layer descriptions &mdash; is
+        kept deliberately simple so that new layers can be added by dropping in a data file and a short description.
+      </p>
+    </section>
+
+    <section id="whats-inside" aria-labelledby="whats-inside-h">
+      <h2 id="whats-inside-h">What&rsquo;s inside</h2>
+      <p>
+        The layers group into <span data-stat="categories-word">eight</span> categories, each divided into subcategories. Most layers cover the
+        Athens Metropolitan Area or the Attica region. The layers for regions of Greece, the national highway network, and the
+        national railway network cover the whole country.
+      </p>
+      <p>
+        The chart below shows how the <span data-stat="total">81</span> layers are spread across those categories. It is
+        read from the map&rsquo;s own layer list every time this page loads, so it always matches what is on the map.
+        Select a slice, or a category in the key, to see the layers it contains.
+      </p>
+
+      <figure class="layer-chart" id="layer-chart" aria-labelledby="layer-chart-title">
+        <figcaption id="layer-chart-title">Layers per category</figcaption>
+        <p class="chart-status" id="layer-chart-status" role="status">Loading chart&hellip;</p>
+        <div class="chart-body" id="layer-chart-body" hidden>
+          <svg class="pie" id="layer-pie" viewBox="-110 -110 220 220" aria-hidden="true" focusable="false"></svg>
+          <ul class="chart-legend" id="layer-legend" aria-label="Layers per category"></ul>
+        </div>
+        <div class="chart-detail" id="layer-detail" aria-live="polite" hidden></div>
+        <p class="chart-note" id="layer-chart-note" hidden></p>
+      </figure>
+
+      <div class="table-wrap">
+        <table>
+          
+          <thead>
+            <tr>
+              <th scope="col">Category</th>
+              <th scope="col"><div class="th-split"><span>What you will find</span><span class="th-date">Uploaded</span></div></th>
+              <th scope="col">Main sources</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Administrative Boundaries</th>
+              <td data-label="What you will find (uploaded / updated)">
+                <ol class="layer-list">
+                  <li><span class="layer-name">Regions of Greece</span><time class="layer-date" datetime="2025-12-19">19 Dec 2025</time></li>
+                  <li><span class="layer-name">Center Sector</span><time class="layer-date" datetime="2025-08-20">20 Aug 2025</time></li>
+                  <li><span class="layer-name">North Sector</span><time class="layer-date" datetime="2025-08-20">20 Aug 2025</time></li>
+                  <li><span class="layer-name">South Sector</span><time class="layer-date" datetime="2025-08-20">20 Aug 2025</time></li>
+                  <li><span class="layer-name">West Sector</span><time class="layer-date" datetime="2025-08-20">20 Aug 2025</time></li>
+                  <li><span class="layer-name">East Attica</span><time class="layer-date" datetime="2025-08-20">20 Aug 2025</time></li>
+                  <li><span class="layer-name">Islands of Attica</span><time class="layer-date" datetime="2025-08-20">20 Aug 2025</time></li>
+                  <li><span class="layer-name">Piraeus</span><time class="layer-date" datetime="2025-08-20">20 Aug 2025</time></li>
+                  <li><span class="layer-name">West Attica</span><time class="layer-date" datetime="2025-08-20">20 Aug 2025</time></li>
+                  <li><span class="layer-name">Municipal Communities of Athens</span><time class="layer-date" datetime="2025-12-05">5 Dec 2025</time></li>
+                </ol>
+              </td>
+              <td data-label="Main sources">gov.gr, Region of Attica, City of Athens</td>
+            </tr>
+            <tr>
+              <th scope="row">Transportation Systems</th>
+              <td data-label="What you will find (uploaded / updated)">
+                <ol class="layer-list">
+                  <li><span class="layer-name">Avenues</span><time class="layer-date" datetime="2025-06-23">23 Jun 2025</time></li>
+                  <li><span class="layer-name">Highways (Greece)</span><time class="layer-date" datetime="2026-07-24">24 Jul 2026</time></li>
+                  <li><span class="layer-name">Street Network Central Sector</span><time class="layer-date" datetime="2026-06-15">15 Jun 2026</time></li>
+                  <li><span class="layer-name">Street Network North Sector</span><time class="layer-date" datetime="2026-06-15">15 Jun 2026</time></li>
+                  <li><span class="layer-name">Street Network South Sector</span><time class="layer-date" datetime="2026-06-15">15 Jun 2026</time></li>
+                  <li><span class="layer-name">Street Network West Sector</span><time class="layer-date" datetime="2026-06-15">15 Jun 2026</time></li>
+                  <li><span class="layer-name">Street Network Piraeus</span><time class="layer-date" datetime="2026-06-15">15 Jun 2026</time></li>
+                  <li><span class="layer-name">AI Traffic Cameras</span><time class="layer-date" datetime="2026-01-07">7 Jan 2026</time></li>
+                  <li><span class="layer-name">OASA Bus Lanes</span><time class="layer-date" datetime="2026-05-18">18 May 2026</time></li>
+                  <li><span class="layer-name">OASA Bus Routes</span><time class="layer-date" datetime="2026-07-14">14 Jul 2026</time></li>
+                  <li><span class="layer-name">OASA Bus Stops</span><time class="layer-date" datetime="2025-11-05">5 Nov 2025</time></li>
+                  <li><span class="layer-name">Toll Stations</span><time class="layer-date" datetime="2025-12-19">19 Dec 2025</time></li>
+                  <li><span class="layer-name">Traffic Accidents 2023-2025</span><time class="layer-date" datetime="2026-02-17">17 Feb 2026</time></li>
+                  <li><span class="layer-name">Traffic Lights</span><time class="layer-date" datetime="2025-12-15">15 Dec 2025</time></li>
+                  <li><span class="layer-name">Metro Stations of Lines 1, 2 and 3</span><time class="layer-date" datetime="2025-06-23">23 Jun 2025</time></li>
+                  <li><span class="layer-name">Metro Stations of Line 4</span><time class="layer-date" datetime="2025-08-27">27 Aug 2025</time></li>
+                  <li><span class="layer-name">Metro Lines 1, 2 and 3</span><time class="layer-date" datetime="2026-02-17">17 Feb 2026</time></li>
+                  <li><span class="layer-name">Extended Metro Lines network</span><time class="layer-date" datetime="2026-03-10">10 Mar 2026</time></li>
+                  <li><span class="layer-name">Metro Boarding Platforms of Line 1</span><time class="layer-date" datetime="2026-02-27">27 Feb 2026</time></li>
+                  <li><span class="layer-name">Railway Network (Greece)</span><time class="layer-date" datetime="2026-01-16">16 Jan 2026</time></li>
+                  <li><span class="layer-name">Suburban Railway Stations</span><time class="layer-date" datetime="2025-06-23">23 Jun 2025</time></li>
+                  <li><span class="layer-name">Tram Stations</span><time class="layer-date" datetime="2026-02-27">27 Feb 2026</time></li>
+                  <li><span class="layer-name">Tram Lines</span><time class="layer-date" datetime="2026-02-27">27 Feb 2026</time></li>
+                  <li><span class="layer-name">Tram Boarding Platforms</span><time class="layer-date" datetime="2025-02-27">27 Feb 2025</time></li>
+                </ol>
+              </td>
+              <td data-label="Main sources">OpenStreetMap, OASA, STASY, Elliniko Metro, Hellenic Train, Ministry of Digital Governance, Road Traffic Collision Map (gov.gr)</td>
+            </tr>
+            <tr>
+              <th scope="row">Points of Interest</th>
+              <td data-label="What you will find (uploaded / updated)">
+                <ol class="layer-list">
+                  <li><span class="layer-name">Banks</span><time class="layer-date" datetime="2025-10-01">1 Oct 2025</time></li>
+                  <li><span class="layer-name">Police Stations</span><time class="layer-date" datetime="2025-10-01">1 Oct 2025</time></li>
+                  <li><span class="layer-name">Charging Stations</span><time class="layer-date" datetime="2026-09-09">9 Sep 2026</time></li>
+                  <li><span class="layer-name">Food Shops</span><time class="layer-date" datetime="2026-07-08">8 Jul 2026</time></li>
+                  <li><span class="layer-name">Fuel Stations</span><time class="layer-date" datetime="2025-10-01">1 Oct 2025</time></li>
+                  <li><span class="layer-name">Supermarkets</span><time class="layer-date" datetime="2026-07-08">8 Jul 2026</time></li>
+                  <li><span class="layer-name">Schools</span><time class="layer-date" datetime="2026-02-17">17 Feb 2026</time></li>
+                  <li><span class="layer-name">Universities</span><time class="layer-date" datetime="2025-10-01">1 Oct 2025</time></li>
+                  <li><span class="layer-name">Cinemas</span><time class="layer-date" datetime="2025-03-04">4 Mar 2025</time></li>
+                  <li><span class="layer-name">Theaters</span><time class="layer-date" datetime="2025-03-04">4 Mar 2025</time></li>
+                  <li><span class="layer-name">Restaurants, Bars, and Cafe</span><time class="layer-date" datetime="2025-03-04">4 Mar 2025</time></li>
+                  <li><span class="layer-name">Hospitals</span><time class="layer-date" datetime="2025-10-01">1 Oct 2025</time></li>
+                  <li><span class="layer-name">Pharmacies</span><time class="layer-date" datetime="2025-10-01">1 Oct 2025</time></li>
+                </ol>
+              </td>
+              <td data-label="Main sources">OpenStreetMap, National School Network, Electro-mobility Market Infrastructure and Operators Register</td>
+            </tr>
+            <tr>
+              <th scope="row">Environment</th>
+              <td data-label="What you will find (uploaded / updated)">
+                <ol class="layer-list">
+                  <li><span class="layer-name">Soil Groups</span><time class="layer-date" datetime="2026-05-28">28 May 2026</time></li>
+                  <li><span class="layer-name">Rivers and Streams</span><time class="layer-date" datetime="2026-01-28">28 Jan 2026</time></li>
+                  <li><span class="layer-name">Natura 2000 sites</span><time class="layer-date" datetime="2025-09-16">16 Sep 2025</time></li>
+                  <li><span class="layer-name">Vegetation Index (Center Sector)</span><time class="layer-date" datetime="2025-08-20">20 Aug 2025</time></li>
+                  <li><span class="layer-name">Vegetation Index (North Sector)</span><time class="layer-date" datetime="2025-08-20">20 Aug 2025</time></li>
+                  <li><span class="layer-name">Vegetation Index (South Sector)</span><time class="layer-date" datetime="2025-08-20">20 Aug 2025</time></li>
+                  <li><span class="layer-name">Vegetation Index (West Sector)</span><time class="layer-date" datetime="2025-08-20">20 Aug 2025</time></li>
+                  <li><span class="layer-name">Vegetation Index (Piraeus)</span><time class="layer-date" datetime="2025-08-20">20 Aug 2025</time></li>
+                </ol>
+              </td>
+              <td data-label="Main sources">SoilGrids, Ministry of Environment and Energy, European Environment Agency, USGS</td>
+            </tr>
+            <tr>
+              <th scope="row">Natural Hazards</th>
+              <td data-label="What you will find (uploaded / updated)">
+                <ol class="layer-list">
+                  <li><span class="layer-name">Wildfires Attica 2015-2025</span><time class="layer-date" datetime="2025-09-22">22 Sep 2025</time></li>
+                  <li><span class="layer-name">Earthquakes Attica 2006-2026</span><time class="layer-date" datetime="2026-02-11">11 Feb 2026</time></li>
+                  <li><span class="layer-name">Seismic Hazard Zones</span><time class="layer-date" datetime="2026-02-11">11 Feb 2026</time></li>
+                  <li><span class="layer-name">Flood Risk Zones 50T</span><time class="layer-date" datetime="2026-04-02">2 Apr 2026</time></li>
+                  <li><span class="layer-name">Flood Risk Zones 100T</span><time class="layer-date" datetime="2026-04-02">2 Apr 2026</time></li>
+                  <li><span class="layer-name">Flood Risk Zones 1000T</span><time class="layer-date" datetime="2026-04-02">2 Apr 2026</time></li>
+                </ol>
+              </td>
+              <td data-label="Main sources">EFFIS, USGS, Greek Seismic Code (EAK), Ministry of Environment and Energy</td>
+            </tr>
+            <tr>
+              <th scope="row">Urban Planning and Land Cover</th>
+              <td data-label="What you will find (uploaded / updated)">
+                <ol class="layer-list">
+                  <li><span class="layer-name">KAEK Central Sector</span><time class="layer-date" datetime="2026-06-12">12 Jun 2026</time></li>
+                  <li><span class="layer-name">KAEK North Sector</span><time class="layer-date" datetime="2026-06-12">12 Jun 2026</time></li>
+                  <li><span class="layer-name">KAEK South Sector</span><time class="layer-date" datetime="2026-06-12">12 Jun 2026</time></li>
+                  <li><span class="layer-name">KAEK West Sector</span><time class="layer-date" datetime="2026-06-12">12 Jun 2026</time></li>
+                  <li><span class="layer-name">KAEK Piraeus</span><time class="layer-date" datetime="2026-06-12">12 Jun 2026</time></li>
+                  <li><span class="layer-name">Buildings height (2021)</span><time class="layer-date" datetime="2026-07-01">1 Jul 2026</time></li>
+                  <li><span class="layer-name">Land Cover and Land Use (2021)</span><time class="layer-date" datetime="2026-06-09">9 Jun 2026</time></li>
+                  <li><span class="layer-name">Land Cover and Land Use (2018)</span><time class="layer-date" datetime="2025-09-01">1 Sep 2025</time></li>
+                  <li><span class="layer-name">Municipality of Athens Urban Plan (2012)</span><time class="layer-date" datetime="2025-09-17">17 Sep 2025</time></li>
+                  <li><span class="layer-name">Tree Cover Density (2024)</span><time class="layer-date" datetime="2026-08-31">31 Aug 2026</time></li>
+                  <li><span class="layer-name">Archaeological Sites</span><time class="layer-date" datetime="2026-05-25">25 May 2026</time></li>
+                  <li><span class="layer-name">Gardens</span><time class="layer-date" datetime="2025-03-23">23 Mar 2025</time></li>
+                  <li><span class="layer-name">Parks</span><time class="layer-date" datetime="2025-03-23">23 Mar 2025</time></li>
+                  <li><span class="layer-name">Playgrounds</span><time class="layer-date" datetime="2025-03-23">23 Mar 2025</time></li>
+                </ol>
+              </td>
+              <td data-label="Main sources">Hellenic Cadastre, Copernicus Land Monitoring Service, City of Athens, OpenStreetMap</td>
+            </tr>
+            <tr>
+              <th scope="row">Population and social conditions</th>
+              <td data-label="What you will find (uploaded / updated)">
+                <ol class="layer-list">
+                  <li><span class="layer-name">2021 Population Census</span><time class="layer-date" datetime="2025-08-20">20 Aug 2025</time></li>
+                  <li><span class="layer-name">2021 Population Census Density</span><time class="layer-date" datetime="2026-09-30">30 Sep 2026</time></li>
+                  <li><span class="layer-name">2011 Population Census</span><time class="layer-date" datetime="2025-09-01">1 Sep 2025</time></li>
+                </ol>
+              </td>
+              <td data-label="Main sources">ELSTAT, Region of Attica, Eurostat</td>
+            </tr>
+            <tr>
+              <th scope="row">Energy</th>
+              <td data-label="What you will find (uploaded / updated)">
+                <ol class="layer-list">
+                  <li><span class="layer-name">Wind Farms</span><time class="layer-date" datetime="2025-09-11">11 Sep 2025</time></li>
+                </ol>
+              </td>
+              <td data-label="Main sources">Regulatory Authority for Energy (RAE)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        Two general-purpose terrain layers (elevation contours and a shaded-relief layer) are available alongside the categories to give the other layers a sense of topography.
+      </p>
+      <p>
+        Both vector layers (points, lines, and polygons) and raster layers are included. The catalog grows as new datasets are prepared.
+      </p>
+    </section>
+
+    <section id="using-the-map" aria-labelledby="using-the-map-h">
+      <h2 id="using-the-map-h">Using the map</h2>
+      <p>
+        The map opens centered on Athens. On a computer, the layer panel is on the left; on a phone or tablet, it opens
+        from the menu button at the top-left. These are the main things you can do.
+      </p>
+      <dl>
+        <dt>Switch layers on and off</dt>
+        <dd>Expand a category and subcategory in the layer panel and tick the layers you want. You can show as many as you like at once.</dd>
+
+        <dt>Read a layer&rsquo;s description</dt>
+        <dd>As soon as you switch on a layer, a <em>Layer information</em> box shows its description, data source, coverage area, upload date, contributors, and keywords. With several layers active, the box has one tab for each.</dd>
+
+        <dt>Inspect features</dt>
+        <dd>Click a point, line, or polygon to see its attributes in the attributes box. A legend is shown for the active layers.</dd>
+
+        <dt>Adjust opacity and draw order</dt>
+        <dd>The toolbar lets you change how transparent each layer is and reorder the active layers, so that, for example, a land-cover layer can sit underneath a street network.</dd>
+
+        <dt>Filter selected layers</dt>
+        <dd>Some layers can be filtered by attribute. Currently, you can filter OASA bus routes by line and the wildfire layer by year.</dd>
+
+        <dt>Measure distances</dt>
+        <dd>The measure tool lets you click along a path on the map and reports the total length.</dd>
+
+        <dt>Zoom to your layers</dt>
+        <dd>One button fits the map to the extent of all the layers you have switched on.</dd>
+
+        <dt>Change the basemap</dt>
+        <dd>Choose between a light basemap, a dark basemap, OpenStreetMap, and satellite imagery. The current view scale is shown at the bottom of the screen.</dd>
+
+        <dt>Export a map image</dt>
+        <dd>The export button saves the current view as an A4 image, in landscape or portrait orientation, together with the legend and scale &mdash; convenient for reports and presentations.</dd>
+
+        <dt>Download data</dt>
+        <dd>Each layer has a <em>Download</em> button that produces a ZIP archive containing the dataset and its description file.</dd>
+
+        <dt>Cite the repository</dt>
+        <dd>The <em>Cite</em> button generates a ready-to-copy citation in APA, Chicago, MLA, ASA, IEEE, Vancouver, or BibTeX format.</dd>
+      </dl>
+    </section>
+
+    <section id="search-and-athena" aria-labelledby="search-and-athena-h">
+      <h2 id="search-and-athena-h">Search and Athena</h2>
+      <p>
+        The box at the bottom of the map has two modes, selected with the switch beside the text field.
+      </p>
+      <h3>Database search</h3>
+      <p>
+        In search mode, type a few letters to find datasets by name, description, or attribute values. Choosing a result
+        switches the layer on, highlights it in the layer panel and zooms the map to it. Because attribute values are
+        searchable too, a search for &ldquo;bakery&rdquo; can find the food-shops layer even though its name never mentions bakeries.
+      </p>
+      <h3>Athena, the assistant (beta)</h3>
+      <p>
+        In Athena mode, you can ask for what you want in plain language instead of hunting through the layer panel.
+        Athena can:
+      </p>
+      <ul>
+        <li><strong>load datasets</strong> &mdash; for example &ldquo;show me hospitals and pharmacies&rdquo; switches on both layers;</li>
+        <li><strong>close layers</strong> &mdash; for example &ldquo;close all layers&rdquo;, which applies only to layers that are currently open.</li>
+      </ul>
+      <div class="callout">
+        <p>
+          <strong>Beta feature.</strong> Athena is powered by a small open language model running on
+          Cloudflare Workers AI, so it can misunderstand a request or pick the wrong dataset. Check the layers it switches on,
+          and use the layer panel or database search whenever you need precision. Your message and a compact description of the
+          dataset catalogue are sent to the Athena service to produce a reply, so please do not type personal information into it.
+        </p>
+      </div>
+    </section>
+
+    <section id="data-and-documentation" aria-labelledby="data-and-documentation-h">
+      <h2 id="data-and-documentation-h">Data and documentation</h2>
+      <p>
+        Every layer comes with a short description file. It states what the dataset represents, who produced it (the source),
+        which area it covers, when it was uploaded to the repository, who contributed to preparing it, and a few keywords.
+        The same text appears in the <em>Layer information</em> box on the map and is included in the ZIP archive you get when you
+        download the layer.
+      </p>
+      <h3>Formats</h3>
+      <ul>
+        <li><strong>Vector layers</strong> are provided as GeoJSON or JSON files.</li>
+        <li><strong>Raster layers</strong> &mdash; population density, building height and tree cover density &mdash; are provided as GeoTIFF files.</li>
+        <li><strong>Large layers</strong>, such as the street networks, cadastral parcels, and land cover, are also converted
+          to PMTiles vector tiles so they draw quickly in the browser. The download button always delivers the original
+          vector file, not the tiles.</li>
+      </ul>
+      <h3>Updates</h3>
+      <p>
+        The data files are stored separately from the web page. New layers
+        are added, and existing ones refreshed, from time to time; the upload date in each layer&rsquo;s description tells you
+        when it was last published to the repository. Several layers cover a fixed period &mdash; for example wildfires
+        2015&ndash;2025, earthquakes 2006&ndash;2026 and traffic accidents January 2023&ndash;May 2025 &mdash; and are not live feeds.
+      </p>
+    </section>
+
+    <h2 class="category-title" id="sources-and-citation" tabindex="-1">Sources and Citation</h2>
+
+    <section id="sources" aria-labelledby="sources-h">
+      <h2 id="sources-h">Sources and acknowledgments</h2>
+      <p>
+        The repository would not exist without the organizations and communities that publish open data. The datasets in the
+        repository draw on the following sources; each layer&rsquo;s description names the specific source it comes from.
+      </p>
+      <ul>
+        <li><strong>OpenStreetMap contributors</strong> &mdash; streets and avenues, highways, points of interest, parks, gardens, playgrounds, archaeological sites and parts of the public-transport network.</li>
+        <li><strong>Copernicus Land Monitoring Service</strong> &mdash; land cover and land use, building height and tree cover density.</li>
+        <li><strong>Hellenic Cadastre</strong> &mdash; cadastral parcel codes (KAEK).</li>
+        <li><strong>ELSTAT</strong> (Hellenic Statistical Authority) and <strong>Eurostat</strong> &mdash; population census data and density.</li>
+        <li><strong>Region of Attica</strong>, <strong>City of Athens</strong> and <strong>gov.gr</strong> &mdash; administrative boundaries and the Athens urban plan.</li>
+        <li><strong>OASA</strong>, <strong>STASY</strong>, <strong>Elliniko Metro</strong> and <strong>Hellenic Train</strong> &mdash; bus, metro, tram and suburban railway data.</li>
+        <li><strong>Ministry of Environment and Energy</strong> &mdash; flood-risk zones and rivers; <strong>Ministry of Digital Governance</strong> &mdash; traffic cameras; the <strong>Road Traffic Collision Map</strong> on gov.gr &mdash; traffic accidents.</li>
+        <li><strong>European Environment Agency</strong> &mdash; Natura 2000 sites; <strong>EFFIS</strong> &mdash; wildfire perimeters; <strong>USGS</strong> &mdash; earthquake records and the satellite imagery behind the vegetation index; <strong>SoilGrids</strong> &mdash; soil groups.</li>
+        <li><strong>Greek Seismic Code (EAK)</strong> &mdash; seismic hazard zones; <strong>Regulatory Authority for Energy (RAE)</strong> &mdash; wind farms.</li>
+        <li><strong>National School Network</strong> &mdash; school units; the <strong>Electro-mobility Market Infrastructure and Operators Register</strong> &mdash; EV charging stations.</li>
+      </ul>
+      <p>
+        CARTO, OpenStreetMap and Esri provide basemap tiles. The site is built with open-source software including
+        Leaflet, Turf.js, PMTiles, JSZip, FileSaver.js and Fuse.js. Individual layer descriptions also credit the people who helped prepare the data.
+      </p>
+    </section>
+
+    <section id="licence-and-citation" aria-labelledby="licence-and-citation-h">
+      <h2 id="licence-and-citation-h">License and citation</h2>
+      <p>
+        Unless otherwise stated, the datasets and materials published on this website are licensed under the
+        <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative Commons Attribution 4.0 International (CC BY 4.0)</a>
+        license. You are free to share and adapt the material for any purpose, including commercial use, as long as you:
+      </p>
+      <ul>
+        <li>give appropriate credit to &ldquo;Athens GIS Repository&rdquo;;</li>
+        <li>provide a link to the license; and</li>
+        <li>indicate whether you made changes.</li>
+      </ul>
+      <p>
+        Some datasets contain material derived from third parties, such as OpenStreetMap (&copy; OpenStreetMap contributors, available under the
+        Open Database License) and Copernicus. That material remains subject to its original license terms, so
+        please check the source of any layer you intend to redistribute.
+      </p>
+      <h3>How to cite</h3>
+      <p>
+        If you use data from the repository in academic, research or professional work, please cite it. The repository has a
+        Zenodo DOI:
+        <a href="https://doi.org/10.5281/zenodo.18727779" target="_blank" rel="noopener">10.5281/zenodo.18727779</a>.
+      </p>
+      <p class="citation">Athens GIS Repository. (2026). <em>Athens GIS Repository</em> [Dataset]. https://doi.org/10.5281/zenodo.18727779</p>
+      <p>Or, for BibTeX users:</p>
+<pre><code>@dataset{athens_gis_repository_2026,
+  title  = {Athens GIS Repository},
+  author = {{Athens GIS Repository}},
+  year   = {2026},
+  doi    = {10.5281/zenodo.18727779},
+  url    = {https://athensgis.gr}
+}</code></pre>
+      <p>The map&rsquo;s <em>Cite</em> button can produce the same reference in other styles.</p>
+    </section>
+
+    <section id="limitations" aria-labelledby="limitations-h">
+      <h2 id="limitations-h">Accuracy and limitations</h2>
+      <ul>
+        <li><strong>Provided &ldquo;as is&rdquo;.</strong> The datasets come without warranty of any kind. The repository and its maintainer are not liable for errors or omissions in the data, for misinterpretation of spatial information, or for decisions made based on it. Please verify that a dataset suits your purpose.</li>
+        <li><strong>Completeness varies.</strong> Layers built from community mapping, such as OpenStreetMap, are only as complete and current as the contributors&rsquo; work in each area. Official layers reflect the date their publisher released them.</li>
+        <li><strong>Hazard and planning layers are general.</strong> Flood-risk zones, seismic zones, and the urban plan are regional datasets useful for exploration and analysis. They are not site-specific assessments or legal documents.</li>
+        <li><strong>Cadastral parcels are for visualization.</strong> For anything with legal consequences, such as property boundaries, consult the issuing authority.</li>
+        <li><strong>Check the date and coverage.</strong> Each layer&rsquo;s description states its coverage area and when it was uploaded.</li>
+      </ul>
+      <p>If you spot an error, or know of a better or newer source for a layer, please get in touch &mdash; see the contact details below.</p>
+    </section>
+
+    <section id="contact" aria-labelledby="contact-h">
+      <h2 class="category-title" id="contact-h">Contact</h2>
+      <p>
+        Questions, corrections, suggestions for new datasets and collaboration ideas are welcome. The quickest way to reach the
+        project is by email at <a href="mailto:info@athensgis.gr">info@athensgis.gr</a> or through its LinkedIn page.
+      </p>
+      <a class="linkedin-btn" href="https://www.linkedin.com/company/athens-gis-repo/" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+        <span>Follow on LinkedIn</span>
+      </a>
+    </section>
+
+  </main>
+</div>
+
+<footer class="site-footer">
+  &copy; 2026 Athens GIS Repository | Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC-BY 4.0</a>
+</footer>
+
+<button type="button" class="back-to-top" id="back-to-top" title="Back to top" aria-label="Back to top">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="5 15 12 8 19 15"/></svg>
+</button>
+
+<script>
+  // Docking page title + side-menu scroll-spy + back-to-top button. No dependencies.
+  (function () {
+    document.documentElement.classList.add('js-title', 'js-nav');   // turns on the sticky title and the moving menu (see the CSS)
+
+    var header = document.querySelector('.site-header');
+    var siteTitle = document.getElementById('site-title');
+    var titleInner = document.getElementById('site-title-inner');
+    var titleBand = document.getElementById('title-band');
+    var reduceMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    var tm = null;              // title metrics, see measureTitle()
+
+    // The title is sticky, so it follows the page natively until it reaches the header's centre
+    // and then stays there. All the script does is shrink it on the way (progress p = how far
+    // along that scroll distance we are).
+    function measureTitle() {
+      if (!header || !siteTitle || !titleInner || !titleBand) return;
+      var big = parseFloat(getComputedStyle(titleInner).fontSize);
+      var docked = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--title-docked'));
+      var h = siteTitle.offsetHeight;
+      // The title rests in the middle of its band.
+      var restCenter = titleBand.getBoundingClientRect().top + (window.pageYOffset || 0) + titleBand.offsetHeight / 2;
+      tm = { endScale: docked / big, travel: restCenter - header.offsetHeight / 2 };
+    }
+
+    function updateTitle(y) {
+      if (!tm) return;
+      var p = tm.travel > 0 ? Math.min(1, Math.max(0, y / tm.travel)) : 1;
+      // Reduced motion: no gradual shrinking, just swap to the docked size once it has docked.
+      var e = (reduceMotion && reduceMotion.matches) ? (p >= 1 ? 1 : 0) : p * p * (3 - 2 * p);
+      titleInner.style.transform = 'scale(' + (1 + (tm.endScale - 1) * e) + ')';
+    }
+
+    var links = Array.prototype.slice.call(document.querySelectorAll('.toc a[href^="#"]'));
+    var items = links.map(function (a) {
+      return { link: a, section: document.getElementById(a.getAttribute('href').slice(1)) };
+    }).filter(function (it) { return it.section; });
+    var toc = document.querySelector('.toc');
+    var mainLinks = links.filter(function (a) { return a.classList.contains('toc-parent'); });   // Introduction, Repository structure, ...
+    var topBtn = document.getElementById('back-to-top');
+    var activeLink = null;
+    var activeGroup = null;     // main entry of the group the active link belongs to, if the active link is a sub-entry
+    var clickedLink = null;     // set on a menu click until the resulting scroll settles
+    var settleTimer = null;
+    var ticking = false;
+
+    // ── Menu: horizontal bar at the top of the page -> left sidebar ──────────────────────────
+    // The real sidebar links never change place in the layout. At the top of the page each one is
+    // translated, scaled and narrowed to sit where its twin in the #nav-band bar is (the bar is a
+    // full-width strip in the header's colour; its items are invisible and only mark the spots), and
+    // that offset shrinks to nothing as the page scrolls, ending exactly when the sticky sidebar
+    // engages. Progress, easing and the reduced-motion fallback work the same way as for the title.
+    var navBand = document.getElementById('nav-band');
+    var tocHeading = toc ? toc.querySelector('h2') : null;
+    var wideMQ = window.matchMedia ? window.matchMedia('(min-width: 901px)') : null;
+    var navItems = [];
+    var navTravel = 0;          // scroll distance over which the links travel, see measureNav()
+    var navFont = 14;           // font size (px) the bar is laid out at, see measureNav()
+    var NAV_BG = [55, 65, 81], NAV_LIGHT = [246, 247, 245], NAV_INK = [75, 85, 99];   // header colour, header text, sidebar link text
+    var NAV_PAD = 12, NAV_BORDER = 2;                                                  // sidebar link: left padding and left bar (px)
+    var NAV_SCROLL = 1;        // px of scrolling the whole bar -> sidebar move is spread over (smaller = faster)
+
+    if (navBand && toc) {
+      mainLinks.forEach(function (a, i) {      // the bar holds only the main entries, not the sub-entries
+        var ghost = document.createElement('span');
+        ghost.textContent = a.textContent;
+        navBand.appendChild(ghost);
+        var li = a.parentElement;
+        // Earlier links stack above later ones, so a link that has already set off passes *behind* the
+        // ones still waiting in the bar instead of covering their text.
+        li.style.position = 'relative';
+        li.style.zIndex = String(mainLinks.length - i);
+        navItems.push({ a: a, li: li, ghost: ghost });
+      });
+    }
+
+    function resetNav() {
+      navItems.forEach(function (it) {
+        var s = it.a.style;
+        s.transform = s.width = s.paddingLeft = s.borderLeftWidth = s.borderRadius = s.background = s.boxShadow = s.color = '';
+        ['t', 'r', 'b', 'l'].forEach(function (side) { s.removeProperty('--hx-' + side); });
+        s.removeProperty('--sep');
+      });
+      if (tocHeading) tocHeading.style.opacity = '';
+      if (navBand) navBand.style.opacity = '';
+    }
+
+    function measureNav() {
+      if (!navItems.length || !wideMQ || !wideMQ.matches) { navTravel = 0; resetNav(); return; }
+      // Fit the bar to the screen: its items are sized in em, so their total width scales with the font
+      // size. Use the largest size (up to the sidebar's 14px) that puts every label on one line; if that
+      // would be too small to read, let the bar wrap onto two lines instead.
+      navBand.classList.remove('is-wrapped');
+      navBand.style.fontSize = '14px';
+      var cs = getComputedStyle(navBand);
+      var gap = parseFloat(cs.columnGap) || 0;
+      var room = navBand.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - gap * (navItems.length - 1);
+      var natural = navItems.reduce(function (sum, it) { return sum + it.ghost.getBoundingClientRect().width; }, 0);
+      var fit = Math.floor(14 * room / natural * 10) / 10 - 0.1;
+      if (fit >= 11.5) { navFont = Math.min(14, fit); }
+      else { navFont = 13; navBand.classList.add('is-wrapped'); }
+      navBand.style.fontSize = navFont + 'px';
+
+      var page = toc.parentElement;
+      var tocDocTop = page.getBoundingClientRect().top + (window.pageYOffset || 0) + (parseFloat(getComputedStyle(page).paddingTop) || 0);
+      // The move is meant to be quick, so it is squeezed into NAV_SCROLL px of scrolling. The links end
+      // up in the sidebar's normal slots (not yet stuck to the top) and then simply ride up with the page.
+      navTravel = Math.max(1, Math.min(NAV_SCROLL, tocDocTop - (parseFloat(getComputedStyle(toc).top) || 0)));
+    }
+
+    // How far each link's hover highlight must reach beyond the link's own box (px, on screen) so that,
+    // while the menu is still a bar, the highlight fills the bar's full height and meets its neighbours with
+    // no gap: up/down to the bar's edge (or halfway to the next row when the bar wraps onto two lines),
+    // and sideways halfway across any gap to the neighbouring link (the links normally touch, so this is
+    // 0; the first and last links do not stretch out to the ends of the bar).
+    function navHoverReach(rects) {
+      var b = navBand.getBoundingClientRect();
+      var bandT = b.top + navBand.clientTop, bandB = bandT + navBand.clientHeight;
+      var same = function (a, c) { return Math.abs(a.top - c.top) < 2; };   // same row of the bar
+      return rects.map(function (r, i) {
+        var prev = i > 0 && same(rects[i - 1], r) ? rects[i - 1] : null;
+        var next = i < rects.length - 1 && same(rects[i + 1], r) ? rects[i + 1] : null;
+        var above = rects.filter(function (o) { return o.top < r.top - 2; });
+        var below = rects.filter(function (o) { return o.top > r.top + 2; });
+        var aboveEdge = above.length ? Math.max.apply(null, above.map(function (o) { return o.bottom; })) : null;
+        var belowEdge = below.length ? Math.min.apply(null, below.map(function (o) { return o.top; })) : null;
+        return {
+          l: prev ? Math.max(0, (r.left - prev.right) / 2) : 0,
+          r: next ? Math.max(0, (next.left - r.right) / 2) : 0,
+          t: Math.max(0, aboveEdge !== null ? (r.top - aboveEdge) / 2 : r.top - bandT),
+          b: Math.max(0, belowEdge !== null ? (belowEdge - r.bottom) / 2 : bandB - r.bottom)
+        };
+      });
+    }
+
+    function updateNav(y) {
+      if (!navTravel) { if (toc) toc.classList.remove('is-docked'); return; }
+      var p = Math.min(1, Math.max(0, y / navTravel));
+      var calm = reduceMotion && reduceMotion.matches;
+      var smooth = function (t) { return t * t * (3 - 2 * t); };
+      if (p >= 1) {                               // docked: links sit in their sidebar slots
+        resetNav();
+        navBand.style.opacity = '0';              // the (now empty) bar stays gone
+        toc.classList.add('is-docked');
+        return;
+      }
+      toc.classList.remove('is-docked');
+      var from = navItems.map(function (it) { return it.ghost.getBoundingClientRect(); });   // read everything first,
+      var to = navItems.map(function (it) { return it.li.getBoundingClientRect(); });        // then write
+      var hx = navHoverReach(from);
+      var STAGGER = 0.5, last = Math.max(1, navItems.length - 1);
+      navItems.forEach(function (it, i) {
+        var g = from[i], l = to[i];
+        // The links move one after another, last one first, and all of them arrive when the sidebar
+        // engages. Filling the column from the bottom up means every link drops into a slot above the
+        // ones already placed, so none has to pass through another. The sideways move runs well ahead
+        // of the downward one, so a link leaves the main column while it is still above the intro text.
+        // (These numbers were picked by simulating the overlap between links, and between links and
+        // the intro text, at several window widths.)
+        var q = calm ? 0 : Math.min(1, Math.max(0, (p - STAGGER * (last - i) / last) / (1 - STAGGER)));
+        var ex = smooth(Math.min(1, q * 2.4)), ey = smooth(q);
+        var k = smooth(Math.min(1, Math.max(0, (q - 0.55) / 0.45)));      // 0 = bar look, 1 = sidebar look
+        var s = navFont / 14 + (1 - navFont / 14) * ex;                   // text scale: bar font size -> 14px
+        var st = it.a.style, barPad = 1.3 * navFont;                      // (the bar's item padding, px; matches .nav-band span)
+        // Sizes below are what the eye should see, so they are divided by the scale (it is applied after).
+        st.width = ((g.width + (l.width - g.width) * ex) / s).toFixed(2) + 'px';
+        var bar = NAV_BORDER * k;                                           // no left bar until the chip dissolves
+        // text offset from the link's left edge: bar padding -> sidebar padding + bar, without a nudge when the bar appears
+        st.paddingLeft = ((barPad + (NAV_PAD + NAV_BORDER - barPad) * ex - bar) / s).toFixed(2) + 'px';
+        st.borderLeftWidth = (bar / s).toFixed(2) + 'px';
+        st.borderRadius = (6 * smooth(Math.min(1, q * 3)) / s).toFixed(2) + 'px';
+        // In the bar the link is just light text on the (slightly see-through) bar. As it sets off it picks up
+        // a solid dark chip, so it stays readable over the page; at the end the chip fades out and the
+        // text turns into plain sidebar text. The text colour flips (rather than blends) halfway through
+        // the fade, because a blend passes through a mid grey that is unreadable on the half-faded chip.
+        var lift = smooth(Math.min(1, q * 6));                              // 0 while still in the bar, 1 once under way
+        var chip = 'rgba(' + NAV_BG.join(',') + ',' + (lift * (1 - k)).toFixed(3) + ')';
+        st.background = chip;
+        st.boxShadow = '0 0 0 1px ' + chip;       // 1px bleed hides the hairline a fractionally positioned chip leaves behind
+        st.color = 'rgb(' + (k < 0.5 ? NAV_LIGHT : NAV_INK).join(',') + ')';
+        st.transform = 'translate(' + ((g.left - l.left) * (1 - ex)).toFixed(2) + 'px,' + ((g.top - l.top) * (1 - ey)).toFixed(2) + 'px) scale(' + s.toFixed(4) + ')';
+        // Hover highlight reach (see navHoverReach): full only while the link is still in the bar.
+        ['t', 'r', 'b', 'l'].forEach(function (side) { st.setProperty('--hx-' + side, (hx[i][side] * (1 - ex) / s).toFixed(2) + 'px'); });
+        st.setProperty('--sep', (1 - ex).toFixed(2));       // dividers fade as the link leaves the bar
+      });
+      // The "On this page" heading only fades in once the links have settled, so none sweep across it.
+      if (tocHeading) tocHeading.style.opacity = calm ? '0' : smooth(Math.min(1, Math.max(0, (p - 0.85) / 0.15))).toFixed(3);
+      // The bar itself fades away as its last links leave, instead of lingering as an empty strip.
+      navBand.style.opacity = calm ? '' : (1 - smooth(Math.min(1, Math.max(0, (p - 0.3) / 0.4)))).toFixed(3);
+    }
+
+    function setActive(link) {
+      if (link === activeLink) return;
+      if (activeLink) activeLink.removeAttribute('aria-current');
+      if (activeGroup) activeGroup.classList.remove('is-group-active');
+      activeLink = link;
+      activeGroup = null;
+      if (!link) return;
+      link.setAttribute('aria-current', 'location');
+      // A sub-entry also marks the main entry of its group.
+      var group = link.closest('.toc-group');
+      if (group && group.firstElementChild !== link) {
+        activeGroup = group.firstElementChild;
+        activeGroup.classList.add('is-group-active');
+      }
+      // Keep the highlighted entry visible if the sticky menu itself has to scroll (short windows).
+      if (toc && toc.scrollHeight > toc.clientHeight) {
+        var t = link.getBoundingClientRect().top - toc.getBoundingClientRect().top + toc.scrollTop, b = t + link.offsetHeight;
+        if (t < toc.scrollTop) toc.scrollTop = t - 8;
+        else if (b > toc.scrollTop + toc.clientHeight) toc.scrollTop = b - toc.clientHeight + 8;
+      }
+    }
+
+    // The current section is the last one whose top has passed a line a little below the sticky header.
+    function update() {
+      ticking = false;
+      var y = window.pageYOffset || document.documentElement.scrollTop;
+      if (topBtn) topBtn.classList.toggle('is-visible', y > 500);
+      updateTitle(y);
+      updateNav(y);
+      // Below 900px the menu is a bar that floats (separate from the header, rounded) once the page has scrolled
+      // far enough for it to stick below the header. The page's own top is where the bar rests in the flow, so
+      // the test does not depend on the bar's current look.
+      var narrow = !!(wideMQ && !wideMQ.matches);
+      if (toc) {
+        var floating = narrow && toc.parentElement.getBoundingClientRect().top <= (header ? header.offsetHeight : 48) + 10;
+        toc.classList.toggle('is-floating', floating);
+        if (floating && mainLinks.length) {
+          // the floating bar is as wide as its links, plus the 4px the links sit in from its edge
+          var tr = toc.getBoundingClientRect();
+          var first = mainLinks[0].getBoundingClientRect(), lastR = mainLinks[mainLinks.length - 1].getBoundingClientRect();
+          toc.style.setProperty('--pill-l', Math.max(0, first.left - tr.left - 4).toFixed(1) + 'px');
+          toc.style.setProperty('--pill-r', Math.max(0, tr.right - lastR.right - 4).toFixed(1) + 'px');
+        }
+      }
+      if (clickedLink) { setActive(clickedLink); return; }
+      var line = 96, current = null;
+      // The reading line sits below the floating bar.
+      if (toc && narrow) line = Math.max(line, toc.getBoundingClientRect().bottom + 16);
+      for (var i = 0; i < items.length; i++) {
+        if (items[i].section.getBoundingClientRect().top <= line) current = items[i].link;
+      }
+      // Before the first section (hero) nothing is highlighted; at the very bottom the last one is.
+      if (y + window.innerHeight >= document.documentElement.scrollHeight - 2 && items.length) {
+        current = items[items.length - 1].link;
+      }
+      setActive(current);
+    }
+
+    function onScroll() {
+      if (clickedLink) {
+        clearTimeout(settleTimer);
+        settleTimer = setTimeout(function () { clickedLink = null; }, 150);
+      }
+      if (!ticking) { ticking = true; window.requestAnimationFrame(update); }
+    }
+
+    // Clicking a menu entry highlights it straight away, even when the page is too short
+    // to scroll that section all the way up to the line above (e.g. the last sections).
+    links.forEach(function (a) {
+      a.addEventListener('click', function () {
+        clickedLink = a;
+        clearTimeout(settleTimer);
+        settleTimer = setTimeout(function () { clickedLink = null; }, 150);
+        setActive(a);
+      });
+    });
+
+    if (topBtn) {
+      topBtn.addEventListener('click', function () {
+        window.scrollTo({ top: 0 });   // smooth via CSS unless the reader prefers reduced motion
+        var h1 = document.getElementById('top');
+        if (h1) h1.focus({ preventScroll: true });
+      });
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', function () { measureTitle(); measureNav(); onScroll(); });
+    measureTitle();
+    measureNav();
+    update();
+  })();
+</script>
+
+<script>
+  // "Layers per category" pie chart, plus the layer/category counts quoted elsewhere on the page.
+  // The numbers are not typed in here: the page reads the `layerCategories` object straight out of
+  // JS/layer-control.js (the same file the map uses, and the same technique tools/build-pmtiles.mjs
+  // uses), so adding, moving or removing a layer there is reflected here on the next page load.
+  (function () {
+    var fig = document.getElementById('layer-chart');
+    if (!fig) return;
+    var statusEl = document.getElementById('layer-chart-status');
+    var bodyEl = document.getElementById('layer-chart-body');
+    var pie = document.getElementById('layer-pie');
+    var legend = document.getElementById('layer-legend');
+    var detail = document.getElementById('layer-detail');
+    var noteEl = document.getElementById('layer-chart-note');
+    var SVG_NS = 'http://www.w3.org/2000/svg';
+
+    // Terrain and Shaded Relief are rendered by layer-control.js outside layerCategories (its layer-count
+    // badge adds them as "+ 2"), so they are listed here. Keep in step with that if common layers change.
+    var COMMON_LAYERS = ['Terrain', 'Shaded Relief'];
+    // Colour-blind-safe set (Okabe-Ito based); further categories get generated hues.
+    var PALETTE = ['#0072B2', '#E69F00', '#009E73', '#CC79A7', '#D55E00', '#56B4E9', '#374151', '#B8A400', '#7C5CBF', '#8D99A6'];
+    var NUMBER_WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+
+    // Returns the text of the {...} object literal that follows `marker`, skipping strings and comments.
+    function extractObjectLiteral(source, marker) {
+      var m = source.indexOf(marker);
+      if (m === -1) throw new Error('"' + marker + '" not found');
+      var start = source.indexOf('{', m + marker.length);
+      if (start === -1) throw new Error('no "{" after "' + marker + '"');
+      var depth = 0, quote = null;
+      for (var i = start; i < source.length; i++) {
+        var ch = source[i], next = source[i + 1];
+        if (quote) {
+          if (ch === '\\') i++;
+          else if (ch === quote) quote = null;
+          continue;
+        }
+        if (ch === '"' || ch === "'" || ch === '`') { quote = ch; continue; }
+        if (ch === '/' && next === '/') { var nl = source.indexOf('\n', i); i = nl === -1 ? source.length : nl; continue; }
+        if (ch === '/' && next === '*') { var end = source.indexOf('*/', i + 2); i = end === -1 ? source.length : end + 1; continue; }
+        if (ch === '{') depth++;
+        else if (ch === '}' && --depth === 0) return source.slice(start, i + 1);
+      }
+      throw new Error('unbalanced braces after "' + marker + '"');
+    }
+
+    function loadLayerCategories() {
+      // no-cache: always revalidate, so a freshly edited layer-control.js shows up straight away.
+      return fetch('JS/layer-control.js', { cache: 'no-cache' }).then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.text();
+      }).then(function (source) {
+        var literal = extractObjectLiteral(source, 'var layerCategories =');
+        return new Function('return (' + literal + ');')();   // data literal from this site's own script
+      });
+    }
+
+    // layerCategories = { Category: { _items: [layer...], "Subcategory": [layer...], ... }, ... }
+    function buildModel(raw) {
+      var cats = [];
+      Object.keys(raw).forEach(function (name) {
+        var data = raw[name];
+        if (!data || typeof data !== 'object') return;
+        var groups = [], count = 0;
+        Object.keys(data).forEach(function (key) {
+          if (!Array.isArray(data[key])) return;
+          var names = data[key].map(function (l) { return l && l.name; }).filter(Boolean);
+          if (!names.length) return;
+          groups.push({ label: key === '_items' ? null : key, layers: names });
+          count += names.length;
+        });
+        if (count) cats.push({ name: name, count: count, groups: groups });
+      });
+      var categoryCount = cats.length;
+      cats.push({
+        name: 'Terrain and relief', count: COMMON_LAYERS.length,
+        groups: [{ label: null, layers: COMMON_LAYERS.slice() }],
+        note: 'General-purpose layers that sit outside the categories.'
+      });
+      cats.sort(function (a, b) { return b.count - a.count || a.name.localeCompare(b.name); });
+      var total = cats.reduce(function (sum, c) { return sum + c.count; }, 0);
+      return { cats: cats, categoryCount: categoryCount, total: total };
+    }
+
+    function colorFor(i) {
+      return i < PALETTE.length ? PALETTE[i] : 'hsl(' + Math.round((i * 137.5) % 360) + ', 50%, 42%)';
+    }
+    function percentText(count, total) {
+      var p = count / total * 100;
+      return p < 1 ? '<1%' : Math.round(p) + '%';
+    }
+    function el(tag, className, text) {
+      var node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
+    }
+
+    function setStats(model) {
+      var words = model.categoryCount < NUMBER_WORDS.length ? NUMBER_WORDS[model.categoryCount] : String(model.categoryCount);
+      [['total', String(model.total)], ['categories', String(model.categoryCount)], ['categories-word', words]].forEach(function (pair) {
+        Array.prototype.forEach.call(document.querySelectorAll('[data-stat="' + pair[0] + '"]'), function (n) { n.textContent = pair[1]; });
+      });
+    }
+
+    function render(model) {
+      var selected = -1, hovered = -1, slices = [], rows = [];
+      var radius = 100, angle = -Math.PI / 2;
+
+      function showDetail(i) {
+        detail.hidden = false;
+        detail.textContent = '';
+        if (i < 0) {
+          detail.appendChild(el('p', 'detail-hint', 'Select a slice, or a category in the key, to see which layers it contains.'));
+          return;
+        }
+        var cat = model.cats[i];
+        detail.appendChild(el('h3', null, cat.name + ' · ' + cat.count + (cat.count === 1 ? ' layer' : ' layers')));
+        if (cat.note) detail.appendChild(el('p', 'detail-note', cat.note));
+        cat.groups.forEach(function (g) {
+          if (g.label) detail.appendChild(el('h4', null, g.label));
+          var ul = el('ul', 'layer-chips');
+          g.layers.forEach(function (n) { ul.appendChild(el('li', null, n)); });
+          detail.appendChild(ul);
+        });
+      }
+
+      function applyState() {
+        var focus = hovered >= 0 ? hovered : selected;
+        pie.classList.toggle('has-focus', focus >= 0);
+        model.cats.forEach(function (c, i) {
+          slices[i].classList.toggle('is-active', i === focus);
+          rows[i].classList.toggle('is-active', i === focus);
+          rows[i].setAttribute('aria-pressed', i === selected ? 'true' : 'false');
+        });
+      }
+      function hover(i) { hovered = i; applyState(); }
+      function toggle(i) { selected = (selected === i) ? -1 : i; showDetail(selected); applyState(); }
+
+      pie.textContent = '';
+      legend.textContent = '';
+      model.cats.forEach(function (cat, i) {
+        var frac = cat.count / model.total;
+        var a0 = angle, a1 = angle + frac * 2 * Math.PI, mid = (a0 + a1) / 2;
+        angle = a1;
+        var label = cat.name + ': ' + cat.count + (cat.count === 1 ? ' layer' : ' layers') + ' (' + percentText(cat.count, model.total) + ')';
+
+        var slice;
+        if (model.cats.length === 1) {
+          slice = document.createElementNS(SVG_NS, 'circle');
+          slice.setAttribute('r', radius);
+        } else {
+          var x0 = radius * Math.cos(a0), y0 = radius * Math.sin(a0), x1 = radius * Math.cos(a1), y1 = radius * Math.sin(a1);
+          slice = document.createElementNS(SVG_NS, 'path');
+          slice.setAttribute('d', 'M0 0 L' + x0.toFixed(3) + ' ' + y0.toFixed(3) + ' A' + radius + ' ' + radius + ' 0 ' +
+            (a1 - a0 > Math.PI ? 1 : 0) + ' 1 ' + x1.toFixed(3) + ' ' + y1.toFixed(3) + ' Z');
+        }
+        slice.setAttribute('class', 'slice');
+        slice.setAttribute('fill', colorFor(i));
+        slice.style.setProperty('--dx', (Math.cos(mid) * 7).toFixed(2) + 'px');
+        slice.style.setProperty('--dy', (Math.sin(mid) * 7).toFixed(2) + 'px');
+        var tip = document.createElementNS(SVG_NS, 'title');
+        tip.textContent = label;
+        slice.appendChild(tip);
+        slice.addEventListener('mouseenter', function () { hover(i); });
+        slice.addEventListener('mouseleave', function () { hover(-1); });
+        slice.addEventListener('click', function () { toggle(i); });
+        pie.appendChild(slice);
+        slices.push(slice);
+
+        var li = el('li');
+        var btn = el('button', 'legend-btn');
+        btn.type = 'button';
+        btn.setAttribute('aria-pressed', 'false');
+        btn.setAttribute('aria-controls', 'layer-detail');
+        var swatch = el('span', 'legend-swatch');
+        swatch.style.background = colorFor(i);
+        btn.appendChild(swatch);
+        btn.appendChild(el('span', 'legend-name', cat.name));
+        btn.appendChild(el('span', 'legend-count', String(cat.count)));
+        btn.appendChild(el('span', 'legend-pct', percentText(cat.count, model.total)));
+        btn.addEventListener('mouseenter', function () { hover(i); });
+        btn.addEventListener('mouseleave', function () { hover(-1); });
+        btn.addEventListener('focus', function () { hover(i); });
+        btn.addEventListener('blur', function () { hover(-1); });
+        btn.addEventListener('click', function () { toggle(i); });
+        li.appendChild(btn);
+        legend.appendChild(li);
+        rows.push(btn);
+      });
+
+      noteEl.textContent = model.total + ' layers in total: ' + (model.total - COMMON_LAYERS.length) + ' in ' +
+        model.categoryCount + ' categories, plus ' + COMMON_LAYERS.length + ' general-purpose terrain layers.';
+      noteEl.hidden = false;
+      statusEl.hidden = true;
+      bodyEl.hidden = false;
+      showDetail(-1);
+      applyState();
+    }
+
+    loadLayerCategories().then(function (raw) {
+      var model = buildModel(raw);
+      if (!model.cats.length) throw new Error('layerCategories is empty');
+      setStats(model);
+      render(model);
+    }).catch(function (err) {
+      statusEl.textContent = 'The layer chart could not be loaded right now. The table below lists the categories.';
+      if (window.console) console.warn('Layer chart unavailable:', err);
+    });
+  })();
+</script>
+
+</body>
+</html>

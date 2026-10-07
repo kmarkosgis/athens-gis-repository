@@ -109,13 +109,53 @@
   // fragments exactly complementary instead of overlapping duplicates, so they can
   // all be kept and simply tile back together seamlessly.
   var CLIPPABLE_TYPES = { LineString: 1, MultiLineString: 1, Polygon: 1, MultiPolygon: 1 };
+
+  // turf.bboxClip leaves an EMPTY entry ([]) behind for every part of a MultiPolygon
+  // (or ring of a Polygon) that lies wholly outside the tile - e.g. an island that
+  // sits in a neighboring tile. Left in place, that empty entry (a) makes
+  // turf.union() throw "Input geometry is not a valid Polygon or MultiPolygon" in
+  // mergePolygonFragments() below, so the feature's per-tile fragments never get
+  // stitched back together and each one is stroked along its tile edge (a visible
+  // grid of lines), and (b) fails JS/layer-control.js's hasValidCoordinates(), so
+  // the whole fragment is silently dropped from the map. Strip the empties.
+  function ringIsUsable(ring) { return Array.isArray(ring) && ring.length >= 4; }
+  function cleanPolygonCoords(rings) {
+    // rings[0] is the outer ring - without it the holes mean nothing.
+    if (!Array.isArray(rings) || !ringIsUsable(rings[0])) return null;
+    return rings.filter(ringIsUsable);
+  }
+  function cleanClippedGeometry(geom) {
+    var c = geom.coordinates;
+    if (geom.type === 'Polygon') {
+      var rings = cleanPolygonCoords(c);
+      return rings && { type: 'Polygon', coordinates: rings };
+    }
+    if (geom.type === 'MultiPolygon') {
+      var polys = (c || []).map(cleanPolygonCoords).filter(Boolean);
+      if (!polys.length) return null;
+      return polys.length === 1
+        ? { type: 'Polygon', coordinates: polys[0] }
+        : { type: 'MultiPolygon', coordinates: polys };
+    }
+    if (geom.type === 'LineString') {
+      return Array.isArray(c) && c.length >= 2 ? geom : null;
+    }
+    // MultiLineString
+    var lines = (c || []).filter(function (l) { return Array.isArray(l) && l.length >= 2; });
+    if (!lines.length) return null;
+    return lines.length === 1
+      ? { type: 'LineString', coordinates: lines[0] }
+      : { type: 'MultiLineString', coordinates: lines };
+  }
+
   function clipFeatureToTile(feature, tileBBox) {
     var geom = feature && feature.geometry;
     if (!geom || !CLIPPABLE_TYPES[geom.type] || typeof window.turf === 'undefined') return feature;
     try {
       var clipped = window.turf.bboxClip(feature, tileBBox);
-      var coords = clipped && clipped.geometry && clipped.geometry.coordinates;
-      if (!coords || !coords.length) return null; // fully outside this tile's true bounds
+      var cleaned = clipped && clipped.geometry && cleanClippedGeometry(clipped.geometry);
+      if (!cleaned) return null; // fully outside this tile's true bounds
+      clipped.geometry = cleaned;
       clipped.id = feature.id; // turf.bboxClip doesn't carry the top-level Feature id over
       return clipped;
     } catch (e) {
@@ -229,18 +269,25 @@
     order.forEach(function (key) {
       var group = byId[key];
       if (group.length === 1) { out.push(group[0]); return; }
-      try {
-        var merged = group.reduce(function (acc, f) { return acc ? window.turf.union(acc, f) : f; });
-        if (merged && merged.geometry) {
-          merged.id = group[0].id;
-          merged.properties = group[0].properties;
-          out.push(merged);
-        } else {
-          group.forEach(function (f) { out.push(f); });
+      // Union fragment by fragment instead of one all-or-nothing reduce(): if a single
+      // fragment trips turf.union (self-intersections etc.), only that one is left
+      // standing alone - the rest still merge, instead of the whole feature falling
+      // back to un-merged (seamed) tile pieces.
+      var acc = null;
+      var leftovers = [];
+      group.forEach(function (f) {
+        if (!acc) { acc = f; return; }
+        try {
+          var u = window.turf.union(acc, f);
+          if (u && u.geometry) acc = u; else leftovers.push(f);
+        } catch (e) {
+          leftovers.push(f);
         }
-      } catch (e) {
-        group.forEach(function (f) { out.push(f); });
-      }
+      });
+      acc.id = group[0].id;
+      acc.properties = group[0].properties;
+      out.push(acc);
+      leftovers.forEach(function (f) { out.push(f); });
     });
     return out;
   }

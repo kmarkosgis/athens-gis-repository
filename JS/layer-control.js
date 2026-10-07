@@ -9,147 +9,150 @@
 // AthensGIS.datasetManifest lookups) - see JS/pmtiles-loader.js and the toggle
 // handler in createLayerRow() below. Layers under the threshold are unchanged: `file`
 // is still the plain source, rendered exactly as before.
+// `geom` ("point" | "line" | "polygon") picks the symbol drawn before the layer's name in
+// the panel (see buildLayerGeomIcon below); rasters are marked by `type: "raster"` instead.
+// Give every new layer one of these, or its row gets a blank slot where the symbol goes.
 var layerCategories = {
   "Administrative Boundaries": {
     "_items": [
-      { name: "Regions of Greece", file: "Boundaries/GrRegions.pmtiles", geojson: "Boundaries/GrRegions.geojson" }
+      { name: "Regions of Greece", file: "Boundaries/GrRegions.pmtiles", geojson: "Boundaries/GrRegions.geojson", geom: "polygon" }
     ],
     "Regional Units of Attica": [
-      { name: "Cental Sector", file: "Boundaries/AthensCenterSector.json" },
-      { name: "North Sector", file: "Boundaries/AthensNorthSector.json" },
-      { name: "South Sector", file: "Boundaries/AthensSouthSector.json" },
-      { name: "West Sector", file: "Boundaries/AthensWestSector.json" },
-      { name: "East Attica", file: "Boundaries/AthensEast.json" },
-      { name: "Islands of Attica", file: "Boundaries/AthensIslands.json" },
-      { name: "Piraeus", file: "Boundaries/Piraeus.json" },
-      { name: "West Attica", file: "Boundaries/AthensWest.json" },
+      { name: "Center Sector", file: "Boundaries/AthensCenterSector.json", geom: "polygon" },
+      { name: "North Sector", file: "Boundaries/AthensNorthSector.json", geom: "polygon" },
+      { name: "South Sector", file: "Boundaries/AthensSouthSector.json", geom: "polygon" },
+      { name: "West Sector", file: "Boundaries/AthensWestSector.json", geom: "polygon" },
+      { name: "East Attica", file: "Boundaries/AthensEast.json", geom: "polygon" },
+      { name: "Islands of Attica", file: "Boundaries/AthensIslands.json", geom: "polygon" },
+      { name: "Piraeus", file: "Boundaries/Piraeus.json", geom: "polygon" },
+      { name: "West Attica", file: "Boundaries/AthensWest.json", geom: "polygon" },
     ],
     "Municipalities": [
-      { name: "Municipal Communities of Athens", file: "Boundaries/AthensCom.geojson" }
+      { name: "Municipal Communities of Athens", file: "Boundaries/AthensCom.geojson", geom: "polygon" }
     ]
     },
   "Energy": {
     "Wind": [
-      { name: "Wind Farms", file: "Energy/WindFarms.json" }
+      { name: "Wind Farms", file: "Energy/WindFarms.json", geom: "point" }
     ]
   },
   "Environment": {
     "Geology": [
-      { name: "Soil Groups", file: "Environment/SoilGroups.pmtiles", geojson: "Environment/SoilGroups.geojson" }
+      { name: "Soil Groups", file: "Environment/SoilGroups.pmtiles", geojson: "Environment/SoilGroups.geojson", geom: "polygon" }
     ],
     "Hydrology": [
-      { name: "Rivers and Streams", file: "Environment/Rivers.pmtiles", geojson: "Environment/Rivers.geojson" },
+      { name: "Rivers and Streams", file: "Environment/Rivers.pmtiles", geojson: "Environment/Rivers.geojson", geom: "line" },
     ],
     "Protection Zones": [
-      { name: "Natura 2000 sites", file: "Environment/Natura.pmtiles", geojson: "Environment/Natura.geojson" },
+      { name: "Natura 2000 sites", file: "Environment/Natura.pmtiles", geojson: "Environment/Natura.geojson", geom: "polygon" },
     ],
     "Vegetation": [ 
-      { name: "Vegetation Index (Center Sector)", file: "Environment/AthensGreenCenter.pmtiles", geojson: "Environment/AthensGreenCenter.geojson" },
-      { name: "Vegetation Index (North Sector)", file: "Environment/AthensGreenNorth.pmtiles", geojson: "Environment/AthensGreenNorth.geojson" },
-      { name: "Vegetation Index (South Sector)", file: "Environment/AthensGreenSouth.pmtiles", geojson: "Environment/AthensGreenSouth.geojson" },
-      { name: "Vegetation Index (West Sector)", file: "Environment/AthensGreenWest.pmtiles", geojson: "Environment/AthensGreenWest.geojson" },
-      { name: "Vegetation Index (Piraeus)", file: "Environment/PiraeusGreen.pmtiles", geojson: "Environment/PiraeusGreen.geojson" }
+      { name: "Vegetation Index (Center Sector)", file: "Environment/AthensGreenCenter.pmtiles", geojson: "Environment/AthensGreenCenter.geojson", geom: "polygon" },
+      { name: "Vegetation Index (North Sector)", file: "Environment/AthensGreenNorth.pmtiles", geojson: "Environment/AthensGreenNorth.geojson", geom: "polygon" },
+      { name: "Vegetation Index (South Sector)", file: "Environment/AthensGreenSouth.pmtiles", geojson: "Environment/AthensGreenSouth.geojson", geom: "polygon" },
+      { name: "Vegetation Index (West Sector)", file: "Environment/AthensGreenWest.pmtiles", geojson: "Environment/AthensGreenWest.geojson", geom: "polygon" },
+      { name: "Vegetation Index (Piraeus)", file: "Environment/PiraeusGreen.pmtiles", geojson: "Environment/PiraeusGreen.geojson", geom: "polygon" }
     ]
   },
   "Natural Hazards": {
     "Wildfires": [
-      { name: "Wildfires Attica 2015-2025", file: "Disasters/WildfiresAttica2015-2025.pmtiles", geojson: "Disasters/WildfiresAttica2015-2025.geojson" },
+      { name: "Wildfires Attica 2015-2025", file: "Disasters/WildfiresAttica2015-2025.pmtiles", geojson: "Disasters/WildfiresAttica2015-2025.geojson", geom: "polygon" },
     ],
       "Earthquakes": [
-        { name: "Earthquakes Attica 2006-2026", file: "Disasters/EarthquakesAttica2006-2026.json" },
-        { name: "Seismic Hazard Zones", file: "Disasters/Seismiczones.json" }
+        { name: "Earthquakes Attica 2006-2026", file: "Disasters/EarthquakesAttica2006-2026.json", geom: "point" },
+        { name: "Seismic Hazard Zones", file: "Disasters/Seismiczones.json", geom: "polygon" }
       ],
       "Floods": [
-        { name: "Flood Risk Zones 50T", file: "Disasters/Floods50T.pmtiles", geojson: "Disasters/Floods50T.geojson" },
-        { name: "Flood Risk Zones 100T", file: "Disasters/Floods100T.pmtiles", geojson: "Disasters/Floods100T.geojson" },
-        { name: "Flood Risk Zones 1000T", file: "Disasters/Floods1000T.pmtiles", geojson: "Disasters/Floods1000T.geojson" }
+        { name: "Flood Risk Zones 50T", file: "Disasters/Floods50T.pmtiles", geojson: "Disasters/Floods50T.geojson", geom: "polygon" },
+        { name: "Flood Risk Zones 100T", file: "Disasters/Floods100T.pmtiles", geojson: "Disasters/Floods100T.geojson", geom: "polygon" },
+        { name: "Flood Risk Zones 1000T", file: "Disasters/Floods1000T.pmtiles", geojson: "Disasters/Floods1000T.geojson", geom: "polygon" }
       ]
   },
   "Points of Interest": {
     "City Services": [
-      { name: "Banks", file: "Amenities/Banks.geojson" },
-      { name: "Police Stations", file: "Amenities/Police.geojson" },
+      { name: "Banks", file: "Amenities/Banks.geojson", geom: "point" },
+      { name: "Police Stations", file: "Amenities/Police.geojson", geom: "point" },
     ],
     "Commerce": [
-      { name : "Charging Stations", file: "Amenities/charging_stations.geojson" },
-      { name: "Food Shops", file: "Amenities/foodshops.geojson" },
-      { name: "Fuel Stations", file: "Amenities/Fuel.geojson" },
-      { name: "Supermarkets", file: "Amenities/markets.geojson" }
+      { name : "Charging Stations", file: "Amenities/charging_stations.geojson", geom: "point" },
+      { name: "Food Shops", file: "Amenities/foodshops.geojson", geom: "point" },
+      { name: "Fuel Stations", file: "Amenities/Fuel.geojson", geom: "point" },
+      { name: "Supermarkets", file: "Amenities/markets.geojson", geom: "point" }
     ],
     "Education": [
-      { name: "Schools", file: "Amenities/Schools.pmtiles", geojson: "Amenities/Schools.geojson" },
-      { name: "Universities", file: "Amenities/Universities.geojson" }
+      { name: "Schools", file: "Amenities/Schools.pmtiles", geojson: "Amenities/Schools.geojson", geom: "point" },
+      { name: "Universities", file: "Amenities/Universities.geojson", geom: "point" }
     ],
     "Entertainment and Leisure": [
-      { name: "Cinemas", file: "Amenities/Cinemas.json" },
-      { name: "Theaters", file: "Amenities/Theater.json" },
-      { name: "Restaurants, Bars, and Cafe", file: "Amenities/RestBarCafe.pmtiles", geojson: "Amenities/RestBarCafe.json" }
+      { name: "Cinemas", file: "Amenities/Cinemas.json", geom: "point" },
+      { name: "Theaters", file: "Amenities/Theater.json", geom: "point" },
+      { name: "Restaurants, Bars, and Cafe", file: "Amenities/RestBarCafe.pmtiles", geojson: "Amenities/RestBarCafe.json", geom: "point" }
     ],
     "Healthcare": [
-      { name: "Hospitals", file: "Amenities/Hospitals.geojson" },
-      { name: "Pharmacies", file: "Amenities/Pharmacies.geojson" },
+      { name: "Hospitals", file: "Amenities/Hospitals.geojson", geom: "point" },
+      { name: "Pharmacies", file: "Amenities/Pharmacies.geojson", geom: "point" },
     ],
   },
   "Population and social conditions": {
     "Population Census": [
-      { name: "2021 Population Census", file: "Social/Population2021.json" },
+      { name: "2021 Population Census", file: "Social/Population2021.json", geom: "polygon" },
       { name: "2021 Population Census Density", file: "Social/population_density_2021.tif", type: "raster" },
-      { name: "2011 Population Census", file: "Social/Population2011.json" }
+      { name: "2011 Population Census", file: "Social/Population2011.json", geom: "polygon" }
     ]
   },
   "Urban Planning and Land Cover": {
     "KAEK": [
-      { name: "KAEK Central Sector", file: "UrbanPlanning/KAEKcenter.pmtiles", geojson: "UrbanPlanning/KAEKcenter.geojson" },
-      { name: "KAEK North Sector", file: "UrbanPlanning/KAEKnorth.pmtiles", geojson: "UrbanPlanning/KAEKnorth.geojson" },
-      { name: "KAEK South Sector", file: "UrbanPlanning/KAEKsouth.pmtiles", geojson: "UrbanPlanning/KAEKsouth.geojson" },
-      { name: "KAEK West Sector", file: "UrbanPlanning/KAEKwest.pmtiles", geojson: "UrbanPlanning/KAEKwest.geojson" },
-      { name: "KAEK Piraeus", file: "UrbanPlanning/KAEKpiraeus.pmtiles", geojson: "UrbanPlanning/KAEKpiraeus.geojson" }
+      { name: "KAEK Central Sector", file: "UrbanPlanning/KAEKcenter.pmtiles", geojson: "UrbanPlanning/KAEKcenter.geojson", geom: "polygon" },
+      { name: "KAEK North Sector", file: "UrbanPlanning/KAEKnorth.pmtiles", geojson: "UrbanPlanning/KAEKnorth.geojson", geom: "polygon" },
+      { name: "KAEK South Sector", file: "UrbanPlanning/KAEKsouth.pmtiles", geojson: "UrbanPlanning/KAEKsouth.geojson", geom: "polygon" },
+      { name: "KAEK West Sector", file: "UrbanPlanning/KAEKwest.pmtiles", geojson: "UrbanPlanning/KAEKwest.geojson", geom: "polygon" },
+      { name: "KAEK Piraeus", file: "UrbanPlanning/KAEKpiraeus.pmtiles", geojson: "UrbanPlanning/KAEKpiraeus.geojson", geom: "polygon" }
     ],
     "Land Cover": [
       { name: "Buildings height (2021)", file: "UrbanPlanning/Building_height.tif", type: "raster" },
-      { name: "Land Cover and Land Use (2021)", file: "UrbanPlanning/Land_Cover_2021.pmtiles", geojson: "UrbanPlanning/Land_Cover_2021.json" },
-      { name: "Land Cover and Land Use (2018)", file: "UrbanPlanning/AthensCorine2018.pmtiles", geojson: "UrbanPlanning/AthensCorine2018.json" },
-      { name: "Municipality of Athens Urban Plan (2012)", file: "UrbanPlanning/Athens Urban Plan 2012.pmtiles", geojson: "UrbanPlanning/Athens Urban Plan 2012.geojson" },
+      { name: "Land Cover and Land Use (2021)", file: "UrbanPlanning/Land_Cover_2021.pmtiles", geojson: "UrbanPlanning/Land_Cover_2021.json", geom: "polygon" },
+      { name: "Land Cover and Land Use (2018)", file: "UrbanPlanning/AthensCorine2018.pmtiles", geojson: "UrbanPlanning/AthensCorine2018.json", geom: "polygon" },
+      { name: "Municipality of Athens Urban Plan (2012)", file: "UrbanPlanning/Athens Urban Plan 2012.pmtiles", geojson: "UrbanPlanning/Athens Urban Plan 2012.geojson", geom: "polygon" },
       { name: "Tree Cover Density (2024)", file: "UrbanPlanning/tree_density.tif", type: "raster" }
     ],
     "Public Spaces": [
-      { name: "Archaeological Sites", file: "UrbanPlanning/Arch_sites.geojson" },
-      { name: "Gardens", file: "UrbanPlanning/Gardens.geojson" },
-      { name: "Parks", file: "UrbanPlanning/Parks.pmtiles", geojson: "UrbanPlanning/Parks.geojson" },
-      { name: "Playgrounds", file: "UrbanPlanning/Playgrounds.geojson" }
+      { name: "Archaeological Sites", file: "UrbanPlanning/Arch_sites.geojson", geom: "polygon" },
+      { name: "Gardens", file: "UrbanPlanning/Gardens.geojson", geom: "polygon" },
+      { name: "Parks", file: "UrbanPlanning/Parks.pmtiles", geojson: "UrbanPlanning/Parks.geojson", geom: "polygon" },
+      { name: "Playgrounds", file: "UrbanPlanning/Playgrounds.geojson", geom: "polygon" }
     ]
 
   },
   "Transportation Systems": {
     "Road Network": [
-      { name: "Avenues", file: "Transportation/AthensAvenues.pmtiles", geojson: "Transportation/AthensAvenues.json" },
-      { name: "Highways (Greece)", file: "Transportation/GreeceHighways.pmtiles", geojson: "Transportation/GreeceHighways.geojson" },
-      { name: "Street Network Central Sector", file: "Transportation/Streets_Center.pmtiles", geojson: "Transportation/Streets_Center.geojson" },
-      { name: "Street Network North Sector", file: "Transportation/Streets_North.pmtiles", geojson: "Transportation/Streets_North.geojson" },
-      { name: "Street Network South Sector", file: "Transportation/Streets_South.pmtiles", geojson: "Transportation/Streets_South.geojson" },
-      { name: "Street Network West Sector", file: "Transportation/Streets_West.pmtiles", geojson: "Transportation/Streets_West.geojson" },
-      { name: "Street Network Piraeus", file: "Transportation/Streets_Piraeus.pmtiles", geojson: "Transportation/Streets_Piraeus.geojson" }
+      { name: "Avenues", file: "Transportation/AthensAvenues.pmtiles", geojson: "Transportation/AthensAvenues.json", geom: "line" },
+      { name: "Highways (Greece)", file: "Transportation/GreeceHighways.pmtiles", geojson: "Transportation/GreeceHighways.geojson", geom: "line" },
+      { name: "Street Network Central Sector", file: "Transportation/Streets_Center.pmtiles", geojson: "Transportation/Streets_Center.geojson", geom: "line" },
+      { name: "Street Network North Sector", file: "Transportation/Streets_North.pmtiles", geojson: "Transportation/Streets_North.geojson", geom: "line" },
+      { name: "Street Network South Sector", file: "Transportation/Streets_South.pmtiles", geojson: "Transportation/Streets_South.geojson", geom: "line" },
+      { name: "Street Network West Sector", file: "Transportation/Streets_West.pmtiles", geojson: "Transportation/Streets_West.geojson", geom: "line" },
+      { name: "Street Network Piraeus", file: "Transportation/Streets_Piraeus.pmtiles", geojson: "Transportation/Streets_Piraeus.geojson", geom: "line" }
     ],
     "Road Transport": [
-      { name: "AI Traffic Cameras", file: "Transportation/AICameras.json" },
-      { name: "OASA Bus Lanes", file: "Transportation/Bus_Lanes.geojson" },
-      { name: "OASA Bus Routes", file: "Transportation/bus_lines.pmtiles", geojson: "Transportation/bus_lines.geojson" },
-      { name: "OASA Bus Stops", file: "Transportation/AthensBusStops.pmtiles", geojson: "Transportation/AthensBusStops.geojson" },
-      { name: "Toll Stations", file: "Transportation/TollStations.geojson" },
-      { name: "Traffic Accidents 2023-2025", file: "Transportation/TrAccidents.pmtiles", geojson: "Transportation/TrAccidents.json" },
-      { name: "Traffic Lights", file: "Transportation/TrLights.geojson" }
+      { name: "AI Traffic Cameras", file: "Transportation/AICameras.json", geom: "point" },
+      { name: "OASA Bus Lanes", file: "Transportation/Bus_Lanes.geojson", geom: "line" },
+      { name: "OASA Bus Routes", file: "Transportation/bus_lines.pmtiles", geojson: "Transportation/bus_lines.geojson", geom: "line" },
+      { name: "OASA Bus Stops", file: "Transportation/AthensBusStops.pmtiles", geojson: "Transportation/AthensBusStops.geojson", geom: "point" },
+      { name: "Toll Stations", file: "Transportation/TollStations.geojson", geom: "point" },
+      { name: "Traffic Accidents 2023-2025", file: "Transportation/TrAccidents.pmtiles", geojson: "Transportation/TrAccidents.json", geom: "point" },
+      { name: "Traffic Lights", file: "Transportation/TrLights.geojson", geom: "point" }
     ],
     "Rail Transport": [
-      { name: "Metro Stations of Lines 1, 2 and 3", file: "Transportation/AthensMetro123.geojson" },
-      { name: "Metro Stations of Line 4", file: "Transportation/AthensMetro4.geojson" },
-      { name: "Metro Lines 1, 2 and 3", file: "Transportation/AthensMetroNet.geojson" },
-      { name: "Extended Metro Lines network", file: "Transportation/AthensMetroExtended.json" },
-      { name: "Metro Boarding Platforms of Line 1", file: "Transportation/MetroPlatforms.geojson" },
-      { name: "Railway Network (Greece)", file: "Transportation/GreeceRail.pmtiles", geojson: "Transportation/GreeceRail.geojson" },
-      { name: "Suburban Railway Stations", file: "Transportation/AthensTrain.geojson" },
-      { name: "Tram Stations", file: "Transportation/TramStations.json" },
-      { name: "Tram Lines", file: "Transportation/TramLines.geojson" },
-      { name: "Tram Boarding Platforms", file: "Transportation/TramPlatforms.geojson" }
+      { name: "Metro Stations of Lines 1, 2 and 3", file: "Transportation/AthensMetro123.geojson", geom: "point" },
+      { name: "Metro Stations of Line 4", file: "Transportation/AthensMetro4.geojson", geom: "point" },
+      { name: "Metro Lines 1, 2 and 3", file: "Transportation/AthensMetroNet.geojson", geom: "line" },
+      { name: "Extended Metro Lines network", file: "Transportation/AthensMetroExtended.json", geom: "line" },
+      { name: "Metro Boarding Platforms of Line 1", file: "Transportation/MetroPlatforms.geojson", geom: "line" },
+      { name: "Railway Network (Greece)", file: "Transportation/GreeceRail.pmtiles", geojson: "Transportation/GreeceRail.geojson", geom: "line" },
+      { name: "Suburban Railway Stations", file: "Transportation/AthensTrain.geojson", geom: "point" },
+      { name: "Tram Stations", file: "Transportation/TramStations.json", geom: "point" },
+      { name: "Tram Lines", file: "Transportation/TramLines.geojson", geom: "line" },
+      { name: "Tram Boarding Platforms", file: "Transportation/TramPlatforms.geojson", geom: "polygon" }
     ]
   }
 };
@@ -472,6 +475,39 @@ function getLegendClassForValue(legendConfig, value){
 
 var DEFAULT_LAYER_FILL_COLOR = '#8392AA';
 var DEFAULT_LAYER_BORDER_COLOR = '#55647C';
+
+// Symbol shown before each layer's name in the panel: circle = points, line = lines,
+// polygon = polygons, square with a cross (a tile) = rasters. Outline only - the fill is
+// transparent - drawn in the default border color features fall back to on the map. An
+// unknown/missing geometry gets an empty slot of the same width, so names stay aligned.
+var LAYER_GEOM_LABELS = { point: 'Point layer', line: 'Line layer', polygon: 'Polygon layer', raster: 'Raster layer' };
+function layerGeomOf(info){
+  return info && (info.type === 'raster' ? 'raster' : info.geom);
+}
+function buildLayerGeomIcon(geom){
+  var border = DEFAULT_LAYER_BORDER_COLOR;
+  var shapes = {
+    point: '<circle cx="8" cy="9" r="4" fill="none" stroke="' + border + '" stroke-width="1.6"/>',
+    line: '<path d="M2 12.5 C5 3.5 9.5 13 14 3.5" fill="none" stroke="' + border + '" stroke-width="2" stroke-linecap="round"/>',
+    polygon: '<polygon points="3,5 9,2.5 14,6 12.5,13 5,13.5" fill="none" stroke="' + border + '" stroke-width="1.6" stroke-linejoin="round"/>',
+    raster: '<rect x="2" y="2" width="12" height="12" rx="1.5" fill="none" stroke="' + border + '" stroke-width="1.6"/>' +
+            '<path d="M8 2v12M2 8h12" fill="none" stroke="' + border + '" stroke-width="1.6"/>'
+  };
+  var icon = document.createElement('span');
+  icon.className = 'layer-geom-icon';
+  if(shapes[geom]){
+    icon.title = LAYER_GEOM_LABELS[geom];
+    icon.innerHTML = '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">' + shapes[geom] + '</svg>';
+  }
+  return icon;
+}
+// Fills a layer row's <label>: the geometry symbol, then the name as a plain text node
+// (so label.textContent is still exactly the layer name).
+function setLayerLabel(label, name, geom){
+  label.appendChild(buildLayerGeomIcon(geom));
+  label.appendChild(document.createTextNode(name));
+}
+
 var LAYER_COLOR_SWATCHES = [
   { name: 'Red', hex: '#E53935' },
   { name: 'Orange', hex: '#FB8C00' },
@@ -574,6 +610,9 @@ function buildPropertyTable(feature){
   };
   for(var key in feature.properties){
     if(!Object.prototype.hasOwnProperty.call(feature.properties,key)) continue;
+    // Internal tag added to point features so the shared cluster pass can find its way
+    // back to the owning layer (see createLayerFromGeoJSON) - not a real attribute.
+    if(key === '__sourceLayer') continue;
     var v = feature.properties[key];
     var k = String(key || '').toLowerCase();
     var d = key;
@@ -1769,7 +1808,7 @@ function renderLayerControl(){
     var row=document.createElement('div'); row.className='layer-item'; row.title='Activate layer';
     var cb=document.createElement('input'); cb.type='checkbox'; cb.id=id;
     cb.dataset.layername='Terrain'; cb.dataset.filename=TERRAIN_PMTILES;
-    var label=document.createElement('label'); label.htmlFor=id; label.textContent='Terrain';
+    var label=document.createElement('label'); label.htmlFor=id; setLayerLabel(label, 'Terrain', 'line'); // contour lines
     row.appendChild(cb); row.appendChild(label);
     commonWrap.appendChild(row);
     row.addEventListener('click', function(e){
@@ -1878,7 +1917,7 @@ function renderLayerControl(){
     var row=document.createElement('div'); row.className='layer-item'; row.title='Activate layer';
     var cb=document.createElement('input'); cb.type='checkbox'; cb.id=id;
     cb.dataset.layername='Shaded Relief'; cb.dataset.filename=SHADED_RELIEF_PMTILES;
-    var label=document.createElement('label'); label.htmlFor=id; label.textContent='Shaded Relief';
+    var label=document.createElement('label'); label.htmlFor=id; setLayerLabel(label, 'Shaded Relief', 'raster');
     row.appendChild(cb); row.appendChild(label);
     commonWrap.appendChild(row); // appended after the Terrain row => sits below it
     row.addEventListener('click', function(e){
@@ -2115,7 +2154,7 @@ function renderLayerControl(){
     var hasLegend = !!((window.legendConfigs||{})[info.name]);
     var row=document.createElement('div'); row.className='layer-item'; row.title='Activate layer';
     var cb=document.createElement('input'); cb.type='checkbox'; cb.id=id; cb.dataset.layername=info.name; if(info.file) cb.dataset.filename=info.file;
-    var label=document.createElement('label'); label.htmlFor=id; label.textContent=info.name;
+    var label=document.createElement('label'); label.htmlFor=id; setLayerLabel(label, info.name, layerGeomOf(info));
     var actions = null;
     var dl=document.createElement('a'); dl.href='#'; dl.innerHTML='DOWNLOAD'; dl.className='download-button'; dl.style.display='none'; dl.title='Download the selected layer as ZIP';
     dl.addEventListener('click', function(e){

@@ -647,12 +647,75 @@
       .back-to-top, .toc a, .toc::before { transition: none; }
     }
 
+    /* ── Cookie consent ─────────────────────────────────────────────────────
+       Same box, text and behaviour as the map (markup + JS/cookies.js, one shared consent
+       record in localStorage); here it sits bottom centre instead of under the map header. */
+    #cookie-consent-box {
+      position: fixed;
+      left: 50%;
+      bottom: 20px;
+      transform: translateX(-50%);
+      width: 400px;
+      max-width: calc(100vw - 28px);
+      z-index: 3001;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 6px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.92);
+      -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(171, 199, 222, 0.45);
+      font-size: 12px;
+      line-height: 1.3;
+      letter-spacing: 0.3px;
+      color: rgba(17, 24, 39, 1);
+    }
+    #cookie-consent-box[hidden] { display: none !important; }
+    #cookie-consent-text { margin: 0; }
+    #cookie-consent-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+    #cookie-accept-btn,
+    #cookie-reject-btn {
+      border-radius: 8px;
+      border: 1px solid rgba(171, 199, 222, 0.8);
+      background: white;
+      color: rgba(17, 24, 39, 1);
+      padding: 4px 8px;
+      font: inherit;
+      font-size: 11px;
+      letter-spacing: inherit;
+      cursor: pointer;
+      transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+    }
+    #cookie-accept-btn:hover,
+    #cookie-reject-btn:hover { border-color: rgba(55, 65, 81, 0.85); }
+    #cookie-accept-btn {
+      background: rgba(55, 65, 81, 0.9);
+      color: white;
+      border-color: transparent;
+    }
+    #cookie-accept-btn:hover {
+      background: rgba(31, 41, 55, 0.95);
+      border-color: transparent;
+    }
+
     /* ── Tablet / phone ─────────────────────────────────────────────────── */
     @media (max-width: 900px) {
       .page {
         display: block;
         padding: 24px 16px 48px;
       }
+      /* Cookie box: larger, touch-sized text and buttons. Sits above the floating buttons
+         until the visitor chooses. */
+      #cookie-consent-box { width: 460px; gap: 10px; padding: 12px 14px; font-size: 16px; line-height: 1.4; }
+      #cookie-accept-btn, #cookie-reject-btn { font-size: 16px; padding: 8px 16px; }
       /* Menu: no sidebar here. The bar of the four main entries sits under the title at the top of the page
          (the same look as the wide-screen bar before it docks) and, as the page scrolls, floats below the
          header as a separate rounded bar (the script adds .is-floating). Sub-entries are not shown.
@@ -796,6 +859,7 @@
       .header-btn { right: 14px; bottom: 14px; }
       .back-to-top { right: 14px; bottom: 70px; }
       :root { --title-big: clamp(18px, 6.6vw, 26px); --title-docked: 12px; --title-pad: 16px; }
+      #cookie-consent-box { bottom: 14px; }
     }
     @media (max-width: 360px) {
       /* keep the docked title clear of the logo on the smallest phones */
@@ -803,7 +867,7 @@
     }
 
     @media print {
-      .site-header, .toc, .skip-link, .back-to-top, .nav-band { display: none !important; }
+      .site-header, .toc, .skip-link, .back-to-top, .nav-band, #cookie-consent-box { display: none !important; }
       .title-band { display: none; }
       .site-title { position: static !important; margin: 0 0 12px; }
       .site-title-inner { transform: none !important; color: var(--ink); }
@@ -1351,6 +1415,20 @@
 <button type="button" class="back-to-top" id="back-to-top" title="Back to top" aria-label="Back to top">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="5 15 12 8 19 15"/></svg>
 </button>
+
+<div id="cookie-consent-box" role="dialog" aria-live="polite" aria-label="Cookie preferences" hidden>
+  <p id="cookie-consent-text">
+    This website uses analytics tools (Google Analytics &amp; PostHog) to improve user experience.
+    You can accept or reject non-essential cookies.
+  </p>
+  <div id="cookie-consent-actions">
+    <button id="cookie-accept-btn" type="button">Accept</button>
+    <button id="cookie-reject-btn" type="button">Reject</button>
+  </div>
+</div>
+
+<!-- Consent + analytics loader, shared with the map (index.html): one choice, stored once. -->
+<script src="JS/cookies.js?v=20261007-1" defer></script>
 
 <script>
   // Docking page title + side-menu scroll-spy + back-to-top button. No dependencies.

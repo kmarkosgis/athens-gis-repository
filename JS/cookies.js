@@ -186,5 +186,15 @@
       writeConsent("rejected");
       box.hidden = true;
     });
+
+    // The map and the About page share this record. If the choice is made in another tab
+    // (the map opens About in a new tab), follow it here: hide the box and, on accept, start analytics.
+    window.addEventListener("storage", function (e) {
+      if (e.key !== STORAGE_KEY) return;
+      var changed = readStoredConsent();
+      if (!changed || shouldReprompt(changed)) return;
+      if (changed.status === "accepted") loadAnalytics();
+      box.hidden = true;
+    });
   });
 })();

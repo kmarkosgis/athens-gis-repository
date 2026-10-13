@@ -47,6 +47,7 @@ var layerCategories = {
       { name: "Natura 2000 sites", file: "Environment/Natura.pmtiles", geojson: "Environment/Natura.geojson", geom: "polygon" },
     ],
     "Vegetation": [ 
+      {"name": "Dominant Leaf Type (2024)", file: "Environment/leaf_type.tif", type: "raster"},
       { name: "Vegetation Index (Center Sector)", file: "Environment/AthensGreenCenter.pmtiles", geojson: "Environment/AthensGreenCenter.geojson", geom: "polygon" },
       { name: "Vegetation Index (North Sector)", file: "Environment/AthensGreenNorth.pmtiles", geojson: "Environment/AthensGreenNorth.geojson", geom: "polygon" },
       { name: "Vegetation Index (South Sector)", file: "Environment/AthensGreenSouth.pmtiles", geojson: "Environment/AthensGreenSouth.geojson", geom: "polygon" },
@@ -113,6 +114,7 @@ var layerCategories = {
       { name: "Land Cover and Land Use (2021)", file: "UrbanPlanning/Land_Cover_2021.pmtiles", geojson: "UrbanPlanning/Land_Cover_2021.json", geom: "polygon" },
       { name: "Land Cover and Land Use (2018)", file: "UrbanPlanning/AthensCorine2018.pmtiles", geojson: "UrbanPlanning/AthensCorine2018.json", geom: "polygon" },
       { name: "Municipality of Athens Urban Plan (2012)", file: "UrbanPlanning/Athens Urban Plan 2012.pmtiles", geojson: "UrbanPlanning/Athens Urban Plan 2012.geojson", geom: "polygon" },
+      { name: "Street Trees (2021)", file: "UrbanPlanning/street_trees.tif", type: "raster" },
       { name: "Tree Cover Density (2024)", file: "UrbanPlanning/tree_density.tif", type: "raster" }
     ],
     "Public Spaces": [
@@ -1151,6 +1153,11 @@ function geojsonOptions(layerName, legendConfig){
     style: function(feature){
       var baseWeight =1;
       var fillOpacity = (AthensGIS.layerOpacities && AthensGIS.layerOpacities[layerName] !== undefined) ? AthensGIS.layerOpacities[layerName] : 1;
+      // The opacity slider only fades the fill; polygon/point outlines stay fully opaque.
+      // Lines have no fill, so for them the slider drives the stroke itself (otherwise
+      // it would do nothing on a line layer).
+      var kind = feature && feature.geometry && feature.geometry.type;
+      var strokeOpacity = (kind === 'LineString' || kind === 'MultiLineString') ? fillOpacity : 1;
       var layerColors = (!legendConfig) ? getLayerColorState(layerName) : null;
       // Special styling for Terrain: scale-aware contour visibility
       if(layerName==='Terrain'){
@@ -1207,23 +1214,23 @@ function geojsonOptions(layerName, legendConfig){
           }
 
           // Non-line geometries (polygons, points): render normally
-          var terrainStyle = { weight: baseWeight, opacity: fillOpacity, fillOpacity: fillOpacity };
+          var terrainStyle = { weight: baseWeight, opacity: strokeOpacity, fillOpacity: fillOpacity };
           if(contourColor){ terrainStyle.color = contourColor; terrainStyle.fillColor = contourColor; }
           return terrainStyle;
         }catch(e){
-          return { weight: baseWeight, opacity: fillOpacity, fillOpacity: fillOpacity };
+          return { weight: baseWeight, opacity: strokeOpacity, fillOpacity: fillOpacity };
         }
       }
       if(legendConfig && feature.properties && legendConfig.field in feature.properties){
         var cv = feature.properties[legendConfig.field];
         var cs = getLegendClassForValue(legendConfig, cv);
-        if(cs) return { color: cs.color, weight: baseWeight, fillColor: cs.color, opacity: fillOpacity, fillOpacity: fillOpacity };
+        if(cs) return { color: cs.color, weight: baseWeight, fillColor: cs.color, opacity: strokeOpacity, fillOpacity: fillOpacity };
       }
       return {
         color: (layerColors && layerColors.border) || DEFAULT_LAYER_BORDER_COLOR,
         weight: baseWeight,
         fillColor: (layerColors && layerColors.fill) || DEFAULT_LAYER_FILL_COLOR,
-        opacity: fillOpacity,
+        opacity: strokeOpacity,
         fillOpacity: fillOpacity
       };
     },
@@ -1244,7 +1251,7 @@ function geojsonOptions(layerName, legendConfig){
         }
       }
       var lyrOpacity = (AthensGIS.layerOpacities && AthensGIS.layerOpacities[layerName] !== undefined) ? AthensGIS.layerOpacities[layerName] : 1;
-      return L.circleMarker(latlng,{ radius: radius, fillColor: fillColor, color: color, weight:1, opacity:lyrOpacity, fillOpacity:lyrOpacity });
+      return L.circleMarker(latlng,{ radius: radius, fillColor: fillColor, color: color, weight:1, opacity:1, fillOpacity:lyrOpacity });
     },
     onEachFeature: function(feature, layer){
       if(!_infoBox) _infoBox = document.getElementById('infoBox');
@@ -1252,7 +1259,6 @@ function geojsonOptions(layerName, legendConfig){
       var infoParent = _infoBox;
       var infoContent = _infoContent;
       var isCluster = !!(feature.properties && feature.properties.__cluster);
-      var html = (!isCluster && layerName !== 'Terrain') ? buildPropertyTable(feature) : null;
       layer.on('click', function(e){
         L.DomEvent.stopPropagation(e);
         // A cluster bubble isn't a real feature (see clusterPointFeatures()) - it
@@ -1267,7 +1273,8 @@ function geojsonOptions(layerName, legendConfig){
         var lc = (window.legendConfigs||{})[layerName];
         if(!lc && layerName==='Terrain') lc = (window.legendConfigs||{}).Terrain;
         var lyrHighlightOpacity = (AthensGIS.layerOpacities && AthensGIS.layerOpacities[layerName] !== undefined) ? AthensGIS.layerOpacities[layerName] : 1;
-        var highlight = { weight: 2, opacity: lyrHighlightOpacity, fillOpacity: lyrHighlightOpacity };
+        var hlKind = feature.geometry && feature.geometry.type;
+        var highlight = { weight: 2, opacity: (hlKind === 'LineString' || hlKind === 'MultiLineString') ? lyrHighlightOpacity : 1, fillOpacity: lyrHighlightOpacity };
         if(lc && feature.properties){
           var cv2 = (lc.field && lc.field in feature.properties) ? feature.properties[lc.field] : undefined;
           if((typeof cv2 === 'undefined' || cv2 === null || cv2 === '') && layerName==='Terrain'){
@@ -1306,6 +1313,10 @@ function geojsonOptions(layerName, legendConfig){
             : e.target.feature;
           applyHighlightOverlay(getMap(), highlightInput, highlight);
         }
+        // Built here, on click, rather than once per feature in onEachFeature: that ran
+        // for every feature on every load and every pan/zoom re-render, and left one
+        // HTML string per feature alive in this closure for as long as it was on the map.
+        var html = (layerName !== 'Terrain') ? buildPropertyTable(feature) : null;
         if(html && infoContent){
           infoContent.innerHTML = html;
           if(infoParent) infoParent.style.display = 'block';
@@ -2352,6 +2363,12 @@ function renderLayerControl(){
           if(AthensGIS._viewportLayers) delete AthensGIS._viewportLayers[file];
           if(AthensGIS.rasterLayers) delete AthensGIS.rasterLayers[file];
         }
+        // Release the parsed feature array + per-feature bboxes indexLayerData() built on
+        // load. Nothing reads them while the layer is off, and re-enabling always
+        // re-fetches and re-indexes (see the checked branch above), so keeping them only
+        // pins the whole dataset in memory - large layers stay resident for the rest of
+        // the session and slow every later GC pass.
+        if(file && AthensGIS._layerCache) delete AthensGIS._layerCache[file];
         // Drop this layer's points from the shared cross-layer cluster pool and
         // recompute immediately, so any bubble it was merged into shrinks back down
         // (or un-merges entirely) right away instead of waiting for the next pan/zoom.

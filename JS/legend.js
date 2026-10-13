@@ -305,6 +305,12 @@ window.legendConfigs = {
         "60+": { color: "#4D0013", label: "60+ m" }
       }
     },
+    "Street Trees (2021)": {
+      title: "Street Trees (2021)",
+      classes: {
+        "1": { color: "#85e685", label: "Street trees" } //light green
+      }
+    },
     "Tree Cover Density (2024)": {
       title: "Tree Cover Density (2024)",
       classes: {

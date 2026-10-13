@@ -4,11 +4,11 @@
 
   // Add new announcements at the top. Newest entry first.
   var ANNOUNCEMENTS = [
+    { date: '14/10/2026', text: 'Dominant leaf type and Street Trees added (Environment - Vegetation & Urban Planning - Land Cover).' },
     { date: '30/09/2026', text: '2021 Population Census Density added (Population and social conditions).' },
     { date: '16/09/2026', text: 'AI assistant "Athena" added. Shaded Relief layer added. Major performance improvements.' },
     { date: '09/09/2026', text: 'Charging stations added (Points of Interest - Commerce).' },
-    { date: '02/09/2026', text: 'Tree cover density data added (Urban Planning - Land Cover).' },
-    
+        
   ];
 
   function buildContent(box) {

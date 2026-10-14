@@ -198,23 +198,6 @@ function encodePathSegments(path){
     .join('/');
 }
 
-function normalizeAssetBase(base){
-  var raw = String(base || '').trim();
-  if(!raw) return '';
-  raw = raw.replace(/\\/g, '/');
-  // Convert same-host absolute URLs to path-only form.
-  try{
-    var parsed = new URL(raw, window.location.href);
-    if(parsed.origin === window.location.origin){
-      raw = parsed.pathname;
-    }
-  }catch(e){}
-  // Force relative paths so GitHub project pages keep the repo prefix.
-  raw = raw.replace(/^\/+/, '');
-  raw = raw.replace(/\/+$/, '');
-  return raw;
-}
-
 function normalizeRootUrl(input){
   try{
     var parsed = new URL(String(input || ''), window.location.href);
@@ -250,11 +233,7 @@ function getSiteRootUrl(){
   return './';
 }
 
-function getAssetBaseCandidates(kind){
-  return [kind === 'data' ? FIXED_ASSET_ROOTS.data : FIXED_ASSET_ROOTS.info];
-}
-
-function buildAssetUrl(kind, relativePath, base){
+function buildAssetUrl(kind, relativePath){
   var root = kind === 'data' ? FIXED_ASSET_ROOTS.data : FIXED_ASSET_ROOTS.info;
   var r2Base = window.CONFIG && window.CONFIG.R2_BASE_URL ? String(window.CONFIG.R2_BASE_URL).replace(/\/+$/, '') : null;
   if(r2Base){
@@ -266,27 +245,24 @@ function buildAssetUrl(kind, relativePath, base){
   return url.toString();
 }
 
+// Name kept from when this tried several base URLs in turn; there is now exactly one.
 function fetchAssetWithFallback(kind, relativePath, parser, signal){
-  var bases = getAssetBaseCandidates(kind);
-  var attempts = [];
-  function tryBase(index){
-    if(index >= bases.length){
-      return Promise.reject(new Error('Failed to load "' + relativePath + '" from ' + attempts.join(' | ')));
+  var url = buildAssetUrl(kind, relativePath);
+  // 'no-cache' = always revalidate with the server (conditional request on the ETag), then
+  // reuse the stored copy on a 304. The R2 objects carry no Cache-Control, so with the
+  // default mode the browser reuses a stored copy for ~10% of the file's age (days to
+  // weeks) and a layer re-uploaded under the same name keeps showing the old one.
+  var opts = { cache: 'no-cache' };
+  if(signal) opts.signal = signal;
+  return fetch(url, opts).then(function(resp){
+    if(!resp.ok){
+      throw new Error(resp.status + ' ' + resp.statusText + ' @ ' + url);
     }
-    var url = buildAssetUrl(kind, relativePath, bases[index]);
-    var opts = signal ? { signal: signal } : undefined;
-    return fetch(url, opts).then(function(resp){
-      if(!resp.ok){
-        throw new Error(resp.status + ' ' + resp.statusText + ' @ ' + url);
-      }
-      return parser(resp);
-    }).catch(function(err){
-      if(err && err.name === 'AbortError') return Promise.reject(err);
-      attempts.push((err && err.message) ? err.message : String(err));
-      return tryBase(index + 1);
-    });
-  }
-  return tryBase(0);
+    return parser(resp);
+  }).catch(function(err){
+    if(err && err.name === 'AbortError') throw err;
+    throw new Error('Failed to load "' + relativePath + '" from ' + ((err && err.message) ? err.message : String(err)));
+  });
 }
 
 function loadLayerData(relativePath, signal){
@@ -599,6 +575,12 @@ function resetLayerColorState(layerName){
 }
 
 // 3. Helper to build property table
+function escHtml(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
 function buildPropertyTable(feature){
   if(!feature || !feature.properties) return '';
   var rows='';
@@ -669,7 +651,9 @@ function buildPropertyTable(feature){
     else if(k==='leisure') d='Public space type';
     else if(k==='period') d='Return Period (years)';
     else if(k==='twentyfourseven') d='24/7 Access';
-    rows += '<tr><th>'+d+'</th><td>'+v+'</td></tr>';
+    // Escaped: values come from the datasets (many OSM-derived, i.e. publicly editable)
+    // and this table is injected with innerHTML.
+    rows += '<tr><th>'+escHtml(d)+'</th><td>'+escHtml(v)+'</td></tr>';
   }
   return '<table class="feature-properties-table">'+rows+'</table>';
 }
@@ -815,11 +799,14 @@ function applyHighlightOverlay(map, geojsonFeature, highlightStyle){
     _highlightRenderer = L.svg({ pane: 'highlight-pane' });
   }
   var s = highlightStyle || {};
+  // != null rather than ||: a layer at 0% opacity passes 0, which || would turn into 1.
+  var hlOpacity = (s.opacity != null) ? s.opacity : 1;
+  var hlFillOpacity = (s.fillOpacity != null) ? s.fillOpacity : 1;
   _highlightOverlayLayer = L.geoJSON(geojsonFeature, {
     renderer: _highlightRenderer,
-    style: function(){ return { color: s.color||'#333', weight: s.weight||2, fillColor: s.fillColor||s.color||'#333', opacity: s.opacity||1, fillOpacity: s.fillOpacity||1 }; },
-    pointToLayer: function(f, latlng){
-      return L.circleMarker(latlng, { renderer: _highlightRenderer, radius: s.radius||6, color: s.color||'#333', weight: s.weight||2, fillColor: s.fillColor||s.color||'#333', opacity: s.opacity||1, fillOpacity: s.fillOpacity||1 });
+    style: function(){ return { color: s.color||'#333', weight: s.weight||2, fillColor: s.fillColor||s.color||'#333', opacity: hlOpacity, fillOpacity: hlFillOpacity }; },
+    pointToLayer: function(_f, latlng){
+      return L.circleMarker(latlng, { renderer: _highlightRenderer, radius: s.radius||6, color: s.color||'#333', weight: s.weight||2, fillColor: s.fillColor||s.color||'#333', opacity: hlOpacity, fillOpacity: hlFillOpacity });
     }
   }).addTo(map);
   _highlightOverlayLayer.eachLayer(function(l){
@@ -907,6 +894,15 @@ function createRasterLayer(georaster, layerName, legendConfig){
       return (cs && cs.color) || DEFAULT_LAYER_FILL_COLOR;
     }
   });
+  // georaster-layer-for-leaflet declares its rendered-tile cache (`cache: {}`) on the
+  // class prototype, so every GeoRasterLayer instance shares ONE object, keyed only by
+  // "x:y:z:resolution" - nothing in the key says which raster a tile belongs to. A second
+  // raster opened after the first was closed (or alongside it) was therefore handed the
+  // first raster's already-drawn tiles for every tile coordinate the first one had
+  // visited, and only drew its own for new ones. clearCache() assigns `this.cache = {}`,
+  // which gives this instance its own cache (shadowing the shared one), so tiles are still
+  // cached within a layer but never leak between layers.
+  if(typeof layer.clearCache === 'function') layer.clearCache();
   layer.addTo(map);
   return layer;
 }
@@ -967,10 +963,8 @@ function handleRasterClickIfAny(e){
     var classStyle = entry.legendConfig ? getLegendClassForValue(entry.legendConfig, pixel.value) : null;
     var color = (classStyle && classStyle.color) || DEFAULT_LAYER_BORDER_COLOR;
     applyHighlightOverlay(getMap(), cellFeature, { color: color, weight: 2, fillColor: color, opacity: 1, fillOpacity: 0.35 });
-    AthensGIS._rasterClickActive = true;
     return true;
   }
-  AthensGIS._rasterClickActive = false;
   return false;
 }
 // ── End raster layer support ───────────────────────────────────────────────────
@@ -1844,10 +1838,13 @@ function renderLayerControl(){
           window.updateLegendBar(layerName);
         }
         var terrainUrl = buildAssetUrl('data', TERRAIN_PMTILES);
-        AthensGIS.pmtiles.getFeaturesForBounds(terrainUrl, getMap().getBounds(), getMap().getZoom())
+        var _reqBoundsT = getMap().getBounds(), _reqZoomT = getMap().getZoom();
+        AthensGIS.pmtiles.getFeaturesForBounds(terrainUrl, _reqBoundsT, _reqZoomT)
           .then(function(fc){
             stopTerrainSpinner();
-            if(!cb.checked) return;
+            // Same stale-load guard as the pmtiles branch in createLayerRow(): after a quick
+            // uncheck + re-check, only the latest check's request may build the layer.
+            if(!cb.checked || row._abortController !== _terrainAbortCtrl) return;
             var lc=(window.legendConfigs||{})[layerName];
             if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName);
             var lyr=createLayerFromGeoJSON(fc || {type:'FeatureCollection',features:[]}, layerName, lc);
@@ -1865,14 +1862,17 @@ function renderLayerControl(){
                 AthensGIS.pmtiles.getFeaturesForBounds(terrainUrl, getMap().getBounds(), getMap().getZoom()).then(function(freshFc){
                   if(!freshFc || !cb.checked) return; // null = superseded by a newer pan/zoom
                   _applyTerrainViewport(freshFc);
-                });
+                }).catch(function(err){ console.warn('Tile refresh failed for Terrain:', err); });
               }, 150);
             };
             AthensGIS._viewportLayers[TERRAIN_PMTILES] = lyr;
             setupViewportUpdateHandler();
+            // Same as the pmtiles branch in createLayerRow(): re-sync if the view moved while loading.
+            if(getMap().getZoom() !== _reqZoomT || !_reqBoundsT.equals(getMap().getBounds())) lyr.updateViewportData();
           }).catch(function(err){
             stopTerrainSpinner();
             if(err && err.name==='AbortError') return;
+            if(!cb.checked || row._abortController !== _terrainAbortCtrl) return;
             console.error('Failed to load Terrain layer data:', err);
             AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>';
             ensureInfoBoxUpdate();
@@ -1973,12 +1973,15 @@ function renderLayerControl(){
         AthensGIS.pmtiles.getRasterLayer(hillshadeUrl, { pane:'hillshade-pane', opacity:hsOpacity, attribution:'', transparentRGB:[170,211,223], transparentTolerance:10 })
           .then(function(lyr){
             stopHsSpinner();
-            if(!cb.checked){ return; }
+            // Stale-load guard (see the Terrain row): a superseded request must not add a
+            // second raster that uncheck can't remove.
+            if(!cb.checked || row._abortController !== _hsAbortCtrl){ return; }
             lyr.addTo(getMap());
             AthensGIS.geojsonLayers[SHADED_RELIEF_PMTILES]=lyr;
           }).catch(function(err){
             stopHsSpinner();
             if(err && err.name==='AbortError') return;
+            if(!cb.checked || row._abortController !== _hsAbortCtrl) return;
             console.error('Failed to load Shaded Relief layer data:', err);
             AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>';
             ensureInfoBoxUpdate();
@@ -2271,8 +2274,9 @@ function renderLayerControl(){
         }
         if(info.type==='raster'){
           Promise.all([
-            loadExternalScript('https://unpkg.com/georaster'),
-            loadExternalScript('https://unpkg.com/georaster-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js')
+            // Pinned: createRasterLayer()'s clearCache() fix depends on 4.1.2's internals.
+            loadExternalScript('https://unpkg.com/georaster@1.6.0'),
+            loadExternalScript('https://unpkg.com/georaster-layer-for-leaflet@4.1.2/dist/georaster-layer-for-leaflet.min.js')
           ]).then(function(){
             return loadRasterData(file, _signal);
           }).then(function(georaster){
@@ -2300,9 +2304,14 @@ function renderLayerControl(){
           var fileUrl3 = buildAssetUrl('data', file);
           AthensGIS.pmtilesDownloadSource = AthensGIS.pmtilesDownloadSource || {};
           AthensGIS.pmtilesDownloadSource[file] = geojsonPath3;
-          AthensGIS.pmtiles.getFeaturesForBounds(fileUrl3, getMap().getBounds(), getMap().getZoom()).then(function(fc){
+          var _reqBounds3 = getMap().getBounds(), _reqZoom3 = getMap().getZoom();
+          AthensGIS.pmtiles.getFeaturesForBounds(fileUrl3, _reqBounds3, _reqZoom3).then(function(fc){
             stopRowSpinner();
-            if(!cb.checked) return;
+            // This branch isn't tied to the abort signal, so cb.checked alone can't tell a
+            // stale load apart: after a quick uncheck + re-check the box is checked again,
+            // and the first request would build a second layer that uncheck can never
+            // remove. Each check gets its own controller, so compare against that.
+            if(!cb.checked || row._abortController !== _abortCtrl) return;
             var lc3=(window.legendConfigs||{})[layerName];
             if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName);
             var lyr3=createLayerFromGeoJSON(fc || {type:'FeatureCollection',features:[]}, layerName, lc3);
@@ -2322,13 +2331,17 @@ function renderLayerControl(){
                 AthensGIS.pmtiles.getFeaturesForBounds(fileUrl3, getMap().getBounds(), getMap().getZoom()).then(function(freshFc){
                   if(!freshFc || !cb.checked) return; // null = superseded by a newer pan/zoom
                   _applyViewport3(freshFc);
-                });
+                }).catch(function(err){ console.warn('Tile refresh failed for "' + layerName + '":', err); });
               }, 150);
             };
             AthensGIS._viewportLayers[file] = lyr3;
             setupViewportUpdateHandler();
+            // The first fetch can take seconds (cold archive); if the user panned/zoomed
+            // meanwhile, this layer was just built for a view that's no longer on screen and
+            // nothing would refresh it until the next pan - leaving features missing.
+            if(getMap().getZoom() !== _reqZoom3 || !_reqBounds3.equals(getMap().getBounds())) lyr3.updateViewportData();
             if(window.LayerFilter) window.LayerFilter.onLayerLoaded(layerName, file, null, geojsonPath3);
-          }).catch(function(err){ stopRowSpinner(); console.error('Failed to load tiled layer data for "' + layerName + '":', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>'; ensureInfoBoxUpdate(); });
+          }).catch(function(err){ stopRowSpinner(); if(!cb.checked || row._abortController !== _abortCtrl) return; console.error('Failed to load tiled layer data for "' + layerName + '":', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>'; ensureInfoBoxUpdate(); });
           var txt3=file.replace(/\.[^/.]+$/, '')+'.txt'; loadLayerInfo(txt3, _signal).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(err){ if(err && err.name==='AbortError') return; AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
         } else if(file){
           loadLayerData(file, _signal).then(function(data){

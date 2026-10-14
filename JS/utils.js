@@ -69,9 +69,13 @@
 			var op  = getLayerOpacity(layerName);
 			var pct = Math.round(op * 100);
 			var safeId = layerName.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
-			var safeAttr = layerName.replace(/"/g, '&quot;');
+			// Full HTML escape - safe both as attribute value and as text, and the browser
+			// decodes it back, so this.dataset.layer below still yields the real name.
+			var safeAttr = String(layerName).replace(/[&<>"']/g, function (c) {
+				return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+			});
 			html += '<li class="opacity-layer-item">';
-			html += '<span class="opacity-layer-name" title="' + safeAttr + '">' + layerName + '</span>';
+			html += '<span class="opacity-layer-name" title="' + safeAttr + '">' + safeAttr + '</span>';
 			html += '<input type="range" class="opacity-layer-slider" id="osl-' + safeId + '" data-layer="' + safeAttr + '" min="0" max="100" step="5" value="' + pct + '">';
 			html += '<span class="opacity-layer-value" id="osv-' + safeId + '">' + pct + '%</span>';
 			html += '</li>';
@@ -116,33 +120,4 @@
 	} else {
 		initOpacityButton();
 	}
-})();
-
-// Remove highlight from selected feature and hide info box on map click
-(function bindClearSelectionOnMapClick() {
-	var ag     = window.AthensGIS || (window.AthensGIS = {});
-	var mapRef = ag.map || (typeof window.map !== 'undefined' ? window.map : null);
-	if (!mapRef || typeof mapRef.on !== 'function') return;
-
-	mapRef.on('click', function () {
-		if (ag._rasterClickActive) return;
-		Object.keys(ag.geojsonLayers || {}).forEach(function (key) {
-			var layer = ag.geojsonLayers[key];
-			if (layer && layer.eachLayer) {
-				layer.eachLayer(function (featureLayer) {
-					if (featureLayer._path) {
-						featureLayer._path.classList.remove('feature-highlight');
-					}
-					if (layer.resetStyle) {
-						try { layer.resetStyle(featureLayer); } catch (_) {}
-					}
-				});
-			}
-		});
-
-		ag.selectedFeature = null;
-
-		var infoBox = document.getElementById('infoBox');
-		if (infoBox) infoBox.style.display = 'none';
-	});
 })();

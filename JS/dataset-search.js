@@ -1356,7 +1356,7 @@
     toColor.forEach(function (r) { parts.push('Set ' + r.entry.name + ' color to ' + r.action.value + '?'); });
     toFilter.forEach(function (r) { parts.push(r.action.value ? ('Filter ' + r.entry.name + ' to "' + r.action.value + '"?') : ('Clear the filter on ' + r.entry.name + '?')); });
     toReorder.forEach(function (r) { parts.push('Move ' + r.entry.name + ' ' + (r.action.value === 'backward' ? 'backward' : 'forward') + '?'); });
-    if (toExport.length) parts.push('Export the map as ' + (toExport[0].action.value === 'a4-portrait' ? 'A4 Portrait' : 'A4 Landscape') + '?');
+    if (toExport.length) parts.push('Export the map as ' + (toExport[0].action.value === 'a4-portrait' ? 'Portrait (4:5)' : 'Landscape (5:4)') + '?');
     toZoom.forEach(function (r) {
       var v = r.action.value;
       if (v === 'in') parts.push('Zoom in?');

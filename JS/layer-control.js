@@ -140,6 +140,8 @@ var layerCategories = {
       { name: "OASA Bus Lanes", file: "Transportation/Bus_Lanes.geojson", geom: "line" },
       { name: "OASA Bus Routes", file: "Transportation/bus_lines.pmtiles", geojson: "Transportation/bus_lines.geojson", geom: "line" },
       { name: "OASA Bus Stops", file: "Transportation/AthensBusStops.pmtiles", geojson: "Transportation/AthensBusStops.geojson", geom: "point" },
+      { name: "OASA TrolleyBus Routes", file: "Transportation/trolleybus_lines.geojson", geom: "line" },
+      { name: "OASA TrolleyBus Stops", file: "Transportation/trolleybus_stops.geojson", geom: "point" },
       { name: "Toll Stations", file: "Transportation/TollStations.geojson", geom: "point" },
       { name: "Traffic Accidents 2023-2025", file: "Transportation/TrAccidents.pmtiles", geojson: "Transportation/TrAccidents.json", geom: "point" },
       { name: "Traffic Lights", file: "Transportation/TrLights.geojson", geom: "point" }
@@ -995,6 +997,8 @@ function getMapScaleDenominator(map, zoom){
 }
 
 function clusterPointFeatures(features){
+  // JS/export.js sets this while a map export is rendered, so the exported map shows every point.
+  if(AthensGIS.clusteringDisabled) return features;
   if(!features || features.length < CLUSTER_MIN_FEATURES) return features;
   var map = getMap();
   if(!map) return features;
@@ -2362,6 +2366,8 @@ function renderLayerControl(){
         }
         if(AthensGIS.activeLayerOrder.indexOf(layerName)===-1) AthensGIS.activeLayerOrder.push(layerName);
         AthensGIS.layerKeyByName[layerName]=file||layerName;
+        // Read by the map export, to draw the right symbol for a layer that has no legend config.
+        (AthensGIS.layerGeomByName = AthensGIS.layerGeomByName || {})[layerName] = layerGeomOf(info);
         if(typeof AthensGIS.refreshOpacityPopup==='function') AthensGIS.refreshOpacityPopup();
       } else {
         if(row._abortController){ row._abortController.abort(); row._abortController = null; }
@@ -2394,6 +2400,7 @@ function renderLayerControl(){
         if(typeof window.updateLegendBar==='function') window.updateLegendBar(layerName,'remove');
         var idx2=(AthensGIS.activeLayerOrder||[]).indexOf(layerName); if(idx2!==-1) AthensGIS.activeLayerOrder.splice(idx2,1);
         delete AthensGIS.layerKeyByName[layerName];
+        if(AthensGIS.layerGeomByName) delete AthensGIS.layerGeomByName[layerName];
         if(window.LayerFilter) window.LayerFilter.onLayerRemoved(layerName);
         if(typeof AthensGIS.refreshOpacityPopup==='function') AthensGIS.refreshOpacityPopup();
       }

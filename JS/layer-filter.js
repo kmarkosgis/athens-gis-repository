@@ -25,6 +25,11 @@
       filterField:   "Year",
       displayFields: ["Year"],
       separator:     " – "
+    },
+    "OASA TrolleyBus Routes": {
+      filterField:   "line_id",
+      displayFields: ["line_id", "descr"],
+      separator:     " – "
     }
   });
 

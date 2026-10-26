@@ -362,7 +362,7 @@
       letter-spacing: 0.3px;
     }
 
-    section { scroll-margin-top: calc(var(--header-h) + 16px); }
+    section, h3[id] { scroll-margin-top: calc(var(--header-h) + 16px); }   /* h3[id]: sub-headings linked from elsewhere, e.g. #metadata-score from the map */
     section + section {
       margin-top: 44px;
       padding-top: 36px;
@@ -581,6 +581,143 @@
     .th-split { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
     .th-date { max-width: 6.5em; text-align: right; line-height: 1.3; }
 
+    /* ── Metadata score (Data structure and metadata; built by the script at the end of the page) ──
+       The five classes each get a colour, but the class name is always written out next to it. */
+    :root {
+      --ms-bad: #b3261e;
+      --ms-poor: #d9822b;
+      --ms-fair: #c9a400;
+      --ms-good: #5b9e4d;
+      --ms-excellent: #1e7b3a;
+    }
+    [data-class="Bad"] { --ms-c: var(--ms-bad); }
+    [data-class="Poor"] { --ms-c: var(--ms-poor); }
+    [data-class="Fair"] { --ms-c: var(--ms-fair); }
+    [data-class="Good"] { --ms-c: var(--ms-good); }
+    [data-class="Excellent"] { --ms-c: var(--ms-excellent); }
+    .ms-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .ms-dot { flex: none; width: 11px; height: 11px; border-radius: 50%; background: var(--ms-c, #8D99A6); }
+    .ms-card {
+      margin: 20px 0 28px;
+      padding: 18px 20px 16px;
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: 12px;
+    }
+    .ms-card figcaption {
+      margin: 0 0 14px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+    }
+    .ms-headline { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+    .ms-big { font-size: 48px; line-height: 1; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .ms-of { color: var(--ink-soft); }
+    .ms-headline .ms-badge { margin-left: 6px; font-size: 18px; }
+    .ms-sub { margin: 8px 0 16px; font-size: 14.5px; color: var(--ink-soft); }
+    .ms-dist { margin: 0; padding: 0; list-style: none; }
+    .ms-dist li {
+      display: grid;
+      grid-template-columns: 104px minmax(0, 1fr) 30px;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 6px;
+      font-size: 14.5px;
+    }
+    .ms-bar { height: 10px; border-radius: 5px; background: rgba(55, 65, 81, 0.1); overflow: hidden; }
+    .ms-bar-fill { display: block; height: 100%; border-radius: 5px; background: var(--ms-c); }
+    .ms-count { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+    .ms-scale {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+      gap: 8px;
+      margin: 8px 0 20px;
+      padding: 0;
+      list-style: none;
+    }
+    .ms-scale li {
+      margin: 0;
+      padding: 8px 12px 9px;
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-top: 4px solid var(--ms-c);
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.4;
+      text-align: left;
+    }
+    .ms-scale strong { display: block; }
+    .ms-scale span { color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+    .ms-table td:nth-child(n) { width: auto; }
+    .ms-table .ms-num { font-variant-numeric: tabular-nums; }
+    /* Per-layer tables: a column per factor holding the points earned (renderCategories() in the script at the end
+       of the page). The headers run sideways to keep the columns narrow, and a cell is tinted by how much of the
+       factor's points were earned - the number is always written out, the tint only helps scanning. */
+    .ms-matrix tbody th { min-width: 120px; }
+    .ms-matrix thead th { vertical-align: bottom; padding-top: 8px; padding-bottom: 8px; }
+    .ms-matrix .ms-fh { padding-left: 4px; padding-right: 4px; text-align: center; text-transform: none; letter-spacing: 0; font-size: 12px; }
+    .ms-matrix .ms-fh > span { display: inline-block; writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+    /* the most the factor is worth: the number after its name, lighter */
+    .ms-matrix .ms-max { margin-inline-start: 5px; font-weight: 400; opacity: 0.75; }
+    .ms-matrix td.ms-pts { padding: 10px 4px; text-align: center; font-variant-numeric: tabular-nums; }
+    .ms-matrix td.ms-pts[data-credit="full"] { background: rgba(91, 158, 77, 0.16); }
+    .ms-matrix td.ms-pts[data-credit="part"] { background: rgba(201, 164, 0, 0.2); }
+    .ms-matrix td.ms-pts[data-credit="none"] { background: rgba(179, 38, 30, 0.14); }
+    .ms-matrix td.ms-pts[data-credit="na"] { color: var(--ink-soft); }
+    .ms-matrix td.ms-score { white-space: nowrap; }
+    .ms-matrix td.ms-score .ms-num { margin-right: 8px; }
+    .ms-cat {
+      margin: 8px 0;
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .ms-cat summary {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px 14px;
+      padding: 10px 14px;
+      cursor: pointer;
+      list-style: none;
+    }
+    .ms-cat summary::-webkit-details-marker { display: none; }
+    .ms-cat summary::before {
+      content: "\25B8";
+      flex: none;
+      color: var(--ink-soft);
+      transition: transform 0.15s;
+    }
+    .ms-cat[open] summary::before { transform: rotate(90deg); }
+    .ms-cat summary:hover { background: rgba(55, 65, 81, 0.05); }
+    .ms-cat summary:focus-visible { outline: 3px solid #4682b4; outline-offset: -3px; border-radius: 10px; }
+    .ms-cat-name { flex: 1 1 200px; font-weight: 600; }
+    .ms-cat-meta { color: var(--ink-soft); font-size: 14px; font-variant-numeric: tabular-nums; }
+    .ms-cat .table-wrap { margin: 0; border: 0; border-top: 1px solid var(--rule); border-radius: 0; }
+    @media (prefers-reduced-motion: reduce) {
+      .ms-cat summary::before { transition: none; }
+    }
+    @media (max-width: 640px) {
+      .ms-card { padding: 16px 14px 12px; }
+      .ms-dist li { grid-template-columns: 92px minmax(0, 1fr) 28px; }
+    }
+    @media (max-width: 600px) {
+      /* The layer tables become cards here (see the table rules below); inside a category they need no extra frame. */
+      .ms-cat .table-wrap { padding: 8px 10px 2px; }
+      /* Each factor is a row inside the layer's card: its name on the left, the points on the right. */
+      .ms-matrix td.ms-pts { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 5px 14px; text-align: right; }
+      .ms-matrix td.ms-pts::before { margin: 0; text-align: left; }
+    }
+
     pre {
       margin: 0 0 16px;
       padding: 14px 16px;
@@ -794,7 +931,7 @@
       .toc .toc-parent:hover { background: rgba(246, 247, 245, 0.75); color: var(--ink); }
       /* Anchors scroll to below the header and the floating bar */
       :root { --bar-h: 52px; }          /* floating bar plus the gap above it */
-      section, .category-title, .hero h1 { scroll-margin-top: calc(var(--header-h) + var(--bar-h) + 16px); }
+      section, h3[id], .category-title, .hero h1 { scroll-margin-top: calc(var(--header-h) + var(--bar-h) + 16px); }
       /* "Open map" leaves the header and floats at the bottom right; "back to top" moves up above it */
       .header-btn {
         position: fixed;
@@ -919,7 +1056,7 @@
           <li><a href="#whats-inside">What&rsquo;s inside</a></li>
           <li><a href="#using-the-map">Using the map</a></li>
           <li><a href="#search-and-athena">Search and Athena</a></li>
-          <li><a href="#data-and-documentation">Data and documentation</a></li>
+          <li><a href="#data-and-documentation">Data structure and metadata</a></li>
         </ol>
       </li>
       <li class="toc-group">
@@ -1300,7 +1437,7 @@
     </section>
 
     <section id="data-and-documentation" aria-labelledby="data-and-documentation-h">
-      <h2 id="data-and-documentation-h">Data and documentation</h2>
+      <h2 id="data-and-documentation-h">Data structure and metadata</h2>
       <p>
         Every layer comes with a short description file. It states what the dataset represents, who produced it (the source),
         which area it covers, when it was uploaded to the repository, who contributed to preparing it, and a few keywords.
@@ -1322,6 +1459,61 @@
         when it was last published to the repository. Several layers cover a fixed period &mdash; for example wildfires
         2015&ndash;2025, earthquakes 2006&ndash;2026 and traffic accidents January 2023&ndash;May 2025 &mdash; and are not live feeds.
       </p>
+      <h3 id="metadata-score">Metadata score</h3>
+      <p>
+        The metadata score shows how completely each layer is documented and made available, from 0 to 100. It is calculated
+        automatically, in your browser, every time this page loads: the page reads the same description files that appear in the
+        <em>Layer information</em> box, looks at how the layer is offered on the map, and checks both against the factors below,
+        so a score changes as soon as a description file is improved. The score measures documentation and access, not the
+        accuracy of the data itself. The map shows each layer&rsquo;s class in its <em>Layer information</em> box, and selecting
+        it brings you here.
+      </p>
+
+      <figure class="ms-card" id="ms-overview" aria-labelledby="ms-overview-title">
+        <figcaption id="ms-overview-title">Repository score</figcaption>
+        <p class="chart-status" id="ms-status" role="status">Calculating&hellip;</p>
+        <div id="ms-overview-body" hidden>
+          <div class="ms-headline">
+            <span class="ms-big" id="ms-app-score"></span>
+            <span class="ms-of">/ 100</span>
+            <span id="ms-app-class"></span>
+          </div>
+          <p class="ms-sub" id="ms-app-sub"></p>
+          <ul class="ms-dist" id="ms-dist" aria-label="Number of layers in each class"></ul>
+        </div>
+      </figure>
+
+      <p>
+        The repository score is the average of the scores of all its layers. Scores are rounded to whole numbers and fall into
+        five equal classes:
+      </p>
+      <ul class="ms-scale" id="ms-scale" aria-label="Score classes"></ul>
+
+      <p>
+        A layer earns the points of each factor it meets; a few factors are graded and give part of their points, always rounded
+        to a whole number. A factor that cannot be assessed for a layer &mdash; the attribute values of a raster, for example, or
+        of a layer whose data has not been measured &mdash; is left out, and the score is scaled to the points that remain.
+      </p>
+      <div class="table-wrap">
+        <table class="ms-table" id="ms-factors">
+          <caption id="ms-factors-caption"></caption>
+          <thead>
+            <tr>
+              <th scope="col">Factor</th>
+              <th scope="col">What counts</th>
+              <th scope="col">Points</th>
+            </tr>
+          </thead>
+          <tbody id="ms-factors-body"></tbody>
+        </table>
+      </div>
+
+      <p id="ms-layers-intro" hidden>
+        Select a category to see the score of each of its layers and the points it earned on every factor. A column shows a
+        factor&rsquo;s short name and the most it is worth; a dash means the factor was left out for that layer, so the points in a
+        row add up to its score only when nothing was left out.
+      </p>
+      <div id="ms-layers"></div>
     </section>
 
     <h2 class="category-title" id="sources-and-citation" tabindex="-1">Sources and Citation</h2>
@@ -1413,7 +1605,8 @@
 </div>
 
 <footer class="site-footer">
-  &copy; 2026 Athens GIS Repository | Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC-BY 4.0</a>
+  &copy; 2026 Athens GIS Repository | Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC-BY 4.0</a> |
+  <a href="privacy.html">Cookies &amp; Privacy</a>
 </footer>
 
 <button type="button" class="back-to-top" id="back-to-top" title="Back to top" aria-label="Back to top">
@@ -1422,7 +1615,7 @@
 
 <div id="cookie-consent-box" role="dialog" aria-live="polite" aria-label="Cookie preferences" hidden>
   <p id="cookie-consent-text">
-    This website uses analytics tools (Google Analytics &amp; PostHog) to improve user experience.
+    This website uses analytics and advertising tools (Google Analytics, Google Ads &amp; PostHog) to improve user experience and measure advertising.
     You can accept or reject non-essential cookies.
   </p>
   <div id="cookie-consent-actions">
@@ -1918,7 +2111,9 @@
       applyState();
     }
 
-    loadLayerCategories().then(function (raw) {
+    // Shared with the "Metadata score" script below, so layer-control.js is read once for both.
+    window.aboutLayerCategories = loadLayerCategories();
+    window.aboutLayerCategories.then(function (raw) {
       var model = buildModel(raw);
       if (!model.cats.length) throw new Error('layerCategories is empty');
       setStats(model);
@@ -1927,6 +2122,246 @@
       statusEl.textContent = 'The layer chart could not be loaded right now. The table below lists the categories.';
       if (window.console) console.warn('Layer chart unavailable:', err);
     });
+  })();
+</script>
+
+<!-- config.js: only R2_BASE_URL is used here, to find the layer description files. -->
+<script src="JS/config.js?v=20260615-1"></script>
+<script src="JS/attribute-report.js?v=83a8e5c328"></script>
+<script src="JS/metadata-score.js?v=70b9bbc2ec"></script>
+<script>
+  // "Metadata score" (Data structure and metadata): scores every layer's description file with
+  // JS/metadata-score.js - the same code that puts the "Metadata score" line in the map's Layer
+  // information box - and shows the repository score, the score of each layer and the method.
+  // Nothing is typed in here: the layer list comes from JS/layer-control.js (read once for the
+  // chart above), the descriptions from info/ and the empty attribute values from JS/attribute-report.js
+  // (generated by tools/build-attribute-report.mjs), all when the page loads.
+  (function () {
+    var card = document.getElementById('ms-overview');
+    if (!card) return;
+    var MS = window.AthensMetadataScore;
+    var statusEl = document.getElementById('ms-status');
+    var bodyEl = document.getElementById('ms-overview-body');
+
+    // Terrain and Shaded Relief are drawn outside layerCategories (see the chart script above). Terrain's description
+    // file is Relief.txt on the map (Relief0.txt as a fallback).
+    var COMMON_LAYERS = [
+      { name: 'Terrain', file: 'Environment/Relief0.pmtiles', type: 'vector', infoFiles: ['Environment/Relief.txt', 'Environment/Relief0.txt'] },
+      { name: 'Shaded Relief', file: 'Environment/shadedrelief.pmtiles', type: 'raster', infoFiles: ['Environment/Hillshade.txt'] }
+    ];
+
+    function el(tag, className, text) {
+      var node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
+    }
+    function badge(label) {
+      var b = el('span', 'ms-badge');
+      b.setAttribute('data-class', label);
+      var dot = el('span', 'ms-dot');
+      dot.setAttribute('aria-hidden', 'true');
+      b.appendChild(dot);
+      b.appendChild(document.createTextNode(label));
+      return b;
+    }
+    function cell(text, label, className) {
+      var td = el('td', className, text);
+      td.setAttribute('data-label', label);
+      return td;
+    }
+    function plural(n, word) { return n + ' ' + word + (n === 1 ? '' : 's'); }
+
+    function fail(err) {
+      statusEl.hidden = false;
+      statusEl.textContent = 'The metadata score could not be calculated right now.';
+      if (window.console) console.warn('Metadata score unavailable:', err);
+    }
+
+    // The same URLs the map uses (JS/layer-control.js buildAssetUrl): R2 when configured, else the site itself.
+    function assetUrl(kind, relativePath) {
+      var base = window.CONFIG && window.CONFIG.R2_BASE_URL ? String(window.CONFIG.R2_BASE_URL).replace(/\/+$/, '') + '/' : '';
+      return base + kind + '/' + relativePath.split('/').map(encodeURIComponent).join('/');
+    }
+    // A missing file reads as '' (no description file: the layer scores 0); any other failure rejects.
+    function fetchText(url) {
+      return fetch(url, { cache: 'no-cache' }).then(function (res) {
+        if (res.status === 404) return '';
+        if (!res.ok) throw new Error('HTTP ' + res.status + ' @ ' + url);
+        return res.text();
+      });
+    }
+    function loadInfoText(layer) {
+      var paths = layer.infoFiles.slice();
+      function next() {
+        if (!paths.length) return Promise.resolve('');
+        return fetchText(assetUrl('info', paths.shift())).then(function (text) { return text ? text : next(); });
+      }
+      return next();
+    }
+    // layerCategories = { Category: { _items: [layer...], "Subcategory": [layer...], ... }, ... }
+    function collectCategories(raw) {
+      var cats = [];
+      Object.keys(raw).forEach(function (name) {
+        var data = raw[name];
+        if (!data || typeof data !== 'object') return;
+        var layers = [];
+        Object.keys(data).forEach(function (key) {
+          if (!Array.isArray(data[key])) return;
+          data[key].forEach(function (l) {
+            if (!l || !l.name || !l.file) return;
+            layers.push({
+              name: l.name, file: l.file, geojson: l.geojson || null,
+              type: l.type === 'raster' ? 'raster' : 'vector',
+              infoFiles: [MS.infoPathFor(l)]
+            });
+          });
+        });
+        if (layers.length) cats.push({ name: name, layers: layers });
+      });
+      cats.push({ name: 'Terrain and relief', layers: COMMON_LAYERS.map(function (l) { return Object.assign({}, l); }) });
+      return cats;
+    }
+
+    // The classes and the factor table do not depend on any data, so they are drawn straight away.
+    function renderMethod() {
+      var scale = document.getElementById('ms-scale');
+      MS.classes.forEach(function (c) {
+        var li = el('li');
+        li.setAttribute('data-class', c.label);
+        li.appendChild(el('strong', null, c.label));
+        li.appendChild(el('span', null, c.min + '–' + c.max));
+        scale.appendChild(li);
+      });
+      var total = 0;
+      var body = document.getElementById('ms-factors-body');
+      MS.factors.forEach(function (f) {
+        total += f.points;
+        var tr = el('tr');
+        var th = el('th', null, f.label);
+        th.setAttribute('scope', 'row');
+        tr.appendChild(th);
+        tr.appendChild(cell(f.rule, 'What counts'));
+        tr.appendChild(cell(String(f.points), 'Points', 'ms-num'));
+        body.appendChild(tr);
+      });
+      document.getElementById('ms-factors-caption').textContent = MS.factors.length + ' factors, ' + total + ' points in total';
+    }
+
+    function renderOverview(app, unchecked) {
+      document.getElementById('ms-app-score').textContent = String(app.score);
+      document.getElementById('ms-app-class').appendChild(badge(app.label));
+      document.getElementById('ms-app-sub').textContent = 'Average of ' + plural(app.count, 'layer') +
+        (unchecked ? ' (' + unchecked + ' could not be checked and are left out)' : '') + '.';
+      var list = document.getElementById('ms-dist');
+      MS.classes.forEach(function (c) {
+        var n = app.byClass[c.label];
+        var li = el('li');
+        li.setAttribute('data-class', c.label);
+        li.appendChild(badge(c.label));
+        var bar = el('span', 'ms-bar');
+        var fill = el('span', 'ms-bar-fill');
+        fill.style.width = (n / app.count * 100) + '%';
+        bar.appendChild(fill);
+        li.appendChild(bar);
+        li.appendChild(el('span', 'ms-count', String(n)));
+        list.appendChild(li);
+      });
+      statusEl.hidden = true;
+      bodyEl.hidden = false;
+    }
+
+    function renderCategories(cats) {
+      var wrap = document.getElementById('ms-layers');
+      cats.forEach(function (cat) {
+        var results = cat.layers.filter(function (l) { return l.result; }).map(function (l) { return l.result; });
+        var sum = MS.summarize(results);
+
+        var details = el('details', 'ms-cat');
+        var summary = el('summary');
+        summary.appendChild(el('span', 'ms-cat-name', cat.name));
+        summary.appendChild(el('span', 'ms-cat-meta', plural(cat.layers.length, 'layer')));
+        if (results.length) {
+          summary.appendChild(el('span', 'ms-cat-meta', 'Average ' + sum.score));
+          summary.appendChild(badge(sum.label));
+        }
+        details.appendChild(summary);
+
+        // One row per layer, one column per factor: the points the layer earned on that factor. The column
+        // headers (short names, maximum points) are turned sideways by CSS; on phones each row becomes a card
+        // and the labels come from data-label instead.
+        var tableWrap = el('div', 'table-wrap');
+        var table = el('table', 'ms-table ms-matrix');
+        var headRow = el('tr');
+        ['Layer', 'Score'].forEach(function (h) {
+          var th = el('th', null, h);
+          th.setAttribute('scope', 'col');
+          headRow.appendChild(th);
+        });
+        MS.factors.forEach(function (f) {
+          var th = el('th', 'ms-fh');
+          th.setAttribute('scope', 'col');
+          th.title = f.label + ' (' + f.points + ' points)';
+          var name = el('span', null, f.short);
+          name.appendChild(el('span', 'ms-max', String(f.points)));
+          th.appendChild(name);
+          headRow.appendChild(th);
+        });
+        var thead = el('thead');
+        thead.appendChild(headRow);
+        table.appendChild(thead);
+        var tbody = el('tbody');
+        cat.layers.forEach(function (layer) {
+          var r = layer.result;
+          var tr = el('tr');
+          var th = el('th', null, layer.name);
+          th.setAttribute('scope', 'row');
+          tr.appendChild(th);
+          if (r) {
+            var scoreCell = cell('', 'Score', 'ms-score');
+            scoreCell.appendChild(el('strong', 'ms-num', String(r.score)));
+            scoreCell.appendChild(badge(r.label));
+            tr.appendChild(scoreCell);
+            r.factors.forEach(function (f) {
+              var td = cell(f.applies ? String(f.earned) : '–', f.label + ' · max ' + f.points, 'ms-pts');
+              td.setAttribute('data-credit', !f.applies ? 'na' : f.earned >= f.points ? 'full' : f.earned > 0 ? 'part' : 'none');
+              td.title = f.label + ': ' + (f.applies ? f.earned + ' of ' + f.points + ' points' : 'left out for this layer');
+              tr.appendChild(td);
+            });
+          } else {
+            tr.appendChild(cell('–', 'Score'));
+            var failed = cell('Could not be checked', 'Points by factor');
+            failed.colSpan = MS.factors.length;
+            tr.appendChild(failed);
+          }
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        tableWrap.appendChild(table);
+        details.appendChild(tableWrap);
+        wrap.appendChild(details);
+      });
+      document.getElementById('ms-layers-intro').hidden = false;
+    }
+
+    if (!MS || !window.aboutLayerCategories) { fail(new Error('metadata-score.js or the layer list is unavailable')); return; }
+    renderMethod();
+
+    window.aboutLayerCategories.then(function (raw) {
+      var cats = collectCategories(raw);
+      var layers = [];
+      cats.forEach(function (c) { c.layers.forEach(function (l) { layers.push(l); }); });
+      return Promise.all(layers.map(function (layer) {
+        return loadInfoText(layer).then(function (text) {
+          layer.result = MS.scoreLayer(layer, text);
+        }).catch(function () { layer.result = null; });   // could not be read (not just missing): left out of the averages
+      })).then(function () { return { cats: cats, layers: layers }; });
+    }).then(function (done) {
+      var scored = done.layers.filter(function (l) { return l.result; });
+      if (!scored.length) throw new Error('no layer could be scored');
+      renderOverview(MS.summarize(scored.map(function (l) { return l.result; })), done.layers.length - scored.length);
+      renderCategories(done.cats);
+    }).catch(fail);
   })();
 </script>
 

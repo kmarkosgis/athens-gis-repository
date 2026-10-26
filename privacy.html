@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Cookies &amp; Privacy | Athens GIS Repository</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Cookie Policy and Privacy Policy of the Athens GIS Repository: which cookies and third-party services the website uses, why, and how to manage your choices.">
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="Konstantinos Markos">
+  <meta property="og:title" content="Cookies &amp; Privacy | Athens GIS Repository">
+  <meta property="og:description" content="Cookie Policy and Privacy Policy of the Athens GIS Repository.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://athensgis.gr/privacy">
+  <link rel="canonical" href="https://athensgis.gr/privacy">
+  <link rel="icon" href="images/6.png" type="image/png">
+
+  <style>
+    :root {
+      --bg: rgb(246, 247, 245);
+      --surface: #ffffff;
+      --ink: #1f2937;
+      --ink-soft: #4b5563;
+      --brand: rgb(55, 65, 81);
+      --brand-ink: rgb(246, 247, 245);
+      --link: #2c5f8a;
+      --link-hover: #1d4468;
+      --rule: rgba(55, 65, 81, 0.18);
+      --header-h: 48px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+    }
+
+    a { color: var(--link); text-underline-offset: 2px; word-break: break-word; }
+    a:hover { color: var(--link-hover); }
+    a:focus-visible, button:focus-visible {
+      outline: 3px solid #4682b4;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    /* ── Header (same look as the About page and the map) ───────────────── */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: var(--header-h);
+      padding: 4px 12px;
+      background: var(--brand);
+      color: var(--brand-ink);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+    }
+    .site-header .brand { display: flex; align-items: center; min-width: 0; }
+    .site-header .brand img { display: block; height: 40px; width: auto; }
+    .header-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .header-btn {
+      display: inline-flex;
+      align-items: center;
+      height: 28px;
+      padding: 0 20px;
+      border: 1px solid rgba(246, 247, 245, 0.7);
+      border-radius: 10px;
+      color: var(--brand-ink);
+      font-size: 16px;
+      font-weight: 500;
+      letter-spacing: 1.5px;
+      text-decoration: none;
+      text-transform: uppercase;
+      white-space: nowrap;
+      transition-duration: 0.2s;
+    }
+    .header-btn:hover { background: rgba(246, 247, 245, 0.95); color: #111827; }
+
+    /* ── Policy ─────────────────────────────────────────────────────────── */
+    main {
+      flex: 1 0 auto;
+      width: 100%;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+    }
+    h1 {
+      margin: 0 0 6px;
+      font-size: 32px;
+      font-weight: 400;
+      line-height: 1.25;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .lead { margin: 0 0 24px; color: var(--ink-soft); font-size: 15px; }
+
+    #legal-body {
+      padding: 20px 28px 24px;
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: 10px;
+      font-size: 15px;
+      line-height: 1.55;
+    }
+    #legal-status { margin: 0; color: var(--ink-soft); }
+    #legal-body strong { font-size: 17px; font-weight: 500; }
+    #legal-body h2 { margin: 18px 0 6px; font-size: 16px; font-weight: 600; }
+    #legal-body p { margin: 0 0 10px; }
+    #legal-body ul { margin: 0 0 12px 20px; padding: 0; }
+    #legal-body li { margin: 0 0 4px; }
+    #legal-body code { font-family: Consolas, "SFMono-Regular", Menlo, monospace; font-size: 0.92em; }
+
+    /* ── Footer (same as the About page) ────────────────────────────────── */
+    .site-footer {
+      padding: 20px 16px;
+      background: var(--brand);
+      color: var(--brand-ink);
+      text-align: center;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+    }
+    .site-footer a { color: inherit; }
+
+    @media (max-width: 520px) {
+      .site-header { gap: 8px; padding: 4px 10px; }
+      .site-header .brand img { height: 30px; }
+      .header-actions { gap: 8px; }
+      .header-btn { padding: 0 12px; font-size: 13px; letter-spacing: 1px; }
+      main { padding: 24px 16px 48px; }
+      h1 { font-size: 24px; }
+      #legal-body { padding: 14px 16px 18px; font-size: 14px; }
+    }
+
+    @media print {
+      .site-header, .site-footer { display: none !important; }
+      body { background: #fff; }
+      #legal-body { border: 0; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="brand" href="./" title="Back to the map">
+    <img src="images/63.png" alt="Athens GIS Repository logo">
+  </a>
+  <div class="header-actions">
+    <a class="header-btn" href="about.html" title="About the Athens GIS Repository">About</a>
+    <a class="header-btn" href="./" title="Open the interactive map">Open map</a>
+  </div>
+</header>
+
+<main id="main">
+  <h1>Cookies &amp; Privacy</h1>
+  <p class="lead">Cookie Policy and Privacy Policy of the Athens GIS Repository.</p>
+
+  <div id="legal-body" aria-live="polite">
+    <p id="legal-status">Loading the policy&hellip;</p>
+    <noscript><p>This page needs JavaScript to show the policy. For a copy, write to <a href="mailto:info@athensgis.gr">info@athensgis.gr</a>.</p></noscript>
+  </div>
+</main>
+
+<footer class="site-footer">
+  &copy; 2026 Athens GIS Repository | Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC-BY 4.0</a> |
+  <a href="privacy.html" aria-current="page">Cookies &amp; Privacy</a>
+</footer>
+
+<!-- config.js: only R2_BASE_URL is used here, to find info/legal.txt (the policy text, read from R2 like the layer descriptions).
+     The map's COOKIES - PRIVACY button and the footer links open this page. It sets no cookies and loads no analytics, so it has no consent banner. -->
+<script src="JS/config.js?v=20260615-1"></script>
+<script>
+  (function () {
+    var body = document.getElementById('legal-body');
+    var status = document.getElementById('legal-status');
+    var r2 = window.CONFIG && window.CONFIG.R2_BASE_URL;
+    var url = (r2 ? String(r2).replace(/\/+$/, '') + '/' : '') + 'info/legal.txt';
+
+    fetch(url, { cache: 'no-cache' }).then(function (res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status + ' @ ' + url);
+      return res.text();
+    }).then(function (html) {
+      // The text is written for the map's dialog, where its section titles are <h4>; under this page's <h1> they are <h2>.
+      body.innerHTML = html.replace(/<(\/?)h4\b/g, '<$1h2');
+    }).catch(function (err) {
+      status.innerHTML = 'The policy could not be loaded right now. Please try again later or write to <a href="mailto:info@athensgis.gr">info@athensgis.gr</a>.';
+      if (window.console) console.warn('Policy unavailable:', err);
+    });
+  })();
+</script>
+
+</body>
+</html>

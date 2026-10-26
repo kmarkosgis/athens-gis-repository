@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="style.css?v=ea66b68df7">
+  <link rel="stylesheet" href="style.css?v=3f612761d3">
   <meta charset="utf-8" />
   <title>Athens GIS Repository</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -266,7 +266,7 @@
 
 <div id="citation-box">
   <button id="citation-btn" title="Show citation options">CITE</button>
-  <button id="legal-btn" title="Show legal information">COOKIES - PRIVACY</button>
+  <button id="legal-btn" title="Open the cookie and privacy policy">COOKIES - PRIVACY</button>
 </div>
 
 <div id="citation-popup" hidden>
@@ -290,16 +290,6 @@
   <textarea id="citation-text" readonly aria-label="Citation text"></textarea>
 </div>
 
-<div id="legal-modal" hidden aria-hidden="true">
-  <div id="legal-content" role="dialog" aria-modal="true" aria-labelledby="legal-title">
-    <div class="legal-header">
-      <h3 id="legal-title">COOKIES - PRIVACY</h3>
-      <button id="legal-close" title="Close legal window" aria-label="Close legal window">&times;</button>
-    </div>
-    <div id="legal-body"></div>
-  </div>
-</div>
-
 <div id="legend-bar" style="display:none;">
   <h1></h1>
   <h4 id="legend-title">LEGEND</h4>
@@ -308,7 +298,7 @@
 
 <div id="cookie-consent-box" role="dialog" aria-live="polite" aria-label="Cookie preferences" hidden>
   <p id="cookie-consent-text">
-    This website uses analytics tools (Google Analytics &amp; PostHog) to improve user experience.
+    This website uses analytics and advertising tools (Google Analytics, Google Ads &amp; PostHog) to improve user experience and measure advertising.
     You can accept or reject non-essential cookies.
   </p>
   <div id="cookie-consent-actions">
@@ -328,7 +318,8 @@
 </a>
 
 <div id="footer">
-  © 2026 Athens GIS Repository | Licensed under CC-BY 4.0
+  © 2026 Athens GIS Repository | Licensed under CC-BY 4.0 |
+  <a href="privacy.html" target="_blank" rel="noopener" style="color: inherit;">Cookies &amp; Privacy</a>
 </div>
 
 <!-- Welcome Modal -->
@@ -383,11 +374,13 @@
 <script src="JS/pmtiles-loader.js?v=c68b1fdc99" defer></script>
 
 <script src="JS/layer-filter.js?v=53682328d0" defer></script>
-<script src="JS/layer-control.js?v=95b58ca65c" defer></script>
+<script src="JS/attribute-report.js?v=83a8e5c328" defer></script>
+<script src="JS/metadata-score.js?v=70b9bbc2ec" defer></script>
+<script src="JS/layer-control.js?v=476ac4a784" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/7.0.0/fuse.min.js" defer></script>
 <script src="JS/dataset-search.js?v=205f355b17" defer></script>
 <script src="JS/citation.js?v=ed58534d30" defer></script>
-<script src="JS/legal.js?v=045e661e11" defer></script>
+<script src="JS/legal.js?v=fb7e2efe45" defer></script>
 <script src="JS/measure.js?v=0675687776" defer></script>
 <script src="JS/attica-outline.js" defer></script>
 <script src="JS/export.js?v=df63f77bf9" defer></script>

@@ -167,6 +167,7 @@ AthensGIS.layerCategories = layerCategories;
 AthensGIS.geojsonLayers = AthensGIS.geojsonLayers || {};
 AthensGIS.rasterLayers = AthensGIS.rasterLayers || {};
 AthensGIS.activeLayerInfos = AthensGIS.activeLayerInfos || {};
+AthensGIS.layerMetadataScores = AthensGIS.layerMetadataScores || {}; // layer name -> score class, see recordMetadataScore()
 AthensGIS.selectedFeature = null;
 AthensGIS.layerOpacities  = AthensGIS.layerOpacities  || {};
 AthensGIS.activeLayerOrder = AthensGIS.activeLayerOrder || [];
@@ -273,6 +274,29 @@ function loadLayerData(relativePath, signal){
 
 function loadLayerInfo(relativePath, signal){
   return fetchAssetWithFallback('info', relativePath, function(resp){ return resp.text(); }, signal);
+}
+
+// Works out a layer's metadata score (JS/metadata-score.js, the same one the About page shows) and
+// keeps its class in AthensGIS.layerMetadataScores, where ensureInfoBoxUpdate() shows it under the
+// layer's title in the Layer information box. The attribute report it reads (JS/attribute-report.js)
+// is loaded with the page, so there is nothing to wait for.
+// Returns the description text unchanged and never throws: if scoring fails, the description
+// is still shown, just without a score.
+function recordMetadataScore(layer, text){
+  var MS = window.AthensMetadataScore;
+  if(MS){
+    try{ AthensGIS.layerMetadataScores[layer.name] = MS.scoreLayer(layer, text).label; }catch(e){}
+  }
+  return text;
+}
+
+// Link to the "Metadata score" section of the About page, for the score line in the Layer information box.
+// Reuses the header's "about" button, so it is the live /about on athensgis.gr and the local about.html
+// anywhere else (index.html points the button at the local copy there).
+function aboutMetadataScoreUrl(){
+  var btn = document.getElementById('about-btn');
+  var base = (btn && btn.getAttribute('href')) || 'https://athensgis.gr/about';
+  return base.split('#')[0] + '#metadata-score';
 }
 
 function loadRasterArrayBuffer(relativePath, signal){
@@ -698,6 +722,11 @@ function ensureInfoBoxUpdate(opts){
 
   var layerNames = Object.keys(AthensGIS.activeLayerInfos);
 
+  // A layer that was switched off no longer has a score to show (it is worked out again when it is switched on).
+  Object.keys(AthensGIS.layerMetadataScores).forEach(function(name){
+    if(layerNames.indexOf(name) === -1) delete AthensGIS.layerMetadataScores[name];
+  });
+
   if(layerNames.length === 0){
     infoBox.style.display='none';
     // #map-scale-ratio (style.css) reads this to know whether to make room
@@ -735,7 +764,8 @@ function ensureInfoBoxUpdate(opts){
   // neither when there's just one layer open, since both are false then).
   var canPrev = toIdx > 0;
   var canNext = toIdx < layerNames.length - 1;
-  var tabsHtml = '<div id="tabsContainer" style="position:sticky; top:55px; display:flex; gap:8px; align-items:center; padding:8px 10px; border-bottom:1px solid #ccc; background-color:white;">';
+  // flex-wrap + row-gap:0: the "Metadata score" line below is a full-width row of its own under the title row.
+  var tabsHtml = '<div id="tabsContainer" style="position:sticky; top:55px; display:flex; flex-wrap:wrap; gap:8px; row-gap:0; align-items:center; padding:8px 10px; border-bottom:1px solid #ccc; background-color:white;">';
   if(canPrev){
     tabsHtml += '<button id="prevTabBtn" style="background:rgba(55, 65, 81, 0.85); color:white; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:14px; flex:0 0 auto;">❮</button>';
   }
@@ -751,6 +781,12 @@ function ensureInfoBoxUpdate(opts){
   }
   if(canNext){
     tabsHtml += '<button id="nextTabBtn" style="background:rgba(55, 65, 81, 0.85); color:white; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:14px; flex:0 0 auto;">❯</button>';
+  }
+  // The selected layer's metadata score, coloured by class (see .layer-info-score in style.css). It links to
+  // the About page's "Metadata score" section, in a new tab like the header's "about" button so the map stays put.
+  var scoreClass = AthensGIS.layerMetadataScores[layerNames[toIdx]];
+  if(scoreClass){
+    tabsHtml += '<div class="layer-info-score"><a href="' + aboutMetadataScoreUrl() + '" target="_blank" rel="noopener" title="How the metadata score is calculated (opens the About page)">Metadata score: <span data-class="' + scoreClass + '">' + scoreClass + '</span></a></div>';
   }
   tabsHtml += '</div>';
 
@@ -1881,7 +1917,8 @@ function renderLayerControl(){
             AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>';
             ensureInfoBoxUpdate();
           });
-        loadLayerInfo('Environment/Relief.txt', _terrainSignal).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); })
+        // Terrain is drawn outside layerCategories, so the attribute report has no entry for it (its "Empty attribute fields" factor is left out).
+        loadLayerInfo('Environment/Relief.txt', _terrainSignal).then(function(t){ return recordMetadataScore({ name: layerName, file: TERRAIN_PMTILES, type: 'vector' }, t); }).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); })
           .catch(function(err){ if(err && err.name==='AbortError') return; AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
         if(AthensGIS.activeLayerOrder.indexOf(layerName)===-1) AthensGIS.activeLayerOrder.push(layerName);
         AthensGIS.layerKeyByName[layerName]=TERRAIN_PMTILES;
@@ -1990,7 +2027,7 @@ function renderLayerControl(){
             AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>';
             ensureInfoBoxUpdate();
           });
-        loadLayerInfo('Environment/Hillshade.txt', _hsSignal).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); })
+        loadLayerInfo('Environment/Hillshade.txt', _hsSignal).then(function(t){ return recordMetadataScore({ name: layerName, file: SHADED_RELIEF_PMTILES, type: 'raster' }, t); }).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); })
           .catch(function(err){ if(err && err.name==='AbortError') return; AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
         if(AthensGIS.activeLayerOrder.indexOf(layerName)===-1) AthensGIS.activeLayerOrder.push(layerName);
         AthensGIS.layerKeyByName[layerName]=SHADED_RELIEF_PMTILES;
@@ -2293,7 +2330,7 @@ function renderLayerControl(){
             AthensGIS.rasterLayers=AthensGIS.rasterLayers || {};
             AthensGIS.rasterLayers[file]={ layer: rasterLyr, georaster: georaster, legendConfig: lcRaster, layerName: layerName, valueLabel: (lcRaster && lcRaster.title) || layerName };
           }).catch(function(err){ stopRowSpinner(); if(err && err.name==='AbortError') return; console.error('Failed to load raster layer data for "' + layerName + '":', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>'; ensureInfoBoxUpdate(); });
-          var txtRaster=file.replace(/\.[^/.]+$/, '')+'.txt'; loadLayerInfo(txtRaster, _signal).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(err){ if(err && err.name==='AbortError') return; AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
+          var txtRaster=file.replace(/\.[^/.]+$/, '')+'.txt'; loadLayerInfo(txtRaster, _signal).then(function(t){ return recordMetadataScore(info, t); }).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(err){ if(err && err.name==='AbortError') return; AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
         } else if(file && isPmtilesFile(file)){
           // Tiled rendering: fetch only the tiles covering the current viewport at
           // the current zoom (JS/pmtiles-loader.js), decode them to a GeoJSON
@@ -2346,7 +2383,7 @@ function renderLayerControl(){
             if(getMap().getZoom() !== _reqZoom3 || !_reqBounds3.equals(getMap().getBounds())) lyr3.updateViewportData();
             if(window.LayerFilter) window.LayerFilter.onLayerLoaded(layerName, file, null, geojsonPath3);
           }).catch(function(err){ stopRowSpinner(); if(!cb.checked || row._abortController !== _abortCtrl) return; console.error('Failed to load tiled layer data for "' + layerName + '":', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>'; ensureInfoBoxUpdate(); });
-          var txt3=file.replace(/\.[^/.]+$/, '')+'.txt'; loadLayerInfo(txt3, _signal).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(err){ if(err && err.name==='AbortError') return; AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
+          var txt3=file.replace(/\.[^/.]+$/, '')+'.txt'; loadLayerInfo(txt3, _signal).then(function(t){ return recordMetadataScore(info, t); }).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(err){ if(err && err.name==='AbortError') return; AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
         } else if(file){
           loadLayerData(file, _signal).then(function(data){
             stopRowSpinner();
@@ -2362,7 +2399,7 @@ function renderLayerControl(){
             setupViewportUpdateHandler();
             if(window.LayerFilter) window.LayerFilter.onLayerLoaded(layerName, file, data);
           }).catch(function(err){ stopRowSpinner(); if(err && err.name==='AbortError') return; console.error('Failed to load layer data for "' + layerName + '":', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>'; ensureInfoBoxUpdate(); });
-          var txt=file.replace(/\.[^/.]+$/, '')+'.txt'; loadLayerInfo(txt, _signal).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(err){ if(err && err.name==='AbortError') return; AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
+          var txt=file.replace(/\.[^/.]+$/, '')+'.txt'; loadLayerInfo(txt, _signal).then(function(t){ return recordMetadataScore(info, t); }).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(err){ if(err && err.name==='AbortError') return; AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
         }
         if(AthensGIS.activeLayerOrder.indexOf(layerName)===-1) AthensGIS.activeLayerOrder.push(layerName);
         AthensGIS.layerKeyByName[layerName]=file||layerName;

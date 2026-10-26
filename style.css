@@ -972,6 +972,28 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       transform: scale(1);
     }
 
+    /* "Metadata score: <class>" under the selected layer's title (ensureInfoBoxUpdate() in
+       JS/layer-control.js; the classes come from JS/metadata-score.js). The class is coloured -
+       the shades are darkened versions of the About page's, to stay readable as text on white. */
+    .layer-info-score {
+      flex: 0 0 100%;
+      text-align: center;
+      font-size: 11px;
+      line-height: 1.5;
+      color: #666;
+    }
+    /* The whole phrase links to the About page's "Metadata score" section: it keeps the text colours
+       (not the browser's link blue) and is underlined on hover / keyboard focus. */
+    .layer-info-score a { color: inherit; text-decoration: none; }
+    .layer-info-score a:hover,
+    .layer-info-score a:focus-visible { text-decoration: underline; }
+    .layer-info-score [data-class] { font-weight: 600; }
+    .layer-info-score [data-class="Bad"] { color: #b3261e; }
+    .layer-info-score [data-class="Poor"] { color: #b85c00; }
+    .layer-info-score [data-class="Fair"] { color: #8a6d00; }
+    .layer-info-score [data-class="Good"] { color: #3f7d33; }
+    .layer-info-score [data-class="Excellent"] { color: #17692f; }
+
     #infoBox {
       position: fixed;
       bottom: 310px;

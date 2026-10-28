@@ -101,8 +101,8 @@
     { key: 'source', label: 'Source', short: 'Source', points: 15,
       rule: 'The source of the data is stated.',
       credit: function (c) { return hasText(c.meta.source) ? 1 : 0; } },
-    { key: 'license', label: 'Licence', short: 'Licence', points: 15,
-      rule: 'The licence of the data is stated.',
+    { key: 'license', label: 'License', short: 'License', points: 15,
+      rule: 'The license of the data is stated.',
       credit: function (c) { return hasText(c.meta.license) ? 1 : 0; } },
     { key: 'fileSize', label: 'File size', short: 'Size', points: 5,
       rule: 'The file size is stated.',
@@ -171,7 +171,7 @@
       var value = stripped.slice(idx + 1).trim();
       if (!value) return;
       if (key === 'source') meta.source = value;
-      else if (key === 'license' || key === 'licence') meta.license = value;
+      else if (key === 'license' || key === 'license') meta.license = value;
       else if (key === 'uploaded') meta.uploaded = value;
       else if (key === 'file size' || key === 'filesize') meta.fileSize = value;
       else if (key === 'keywords') {

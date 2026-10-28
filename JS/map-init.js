@@ -7,6 +7,29 @@
   }).setView([37.98, 23.72], 12);
   if (window.AthensGIS) { window.AthensGIS.map = map; }
 
+  // === Attribution in front of the footer ===
+  // Leaflet's attribution lives in the map's own stacking context, which is under the footer,
+  // so the opaque footer hides it. Keep it where it is (JS/export.js reads it from the map
+  // container for the exports) and show a live copy inside #footer, in front of the bar.
+  (function(){
+    var src = map.attributionControl && map.attributionControl.getContainer();
+    var copy = document.getElementById('map-attribution');
+    if(!src || !copy) return;
+
+    function sync(){
+      copy.innerHTML = src.innerHTML;
+      Array.prototype.forEach.call(copy.querySelectorAll('a'), function(a){
+        a.target = '_blank';
+        a.rel = 'noopener';
+      });
+    }
+
+    // Leaflet rewrites the control's content whenever a basemap/layer with an attribution is added or removed.
+    new MutationObserver(sync).observe(src, { childList: true, subtree: true, characterData: true });
+    sync();
+  })();
+  // === End attribution copy ===
+
   // Keep Leaflet canvas aligned with mobile viewport changes.
   window.addEventListener('resize', function () {
     map.invalidateSize();

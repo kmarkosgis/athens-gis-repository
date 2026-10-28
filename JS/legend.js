@@ -552,6 +552,53 @@ window.legendConfigs = {
         "25000+": { color: "#011531d5", label: "25,000+" }
       }
     },
+    "2021 Employment Census": {
+      field: "Employed",
+      title: "Employed persons",
+      classes: {
+        "0-10000": { color: "#bae4b3", label: "0 – 10,000" },
+        "10000-20000": { color: "#74c476", label: "10,000 – 20,000" },
+        "20000-35000": { color: "#31a354", label: "20,000 – 35,000" },
+        "35000-60000": { color: "#006d2c", label: "35,000 – 60,000" },
+        "60000+": { color: "#00441b", label: "60,000+" }
+      }
+    },
+    "2021 Employment Density": {
+      title: "Employment Density (employed persons/km²)",
+      classes: {
+        "0-50": { color: "#ffffccd2", label: "0 – 50" },
+        "50-150": { color: "#ffeda0d2", label: "50 – 150" },
+        "150-400": { color: "#fed976d2", label: "150 – 400" },
+        "400-1000": { color: "#feb24cd2", label: "400 – 1,000" },
+        "1000-2500": { color: "#fd8d3cd2", label: "1,000 – 2,500" },
+        "2500-5000": { color: "#fc4e2ad2", label: "2,500 – 5,000" },
+        "5000-7500": { color: "#e31a1cd2", label: "5,000 – 7,500" },
+        "7500-10000": { color: "#bd0026d2", label: "7,500 – 10,000" },
+        "10000+": { color: "#800026d2", label: "10,000+" }
+      }
+    },
+    "2021 Unemployment Census": {
+      field: "Unemployed",
+      title: "Unemployed persons",
+      classes: {
+        "0-1000": { color: "#fcbba1", label: "0 – 1,000" },
+        "1000-2000": { color: "#fc9272", label: "1,000 – 2,000" },
+        "2000-3500": { color: "#fb6a4a", label: "2,000 – 3,500" },
+        "3500-6000": { color: "#de2d26", label: "3,500 – 6,000" },
+        "6000+": { color: "#a50f15", label: "6,000+" }
+      }
+    },
+    "2021 Economically inactive": {
+      field: "Inactive",
+      title: "Economically inactive persons",
+      classes: {
+        "0-10000": { color: "#d9d7ea", label: "0 – 10,000" },
+        "10000-20000": { color: "#aba6d2", label: "10,000 – 20,000" },
+        "20000-35000": { color: "#7e74b8", label: "20,000 – 35,000" },
+        "35000-60000": { color: "#58449c", label: "35,000 – 60,000" },
+        "60000+": { color: "#361970", label: "60,000+" }
+      }
+    },
 
     "2011 Population Census": {
       field: "Popul2011",

@@ -7,6 +7,7 @@ Copyright © 2026 Athens GIS Repository
 This work is licensed under the Creative Commons Attribution 4.0 International.
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18727779.svg)](https://doi.org/10.5281/zenodo.18727779)
+[![PeekWell accreditation](https://app.peekwell.org/a/8OnXqKbIfiS26HnDFCt8msgfQkbnHxAH/badge.svg)](https://app.peekwell.org/a/8OnXqKbIfiS26HnDFCt8msgfQkbnHxAH/)
 
 ## Project Overview
 
@@ -32,6 +33,7 @@ The data is organized by thematic domains such as:
 - `data/` – geospatial datasets (`.geojson` / `.json`) grouped by topic.
 - `info/` – dataset notes and metadata text files.
 - `images/` – map/application image assets.
+- `athens-gis-worker/` – Cloudflare Worker backing the AI chat feature (separate npm project, deployed independently via `wrangler deploy`).
 
 
 ## Data Notes

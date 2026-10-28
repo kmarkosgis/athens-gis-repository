@@ -4,11 +4,11 @@
 
   // Add new announcements at the top. Newest entry first.
   var ANNOUNCEMENTS = [
+    { date: '29/10/2026', text: 'Employment, Unemployment, and inactive census 2021 added. (Population and Social conditions - Empolyment)' },
     { date: '21/10/2026', text: 'TrolleyBus routes and stops added (Transportation Systems - Road Transport).' },
     { date: '14/10/2026', text: 'Dominant leaf type and Street Trees added (Environment - Vegetation & Urban Planning - Land Cover).' },
     { date: '30/09/2026', text: '2021 Population Census Density added (Population and social conditions).' },
-    { date: '16/09/2026', text: 'AI assistant "Athena" added. Shaded Relief layer added. Major performance improvements.' },
-        
+            
   ];
 
   function buildContent(box) {

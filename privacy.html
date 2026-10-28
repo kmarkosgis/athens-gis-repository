@@ -130,8 +130,74 @@
       letter-spacing: 0.5px;
     }
     .site-footer a { color: inherit; }
+    .site-footer .peekwell-badge { display: block; margin-top: 10px; line-height: 0; }
+
+    /* ── Cookie consent ─────────────────────────────────────────────────────
+       Same box, text and behaviour as the map and the About page (markup + JS/cookies.js,
+       one shared consent record in localStorage); it sits bottom left. */
+    #cookie-consent-box {
+      position: fixed;
+      left: 20px;
+      bottom: 20px;
+      width: 460px;
+      max-width: calc(100vw - 28px);
+      z-index: 3001;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.92);
+      -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(171, 199, 222, 0.45);
+      font-size: 14px;
+      line-height: 1.4;
+      letter-spacing: 0.3px;
+      color: rgba(17, 24, 39, 1);
+    }
+    #cookie-consent-box[hidden] { display: none !important; }
+    #cookie-consent-text { margin: 0; }
+    #cookie-consent-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    #cookie-accept-btn,
+    #cookie-reject-btn {
+      border-radius: 8px;
+      border: 1px solid rgba(171, 199, 222, 0.8);
+      background: white;
+      color: rgba(17, 24, 39, 1);
+      padding: 6px 12px;
+      font: inherit;
+      font-size: 13px;
+      letter-spacing: inherit;
+      cursor: pointer;
+      transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+    }
+    #cookie-accept-btn:hover,
+    #cookie-reject-btn:hover { border-color: rgba(55, 65, 81, 0.85); }
+    #cookie-accept-btn {
+      background: rgba(55, 65, 81, 0.9);
+      color: white;
+      border-color: transparent;
+    }
+    #cookie-accept-btn:hover {
+      background: rgba(31, 41, 55, 0.95);
+      border-color: transparent;
+    }
+
+    /* Tablet / phone: larger, touch-sized text and buttons. */
+    @media (max-width: 900px) {
+      #cookie-consent-box { left: 14px; gap: 10px; font-size: 16px; }
+      #cookie-accept-btn, #cookie-reject-btn { font-size: 16px; padding: 8px 16px; }
+    }
 
     @media (max-width: 520px) {
+      #cookie-consent-box { bottom: 14px; }
       .site-header { gap: 8px; padding: 4px 10px; }
       .site-header .brand img { height: 30px; }
       .header-actions { gap: 8px; }
@@ -142,7 +208,7 @@
     }
 
     @media print {
-      .site-header, .site-footer { display: none !important; }
+      .site-header, .site-footer, #cookie-consent-box { display: none !important; }
       body { background: #fff; }
       #legal-body { border: 0; padding: 0; }
     }
@@ -173,10 +239,26 @@
 <footer class="site-footer">
   &copy; 2026 Athens GIS Repository | Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC-BY 4.0</a> |
   <a href="privacy.html" aria-current="page">Cookies &amp; Privacy</a>
+  <a class="peekwell-badge" href="https://app.peekwell.org/a/8OnXqKbIfiS26HnDFCt8msgfQkbnHxAH/" target="_blank" rel="noopener"><img src="https://app.peekwell.org/a/8OnXqKbIfiS26HnDFCt8msgfQkbnHxAH/badge.svg" alt="PeekWell accreditation" height="22"></a>
 </footer>
 
+<div id="cookie-consent-box" role="dialog" aria-live="polite" aria-label="Cookie preferences" hidden>
+  <p id="cookie-consent-text">
+    This website uses analytics and advertising tools (Google Analytics, Google Ads &amp; PostHog) to improve user experience and measure advertising.
+    You can accept or reject non-essential cookies.
+  </p>
+  <div id="cookie-consent-actions">
+    <button id="cookie-accept-btn" type="button">Accept</button>
+    <button id="cookie-reject-btn" type="button">Reject</button>
+  </div>
+</div>
+
+<!-- Consent + analytics loader, shared with the map (index.html) and the About page: one choice, stored once.
+     Analytics (Google Analytics, PostHog) only load after the visitor accepts. -->
+<script src="JS/cookies.js?v=b8b6f976ff" defer></script>
+
 <!-- config.js: only R2_BASE_URL is used here, to find info/legal.txt (the policy text, read from R2 like the layer descriptions).
-     The map's COOKIES - PRIVACY button and the footer links open this page. It sets no cookies and loads no analytics, so it has no consent banner. -->
+     The map's COOKIES - PRIVACY button and the footer links open this page. -->
 <script src="JS/config.js?v=20260615-1"></script>
 <script>
   (function () {

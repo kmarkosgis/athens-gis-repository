@@ -176,6 +176,23 @@
       box.hidden = false;
     }
 
+    // Keep the cookie box 10px below the announcement box, whatever its height.
+    // Falls back to the header offset when the announcement box is absent or not displayed.
+    var announcement = document.getElementById("announcement-box");
+    function positionBelowAnnouncement() {
+      var top = 50;
+      if (announcement && !announcement.hidden) {
+        var rect = announcement.getBoundingClientRect();
+        if (rect.height > 0) top = Math.round(rect.bottom + 10);
+      }
+      box.style.setProperty("--cookie-top", top + "px");
+    }
+    positionBelowAnnouncement();
+    window.addEventListener("resize", positionBelowAnnouncement);
+    if (announcement && window.ResizeObserver) {
+      new ResizeObserver(positionBelowAnnouncement).observe(announcement);
+    }
+
     acceptBtn.addEventListener("click", function () {
       writeConsent("accepted");
       loadAnalytics();

@@ -99,6 +99,12 @@ var layerCategories = {
       { name: "2021 Population Census", file: "Social/Population2021.json", geom: "polygon" },
       { name: "2021 Population Census Density", file: "Social/population_density_2021.tif", type: "raster" },
       { name: "2011 Population Census", file: "Social/Population2011.json", geom: "polygon" }
+    ],
+    "Employment": [
+      { name: "2021 Employment Census", file: "Social/Employment2021.json", geom: "polygon" },
+      { name: "2021 Employment Density", file: "Social/employment_density_2021.tif", type: "raster" },
+      { name: "2021 Unemployment Census", file: "Social/Unemployment2021.json", geom: "polygon" },
+      { name: "2021 Economically inactive", file: "Social/Inactive2021.json", geom: "polygon" }
     ]
   },
   "Urban Planning and Land Cover": {
@@ -791,7 +797,9 @@ function ensureInfoBoxUpdate(opts){
   tabsHtml += '</div>';
 
   // Build content areas (only show active tab)
-  var contentHtml = '<div id="contentContainer" style="padding:10px; max-height:250px; overflow-y:auto;">';
+  // No max-height here: #layerInfoBox is a flex column (style.css), which sizes this to the room left
+  // under the title and tabs - a fixed value ignored those and pushed the end of the text out of view.
+  var contentHtml = '<div id="contentContainer" style="padding:10px; overflow-y:auto;">';
   layerNames.forEach(function(name, idx){
     var isActive = idx === toIdx;
     var display = isActive ? 'block' : 'none';
@@ -802,7 +810,7 @@ function ensureInfoBoxUpdate(opts){
   // Combine all HTML
   var html = tabsHtml + contentHtml;
   contentEl.innerHTML = html;
-  infoBox.style.display = 'block';
+  infoBox.style.display = 'flex'; // a flex column - see #layerInfoBox / #layerInfoContent in style.css
   document.body.classList.add('layer-info-open');
 
   // Slide the freshly-rendered track from its old position to its new one: it's
@@ -2132,6 +2140,48 @@ function renderLayerControl(){
     buttonEl.style.opacity = '';
   }
 
+  // Desktop only: after the first download in a month, highlight the CITE button and
+  // show a short thank-you note beside it. The last-shown time is kept in localStorage.
+  var CITE_REMINDER_KEY = 'athensgis_cite_reminder_shown';
+  var citeReminderTimer = null;
+  function showCitationReminder(){
+    var btn = document.getElementById('citation-btn');
+    var box = document.getElementById('citation-box');
+    if(!btn || !box || !window.matchMedia || !window.matchMedia('(min-width: 901px)').matches) return;
+    try{
+      var last = parseInt(localStorage.getItem(CITE_REMINDER_KEY), 10);
+      if(last){
+        var next = new Date(last);
+        next.setMonth(next.getMonth() + 1);
+        if(Date.now() < next.getTime()) return;
+      }
+      localStorage.setItem(CITE_REMINDER_KEY, String(Date.now()));
+    }catch(e){ return; }
+
+    var msg = document.getElementById('citation-reminder');
+    if(!msg){
+      msg = document.createElement('div');
+      msg.id = 'citation-reminder';
+      msg.setAttribute('role', 'status');
+      msg.textContent = 'Thank you for using Athens GIS Repository. Don’t forget to cite the app in your project.';
+      box.insertBefore(msg, btn);
+    }
+    // Light note on the dark basemap, dark note otherwise.
+    msg.classList.toggle('on-dark-basemap', (window.AthensGIS || {}).currentBaseLayerKey === 'maptilerStreetsDark');
+    msg.hidden = false;
+    btn.classList.add('citation-btn-highlight');
+
+    function dismiss(){
+      msg.hidden = true;
+      btn.classList.remove('citation-btn-highlight');
+      btn.removeEventListener('click', dismiss);
+      clearTimeout(citeReminderTimer);
+    }
+    btn.addEventListener('click', dismiss);
+    clearTimeout(citeReminderTimer);
+    citeReminderTimer = setTimeout(dismiss, 15000);
+  }
+
   function downloadLayerAsZip(info, categoryName, subcategoryName, buttonEl){
     if(!info || !info.file) return Promise.resolve();
     if(typeof JSZip === 'undefined'){
@@ -2179,6 +2229,7 @@ function renderLayerControl(){
         file: zipFilename,
         sourceFile: sourceFile
       }, categoryName, subcategoryName);
+      showCitationReminder();
     }).catch(function(err){
       console.error('Failed to create zip for layer "' + (info.name || sourceFile) + '":', err);
       alert('Could not create the zip file for "' + (info.name || sourceFile) + '". Please try again.');

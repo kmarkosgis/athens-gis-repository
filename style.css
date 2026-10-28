@@ -889,7 +889,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       right: 10px;
       width: 325px;
       max-height: 270px;
-      overflow-y: auto;
+      overflow-y: hidden;
       overflow-x: hidden;
       background: rgba(255, 255, 255, 0.95);
       -webkit-backdrop-filter: blur(7px);
@@ -899,10 +899,28 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       font-size: 11px;
       font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
-      display: none;  /* hidden by default */
+      display: none;  /* hidden by default - ensureInfoBoxUpdate() (JS/layer-control.js) shows it with display:flex */
+      flex-direction: column;
       z-index: 20;  /* ✅ force on top! */
     }
+    /* A flex column, so the title, the LAYER INFORMATION bar and the tabs row keep their own height
+       and the text area under them (#contentContainer) gets exactly what is left of the 270px
+       max-height. It used to have a fixed max-height of its own, which didn't count those three,
+       so its bottom ~100px sat below the clipped edge of this box and could never be scrolled
+       into view. */
+    #layerInfoContent {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    #layerInfoContent #tabsContainer { flex: 0 0 auto; }
+    #layerInfoContent #contentContainer {
+      flex: 1 1 auto;
+      min-height: 0;
+    }
      #layerInfoBox h1 {
+      flex: 0 0 auto;
       position: -webkit-sticky;
       position: sticky;
       top: 40px; /* user requested top: 0 */
@@ -919,6 +937,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
     }
 
     #layerInfoBox h4 {
+      flex: 0 0 auto;
       position: -webkit-sticky;
       position: sticky;
       top: 10px;
@@ -1411,8 +1430,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       gap: 8px;
     }
 
-    #citation-btn,
-    #legal-btn {
+    #citation-btn {
       height: 30px;
       min-width: 50px;
       border: 2px solid transparent;
@@ -1429,15 +1447,67 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       transition-duration: 0.2s;
     }
 
-    #citation-btn:hover,
-    #legal-btn:hover {
+    #citation-btn:hover {
       border: 2px solid rgba(55, 65, 81, 0.85);
+    }
+
+    /* Cite reminder shown after a layer download (desktop only, see layer-control.js) */
+    #citation-btn.citation-btn-highlight {
+      border-color: rgba(55, 65, 81, 0.85);
+      animation: citeBtnPulse 1.4s ease-in-out infinite;
+    }
+    @keyframes citeBtnPulse {
+      0%, 100% { box-shadow: 0 2px 6px rgba(0,0,0,0.3), 0 0 0 0 rgba(55, 65, 81, 0.45); }
+      50%      { box-shadow: 0 2px 6px rgba(0,0,0,0.3), 0 0 0 7px rgba(55, 65, 81, 0); }
+    }
+    /* Out of flow, centred on the CITE button, so showing it never shifts the button. */
+    #citation-reminder {
+      position: absolute;
+      right: calc(100% + 12px);
+      top: 50%;
+      transform: translateY(-50%);
+      width: max-content;
+      max-width: 260px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: rgba(55, 65, 81, 0.92);
+      color: #fff;
+      font-size: 13px;
+      line-height: 1.4;
+      font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      animation: citeReminderIn 0.3s ease;
+    }
+    @keyframes citeReminderIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    #citation-reminder::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -6px;
+      transform: translateY(-50%);
+      border: 6px solid transparent;
+      border-right: 0;
+      border-left-color: rgba(55, 65, 81, 0.92);
+    }
+    #citation-reminder.on-dark-basemap {
+      background: rgba(255, 255, 255, 0.95);
+      color: rgba(17, 24, 39, 1);
+    }
+    #citation-reminder.on-dark-basemap::after {
+      border-left-color: rgba(255, 255, 255, 0.95);
+    }
+    #citation-reminder[hidden] { display: none; }
+    @media (max-width: 900px) {
+      #citation-reminder { display: none !important; }
     }
 
     #citation-popup {
       position: fixed;
-      top: 105px;
-      right: 60px;
+      top: 90px;
+      right: 50px;
       width: 360px;
       max-width: calc(100vw - 20px);
       background: rgba(255, 255, 255, 0.95);
@@ -1664,15 +1734,60 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       right: 0;
       bottom: 0;
       width: 100%;
-      background: rgba(171, 199, 222, 0.6);
-      color: grey;
+      /* A light tint of the About page's footer slate (its --brand, rgb(55, 65, 81)), with that slate as the text. */
+      background: rgb(205, 213, 224);
+      color: rgb(55, 65, 81);
       text-align: center;
-      padding: 2px;
+      padding: 0 2px;
+      min-height: 19px;
+      line-height: 19px; /* one centred text line, as tall as the badges that sit on the bar */
       font-size: 11px;
       font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       font-style: normal;
       z-index: 1200; /* above map but below modals */
       box-sizing: border-box;
+    }
+
+    /* The badges and the Leaflet attribution sit on the footer bar, in front of it (they are
+       children of #footer). Bottom-left: the Zenodo DOI badge, then the PeekWell badge right
+       after it. Bottom-right: #map-attribution, a live copy of the Leaflet attribution
+       (JS/map-init.js) - the map's own copy is in #map's stacking context, under the footer.
+       Badge widths follow their height (DOI is 193x20 natively, PeekWell 169x22), so the
+       PeekWell badge's left = 10px + the DOI badge's width at that height + a ~6px gap -
+       update it if either badge changes. */
+    #footer .doi-badge,
+    #footer .peekwell-badge {
+      position: absolute;
+      bottom: 0;
+      line-height: 0;
+    }
+
+    #footer .doi-badge { left: 10px; }
+    #footer .peekwell-badge { left: 200px; }
+
+    #footer .doi-badge img,
+    #footer .peekwell-badge img {
+      display: block;
+      height: 19px;
+      width: auto;
+    }
+
+    #map-attribution {
+      position: absolute;
+      right: 10px;
+      bottom: 0;
+      white-space: nowrap;
+    }
+
+    #map-attribution a { color: inherit; }
+
+    @media (max-width: 1120px) {
+      /* Narrower windows: smaller badges, so the centred footer text stays clear of them. */
+      #footer .doi-badge,
+      #footer .peekwell-badge { bottom: 2px; }
+      #footer .doi-badge img,
+      #footer .peekwell-badge img { height: 14px; }
+      #footer .peekwell-badge { left: 150px; }
     }
 
     #map-scale-ratio {
@@ -1713,7 +1828,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
     #cookie-consent-box {
       position: fixed;
       /* Same horizontal anchor as .announcement-box, stacked directly below it */
-      top: 270px;
+      top: var(--cookie-top, 270px); /* set by cookies.js: announcement box bottom + 10px */
       left: 50%;
       right: 400px;
       transform: translateX(-50%);
@@ -2484,8 +2599,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
         right: 56px;
         z-index: 3002;
       }
-      #citation-btn,
-      #legal-btn {
+      #citation-btn {
         height: 40px;
         min-width: 90px;
         font-size: 12px;
@@ -2773,13 +2887,32 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       }
       #footer {
         width: 100%;
-        
         font-size: 9px;
-        background-color: rgba(255, 255, 255, 1);
         padding: 4px;
+        min-height: 0;
+        line-height: 12px;
         z-index: 9999;
       }
-      
+      /* The footer text takes the whole bar on a phone, so the badges and the attribution
+         float at the left instead, just above the bottom-centre toolbar (28px up, ~50px tall):
+         the badges first, the attribution on top of them. */
+      #footer .doi-badge,
+      #footer .peekwell-badge { bottom: calc(100% + 66px); }
+      #footer .doi-badge img,
+      #footer .peekwell-badge img { height: 16px; }
+      #footer .peekwell-badge { left: 170px; }
+      #map-attribution {
+        right: auto;
+        left: 10px;
+        bottom: calc(100% + 86px);
+        padding: 0 6px;
+        border-radius: 4px;
+        background: rgba(55, 65, 81, 0.85);
+        color: rgb(246, 247, 245);
+        font-size: 10px;
+        line-height: 16px;
+      }
+
       #menuIcon.animated {
         transform: rotate(180deg) scale(1.2);
         transition: transform 0.5s;

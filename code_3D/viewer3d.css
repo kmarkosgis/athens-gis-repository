@@ -1,0 +1,789 @@
+/* 3D Viewer - additions and overrides on top of the main style.css (header, footer,
+   toolbar, zoom buttons, modals and scale label come from there unchanged). */
+
+/* ---------- Map ---------- */
+.viewer-3d #map { background: #eef2f7; }
+/* The attribution is shown in the footer instead (code_3D/map3d.js copies it). */
+.viewer-3d .maplibregl-ctrl-attrib { display: none !important; }
+
+/* Header stays visible (and clickable) above the loading overlay. */
+.viewer-3d header { z-index: 1160; }
+.viewer-3d .header-switch-btn { z-index: 1161; }
+
+/* Desktop only (mobile keeps its own two-line layout below): the "3D Viewer" badge's
+   own padding makes its box taller than the header's plain-text line, which would
+   otherwise stretch the header past the main page's height. Laying the title out as
+   a flex row - centered, at a height equal to the main page's header (style.css:
+   24px text + 4px/7px padding = 43px) - keeps the two pages' headers the same height
+   regardless of the badge's size. */
+@media (min-width: 901px) {
+  .viewer-3d header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 43px;
+    padding-top: 0;
+    padding-bottom: 0;
+    box-sizing: border-box;
+  }
+}
+
+/* "Athens GIS Repository" - 2px smaller than the header's default 24px, so the
+   "3D Viewer" badge next to it reads as the page title. */
+.header-title { font-size: 20px; }
+
+/* "3D Viewer" badge - 1px larger than the title next to it, and picked out with the
+   app's own accent blue (the scrollbar, input borders and focus rings elsewhere in
+   the site: #4682B4) rather than an unrelated color. */
+.header-3d {
+  display: inline-block;
+  
+  background: transparent;
+  border: 0px solid rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  vertical-align: middle;
+}
+
+/* ---------- Zoom + compass (no layer panel on this page, so they sit at the left) ---------- */
+#custom-zoom-controls { left: 10px; }
+
+#rotate-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  perspective: 80px;
+}
+#tilt-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+#tilt-btn .tilt-label {
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: rgb(55, 65, 81);
+}
+#rotate-btn .compass-needle {
+  transition: transform 0.08s linear;
+  pointer-events: none;
+}
+
+/* ---------- Toolbar: measure, route shade, export ---------- */
+#toolbar {
+  width: 250px;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto auto;
+}
+/* Route shade gets the first line (icon + name); measure and export share the one below. */
+#routeShadeBtn { grid-row: 2; grid-column: 1 / -1; justify-self: stretch; margin: 0; }
+#measureBtn    { grid-row: 3; grid-column: 1; justify-self: stretch; margin: 0; }
+#exportBtn     { grid-row: 3; grid-column: 2; justify-self: stretch; margin: 0; }
+/* Same look as the measure/export buttons (style.css styles those, with opacity/draw order, by id). */
+#routeShadeBtn {
+  box-sizing: border-box;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.95);
+  color: black;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
+  letter-spacing: 1px;
+  padding: 0 10px;
+  border-radius: 9999px;
+  border: 2px solid rgba(171, 199, 222, 0.3);
+  cursor: pointer;
+  transition-duration: 0.2s;
+}
+#routeShadeBtn svg { margin-right: 5px; flex-shrink: 0; }
+#routeShadeBtn:hover { border: 2px solid rgba(55, 65, 81, 0.85); }
+#measureBtn.active,
+#routeShadeBtn.active {
+  border: 2px solid rgba(55, 65, 81, 0.85);
+  background: rgba(55, 65, 81, 0.12);
+}
+
+/* ---------- NOTE button + window (code_3D/note.js); the CITE button next to it is style.css's ---------- */
+#note-btn {
+  height: 30px;
+  min-width: 50px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  color: rgba(17, 24, 39, 1);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
+  padding: 0 16px;
+  cursor: pointer;
+  transition-duration: 0.2s;
+}
+#note-btn:hover,
+#note-btn[aria-expanded="true"] { border: 2px solid rgba(55, 65, 81, 0.85); }
+
+/* Note and Cite sit 10px from the right edge (style.css puts them 50px in on the main page). */
+.viewer-3d #citation-box { right: 10px; }
+.viewer-3d #citation-popup { right: 10px; }
+
+#note-popup {
+  position: fixed;
+  top: 90px;
+  right: 10px;
+  width: 380px;
+  max-width: calc(100vw - 20px);
+  max-height: calc(100dvh - 190px);
+  overflow-y: auto;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.95);
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
+  border-radius: 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  padding: 10px;
+  z-index: 1600;
+  font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
+  color: rgb(55, 65, 81);
+}
+#note-popup[hidden] { display: none !important; }
+.note-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(55, 65, 81, 0.85);
+  color: #ffffff;
+  border-radius: 10px;
+  padding: 6px 10px;
+}
+#note-title { margin: 0; font-size: 14px; font-weight: 500; letter-spacing: 2px; }
+#note-close {
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  font-size: 20px;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+}
+.note-popup-body { padding: 6px 4px 2px; font-size: 12.5px; line-height: 1.45; }
+.note-popup-body h4 { margin: 10px 0 4px; font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.75; }
+.note-popup-body h4:first-child { margin-top: 2px; }
+.note-popup-body ul { margin: 0; padding-left: 18px; }
+.note-popup-body li { margin: 0 0 4px; }
+.note-warning { margin: 10px 0 0; padding: 8px 10px; border-radius: 10px; background: rgba(245, 179, 1, 0.16); font-weight: 600; }
+
+/* ---------- Route shade (code_3D/route-shade.js) ---------- */
+.route-hint { font-size: 13px !important; opacity: 0.8; }
+#routeQuitModal .measure-modal-content button + button { margin-left: 8px; }
+#route-panel {
+  position: fixed;
+  left: 50%;
+  bottom: 72px;
+  transform: translateX(-50%);
+  width: 420px;
+  max-width: calc(100vw - 20px);
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.95);
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
+  border-radius: 14px;
+  padding: 8px 10px 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  color: rgb(55, 65, 81);
+  z-index: 1001;
+  animation: popupFadeIn 0.3s cubic-bezier(.25,.8,.25,1);
+}
+#route-panel[hidden] { display: none; }
+.route-head { display: flex; align-items: center; gap: 6px; margin: 0 0 6px; }
+#route-panel h1,
+#route-heat h1 {
+  flex: 1;
+  margin: 0;
+  padding: 6px 10px;
+  background: rgba(55, 65, 81, 0.85);
+  color: #ffffff;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  letter-spacing: 2px;
+}
+/* Minimized: only the header row stays; the route stays on the map. */
+#route-panel.min > :not(.route-head) { display: none; }
+#route-panel.min .route-head { margin-bottom: 0; }
+#route-panel.min { width: 260px; }
+#route-min .route-max-icon { display: none; }
+#route-panel.min #route-min .route-min-icon { display: none; }
+#route-panel.min #route-min .route-max-icon { display: block; }
+
+#route-close,
+#route-min,
+#route-csv,
+#route-download,
+#route-heat-btn,
+#route-heat-download,
+#route-heat-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: rgba(55, 65, 81, 0.08);
+  color: rgb(55, 65, 81);
+  cursor: pointer;
+}
+#route-close:hover,
+#route-min:hover,
+#route-heat-download:hover,
+#route-heat-close:hover,
+#route-heat-btn:hover:not(:disabled),
+#route-csv:hover:not(:disabled),
+#route-download:hover:not(:disabled) { border-color: rgba(55, 65, 81, 0.6); }
+#route-heat-btn.active { background: rgba(55, 65, 81, 0.85); color: #ffffff; }
+#route-heat-btn:disabled { opacity: 0.4; cursor: default; }
+#route-csv { width: auto; padding: 0 7px; font-family: inherit; font-size: 11px; font-weight: 700; letter-spacing: 0.6px; }
+#route-csv:disabled,
+#route-download:disabled { opacity: 0.4; cursor: default; }
+.route-sub { margin: 0 0 4px; font-size: 11.5px; opacity: 0.8; text-align: center; font-variant-numeric: tabular-nums; }
+#route-chart { display: block; width: 100%; height: auto; touch-action: none; cursor: crosshair; }
+#route-chart .rc-grid { stroke: rgba(55, 65, 81, 0.25); stroke-width: 1; }
+#route-chart .rc-tick { stroke: rgba(55, 65, 81, 0.45); stroke-width: 1; }
+#route-chart .rc-label { font-size: 10px; fill: rgb(55, 65, 81); font-variant-numeric: tabular-nums; }
+#route-chart .rc-now { stroke: #c0392b; stroke-width: 2; }
+#route-chart .rc-hover { stroke: rgba(17, 24, 39, 0.6); stroke-width: 1; stroke-dasharray: 3 2; }
+.route-readout { margin: 4px 0; min-height: 15px; font-weight: 600; text-align: center; font-variant-numeric: tabular-nums; }
+.route-legend { display: flex; align-items: center; gap: 12px; font-size: 11.5px; }
+.route-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.route-sw { display: inline-block; width: 18px; height: 10px; border-radius: 3px; border: 1px solid rgba(55, 65, 81, 0.3); }
+.route-legend .route-tip { margin-left: auto; opacity: 0.65; font-size: 11px; }
+.route-note { margin: 4px 0 0; font-size: 11px; opacity: 0.65; }
+#route-elev-wrap[hidden] { display: none; }
+.route-elev-sub { margin: 8px 0 2px; font-weight: 600; opacity: 1; }
+#route-elev { display: block; width: 100%; height: auto; touch-action: none; cursor: crosshair; }
+#route-elev .rc-elev-area { fill: rgba(55, 65, 81, 0.18); }
+#route-elev .rc-elev-line { fill: none; stroke: rgb(55, 65, 81); stroke-width: 1.6; stroke-linejoin: round; }
+#route-elev .rc-grid { stroke: rgba(55, 65, 81, 0.25); stroke-width: 1; }
+#route-elev .rc-tick { stroke: rgba(55, 65, 81, 0.45); stroke-width: 1; }
+#route-elev .rc-label { font-size: 10px; fill: rgb(55, 65, 81); font-variant-numeric: tabular-nums; }
+#route-elev .rc-hover { stroke: rgba(17, 24, 39, 0.6); stroke-width: 1; stroke-dasharray: 3 2; }
+#route-sun-wrap[hidden] { display: none; }
+#route-sun { display: block; width: 100%; height: auto; touch-action: none; cursor: crosshair; }
+#route-sun .rc-sun-line { fill: none; stroke: rgb(55, 65, 81); stroke-width: 1.4; stroke-linejoin: round; }
+#route-sun .rc-grid { stroke: rgba(55, 65, 81, 0.25); stroke-width: 1; }
+#route-sun .rc-tick { stroke: rgba(55, 65, 81, 0.45); stroke-width: 1; }
+#route-sun .rc-label { font-size: 10px; fill: rgb(55, 65, 81); font-variant-numeric: tabular-nums; }
+#route-sun .rc-hover { stroke: rgba(17, 24, 39, 0.6); stroke-width: 1; stroke-dasharray: 3 2; }
+/* Sun map: % of sun by route length and time of day. */
+#route-heat {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 720px;
+  max-width: calc(100vw - 20px);
+  max-height: calc(100dvh - 20px);
+  overflow-y: auto;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 14px;
+  padding: 8px 10px 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  color: rgb(55, 65, 81);
+  z-index: 2010;
+}
+#route-heat[hidden] { display: none; }
+#route-heat-chart { display: block; width: 100%; height: 320px; touch-action: none; cursor: crosshair; }
+.route-heat-legend { display: flex; align-items: center; gap: 8px; font-size: 11.5px; }
+#route-heat-scale { display: inline-block; width: 140px; height: 10px; border-radius: 3px; border: 1px solid rgba(55, 65, 81, 0.3); }
+.route-heat-legend .route-tip { margin-left: auto; opacity: 0.65; font-size: 11px; }
+@media (max-width: 600px) { #route-heat-chart { height: 260px; } #route-heat-scale { width: 80px; } }
+.route-note { margin: 8px 0 0; font-size: 10.5px; line-height: 1.35; opacity: 0.7; }
+/* Tall content (chart + elevation + note) scrolls inside the panel on a short screen. */
+#route-panel { max-height: calc(100dvh - 190px); overflow-y: auto; overflow-x: hidden; }
+.route-summary { margin: 6px 0 0; padding-top: 6px; border-top: 1px solid rgba(55, 65, 81, 0.12); line-height: 1.4; }
+
+/* Export size menu (same look as the main page's) */
+#exportSizeMenu {
+  position: fixed;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 70px;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+}
+#exportSizeMenu.open { display: flex; animation: popupFadeIn 0.2s cubic-bezier(.25,.8,.25,1); }
+#exportSizeMenu li {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  transition: border 0.2s;
+}
+#exportSizeMenu li:hover {
+  border: 2px solid rgba(55, 65, 81, 0.85);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ---------- Loading circle ---------- */
+#loading3d {
+  position: fixed;
+  inset: 0;
+  z-index: 1150;            /* above the map, zoom buttons and toolbar; below header/footer/modals */
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.35);
+  cursor: progress;
+  touch-action: none;
+}
+#loading3d.active { display: flex; }
+.loading3d-spinner {
+  width: 64px;
+  height: 64px;
+  box-sizing: border-box;
+  border: 6px solid rgba(0, 0, 0, 0.08);
+  border-top: 6px solid #2c3e50;
+  border-radius: 50%;
+  animation: loading3d-spin 1s linear infinite;
+  box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.55);
+}
+@keyframes loading3d-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* ---------- Notices ---------- */
+#notice3d {
+  position: fixed;
+  top: 52px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1300;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+}
+.notice3d-item {
+  background: rgba(55, 65, 81, 0.88);
+  color: rgb(246, 247, 245);
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  padding: 7px 14px;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  animation: popupFadeIn 0.3s cubic-bezier(.25,.8,.25,1);
+  transition: opacity 0.5s;
+}
+.notice3d-item.leaving { opacity: 0; }
+
+/* ---------- Buildings panel (color switch + height legend) ---------- */
+#buildings-panel {
+  position: fixed;
+  right: 10px;
+  bottom: 72px;             /* just above #map-scale-ratio */
+  width: 190px;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.95);
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
+  border-radius: 14px;
+  padding: 8px 10px 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  z-index: 1000;
+  animation: popupFadeIn 0.3s cubic-bezier(.25,.8,.25,1);
+}
+#buildings-panel[hidden] { display: none; }
+#buildings-panel h1 {
+  margin: 0 0 10px;
+  padding: 6px 10px;
+  background: rgba(55, 65, 81, 0.85);
+  color: #ffffff;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  letter-spacing: 2px;
+}
+
+.switch3d {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  padding: 0 2px;
+}
+.switch3d input { position: absolute; opacity: 0; width: 0; height: 0; }
+.switch3d-track {
+  position: relative;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 18px;
+  border-radius: 9999px;
+  background: rgba(171, 199, 222, 0.6);
+  transition: background 0.2s;
+}
+.switch3d-track::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s;
+}
+.switch3d input:checked + .switch3d-track { background: rgba(55, 65, 81, 0.85); }
+.switch3d input:checked + .switch3d-track::after { transform: translateX(16px); }
+.switch3d input:focus-visible + .switch3d-track { outline: 2px solid #4682b4; outline-offset: 2px; }
+
+#height-legend {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 8px 2px 0;
+  border-top: 1px solid rgba(55, 65, 81, 0.12);
+}
+#height-legend[hidden] { display: none; }
+#height-legend li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 0;
+  font-size: 12px;
+}
+.height-swatch {
+  width: 24px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid rgba(55, 65, 81, 0.3);
+  flex: 0 0 auto;
+}
+
+/* ---------- Sun panel (code_3D/sun.js) ---------- */
+/* Left edge; sun.js sets its top so it's vertically centred, clear of the
+   zoom/compass buttons above and the toolbar below. */
+#sun-panel {
+  position: fixed;
+  left: 10px;
+  top: 50%;
+  z-index: 1000;
+  width: 232px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.95);
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
+  border-radius: 14px;
+  padding: 8px 10px 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  color: rgb(55, 65, 81);
+  animation: popupFadeIn 0.3s cubic-bezier(.25,.8,.25,1);
+}
+#sun-fab { display: none; }
+#sun-panel.folded {
+  width: auto;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  overflow: visible;
+}
+#sun-panel.folded #sun-box { display: none; }
+#sun-panel.folded #sun-fab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 45px;
+  height: 45px;
+  padding: 0;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: border 0.2s;
+}
+#sun-panel.folded #sun-fab:hover { border-color: rgba(55, 65, 81, 0.85); }
+#sun-panel.sun-night #sun-fab svg { filter: grayscale(0.7) brightness(0.8); }
+
+#sun-panel .sun-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+}
+#sun-panel h1 {
+  flex: 1;
+  margin: 0;
+  padding: 6px 10px;
+  background: rgba(55, 65, 81, 0.85);
+  color: #ffffff;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  letter-spacing: 2px;
+}
+#sun-fold {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: rgba(55, 65, 81, 0.08);
+  color: rgb(55, 65, 81);
+  cursor: pointer;
+}
+#sun-fold:hover { border-color: rgba(55, 65, 81, 0.6); }
+
+.sun-switch { margin: 0 0 8px; font-size: 13px; }
+.sun-switch-sub { padding-left: 14px; font-size: 12px; }
+.sun-switch input:disabled + .switch3d-track,
+.sun-switch input:disabled ~ .switch3d-label { opacity: 0.45; }
+
+.sun-grid {
+  display: grid;
+  gap: 2px 6px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.sun-grid-date { grid-template-columns: 1fr 1.25fr 1.5fr; }
+.sun-grid-time { grid-template-columns: 1fr 1fr 1fr; }
+.sun-grid label { font-size: 11px; opacity: 0.75; padding-left: 2px; }
+.sun-grid input,
+.sun-grid select,
+#sun-speed {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 28px;
+  padding: 2px 4px;
+  border: 1px solid rgba(55, 65, 81, 0.25);
+  border-radius: 8px;
+  background: #ffffff;
+  color: rgb(17, 24, 39);
+  font: inherit;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.sun-grid input:focus,
+.sun-grid select:focus,
+#sun-speed:focus { outline: 2px solid #4682b4; outline-offset: 0; border-color: transparent; }
+#sun-now {
+  height: 28px;
+  padding: 0 6px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: rgba(55, 65, 81, 0.85);
+  color: #ffffff;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+#sun-now:hover { border-color: rgba(70, 130, 180, 0.9); }
+.sun-tz { margin: 0 0 8px; font-size: 11px; opacity: 0.7; text-align: center; }
+
+.sun-play {
+  display: grid;
+  grid-template-columns: 32px 32px 32px 1fr;
+  gap: 6px;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(55, 65, 81, 0.12);
+  margin-bottom: 8px;
+}
+.sun-play-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 28px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: rgba(55, 65, 81, 0.08);
+  color: rgb(55, 65, 81);
+  cursor: pointer;
+  transition: border 0.2s, background 0.2s;
+}
+.sun-play-btn:hover { border-color: rgba(55, 65, 81, 0.6); }
+.sun-play-btn[aria-pressed="true"] { background: rgba(55, 65, 81, 0.85); color: #ffffff; }
+
+.sun-info { display: flex; align-items: center; gap: 8px; }
+#sun-dial { flex: 0 0 auto; overflow: visible; }
+#sun-dial .dial-horizon { fill: rgba(171, 199, 222, 0.25); stroke: rgba(55, 65, 81, 0.55); stroke-width: 1.4; }
+#sun-dial .dial-ring { fill: none; stroke: rgba(55, 65, 81, 0.18); stroke-width: 0.8; stroke-dasharray: 2 2; }
+#sun-dial .dial-path { fill: none; stroke: #e0a000; stroke-width: 1.6; stroke-linecap: round; opacity: 0.7; }
+#sun-dial .dial-ray { stroke: rgba(224, 160, 0, 0.6); stroke-width: 1; }
+#sun-dial .dial-label { font-size: 10px; font-weight: 600; fill: rgb(55, 65, 81); }
+#sun-dial .dial-north { fill: #c0392b; }
+#sun-dial .dial-sun { fill: #f5b301; stroke: #d98a00; stroke-width: 1.4; }
+#sun-dial .dial-sun.below { fill: #ffffff; stroke: rgba(55, 65, 81, 0.5); stroke-dasharray: 2 1.5; }
+
+.sun-readout {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3px 6px;
+  margin: 0;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+.sun-readout dt { opacity: 0.7; }
+.sun-readout dd { margin: 0; font-weight: 600; white-space: nowrap; }
+
+/* Lighting switched off: the fields still work, the readout is just greyed. */
+#sun-panel.sun-off .sun-info { opacity: 0.55; }
+
+/* ---------- The sun in the sky (code_3D/sun.js places it) ---------- */
+#sky-sun {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 900;              /* above the map, below panels and the loading circle */
+  pointer-events: none;
+  will-change: transform;
+}
+.sky-sun-disc {
+  position: absolute;
+  left: -20px;
+  top: -20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--sun-core, #fff6c8) 0 38%, var(--sun-glow, #ffd34d) 48%, transparent 72%);
+  box-shadow: 0 0 40px 18px color-mix(in srgb, var(--sun-glow, #ffd34d) 45%, transparent);
+}
+/* Off the map: a small sun at the edge, on the side where the sun is. */
+#sky-sun.edge { pointer-events: auto; }
+#sky-sun.edge .sky-sun-disc {
+  left: -11px;
+  top: -11px;
+  width: 22px;
+  height: 22px;
+  background: radial-gradient(circle, var(--sun-core, #fff6c8) 0 40%, var(--sun-glow, #ffd34d) 52%, transparent 74%);
+  box-shadow: 0 0 10px 3px color-mix(in srgb, var(--sun-glow, #ffd34d) 50%, transparent);
+  outline: 1.5px dashed rgba(217, 138, 0, 0.7);
+  outline-offset: 2px;
+  opacity: 0.9;
+}
+
+/* ---------- Scale + eye altitude (one frame, from style.css's #map-scale-ratio) ---------- */
+#map-scale-ratio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#eye-alt-sep, #elev-sep { opacity: 0.4; }
+#eye-alt-text:empty, #elev-text:empty { display: none; }
+
+/* ---------- Phones (matches style.css's 900px breakpoint) ---------- */
+@media (max-width: 900px) {
+  /* The longer title doesn't fit beside the LinkedIn icon: two lines, left-aligned.
+     Right padding just clears that icon now - "About" moved to the footer. */
+  .viewer-3d header {
+    text-align: left;
+    font-size: 15px;
+    line-height: 18px;
+    padding: 7px 92px 7px 12px;
+  }
+  /* .header-title/.header-3d set their own font-size unconditionally above (an
+     inherited value never wins over an explicit rule) - restate the mobile sizes
+     here so they still shrink with the rest of the header. */
+  .header-title { display: none; }   /* phones: "3D Viewer" only */
+  .header-3d { display: inline-block; margin: 3px 0 0; font-size: 16px; letter-spacing: 1.5px; }
+
+  /* +36px, matching style.css's #toolbar shift on mobile - keeps the same
+     clearance above the toolbar now that it's been raised for .footer-credits. */
+  #custom-zoom-controls { left: auto; right: 10px; bottom: 126px; }
+
+  #toolbar {
+    width: auto;
+    grid-template-columns: auto auto auto;
+    grid-template-rows: auto;
+    gap: 14px;
+  }
+  #measureBtn    { grid-row: 1; grid-column: 1; }
+  #routeShadeBtn { grid-row: 1; grid-column: 2; width: 38px; height: 38px; padding: 0; border: 2px solid rgba(171, 199, 222, 0.45); }
+  #routeShadeBtn svg { width: 16px; height: 16px; margin: 0; }
+  #exportBtn     { grid-row: 1; grid-column: 3; }
+
+  .viewer-3d #citation-box { right: 10px; }
+  #note-btn { height: 40px; min-width: 90px; font-size: 12px; letter-spacing: 0.8px; }
+  #note-popup { top: 102px; right: 10px; left: 10px; width: auto; max-width: none; z-index: 3501; }
+
+  /* Above the toolbar, full width. */
+  #route-panel { bottom: 124px; width: calc(100vw - 20px); z-index: 2004; }
+  .route-legend .route-tip { display: none; }
+
+  #notice3d { top: 62px; }
+
+  #buildings-panel {
+    top: 98px;                /* clear of the CITE button (style.css: 50px from the top, 40px high) */
+    bottom: auto;
+    right: 10px;
+    width: 170px;
+    z-index: 2002;
+  }
+
+  /* Above the buildings panel when both are open on a small screen. */
+  #sun-panel { z-index: 2003; width: 220px; }
+  #sun-panel.folded #sun-fab { width: 38px; height: 38px; }
+  #sun-panel.folded #sun-fab svg { width: 22px; height: 22px; }
+
+  .notice3d-item { white-space: normal; max-width: calc(100vw - 40px); text-align: center; }
+}
+
+/* ---------- Building info popup (code_3D/building-info.js) ---------- */
+.bldg-popup .maplibregl-popup-content { padding: 8px 10px 10px; border-radius: 12px; color: rgb(55, 65, 81); font-size: 12px; letter-spacing: 0.3px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3); }
+.bldg-popup .maplibregl-popup-close-button { top: 8px; right: 10px; width: 26px; height: 26px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; line-height: 1; color: #ffffff; border-radius: 8px; }
+.bldg-popup .maplibregl-popup-close-button:hover { background: rgba(255, 255, 255, 0.2); }
+.bldg-info { min-width: 240px; }
+.bldg-info h3 { margin: 0 0 6px; padding: 0 34px; height: 26px; line-height: 26px; background: rgba(55, 65, 81, 0.85); color: #ffffff; border-radius: 8px; font-size: 12px; font-weight: 500; letter-spacing: 2px; text-align: center; }
+.bldg-scroll { max-height: 40vh; overflow-y: auto; }
+.bldg-info table { border-collapse: collapse; width: 100%; }
+.bldg-info th { text-align: left; font-weight: 600; width: 1%; padding: 2px 14px 2px 0; white-space: nowrap; vertical-align: top; opacity: 0.8; }
+.bldg-info td { text-align: right; padding: 2px 0; word-break: break-word; font-variant-numeric: tabular-nums; }
+.bldg-info tr + tr th, .bldg-info tr + tr td { border-top: 1px solid rgba(55, 65, 81, 0.12); }
+.bldg-none { margin: 6px 0 0; opacity: 0.7; font-size: 11px; }

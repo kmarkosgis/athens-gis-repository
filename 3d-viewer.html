@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="style.css?v=7529abf84c">
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" crossorigin="anonymous">
+  <link rel="stylesheet" href="code_3D/viewer3d.css">
+  <meta charset="utf-8" />
+  <title>Athens GIS Repository 3D Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Explore Athens in 3D: the city's buildings extruded by height on top of a 3D terrain model, in the Athens GIS Repository 3D Viewer. Pan, zoom, tilt and rotate the map, measure distances and export the view.">
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="Konstantinos Markos">
+  <meta property="og:title" content="Athens GIS Repository | 3D Viewer">
+  <meta property="og:description" content="3D buildings and terrain of Athens, Greece.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://athensgis.gr/3d-viewer">
+  <link rel="canonical" href="https://athensgis.gr/3d-viewer">
+  <link rel="icon" href="images/6.png" type="image/png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://data.athensgis.gr">
+  <link rel="dns-prefetch" href="https://basemaps.cartocdn.com">
+  <link rel="dns-prefetch" href="https://tiles.basemaps.cartocdn.com">
+
+  <!-- Bold "+"/"-" glyphs of the zoom buttons, as on the main page. -->
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@700&display=swap" rel="stylesheet">
+
+  <!-- three.js (landmark models, code_3D/landmarks.js); only downloaded when a model is configured. -->
+  <script type="importmap">
+  { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  } }
+  </script>
+
+  <script>
+    var host = String(window.location.hostname || '').toLowerCase();
+    var isProductionSite = host === 'athensgis.gr';
+  </script>
+</head>
+
+<body class="viewer-3d">
+
+<div class="logo-container">
+  <a href="./" title="Back to the Athens GIS Repository map"><img src="images/63.png" alt="Athens GIS Logo" class="logo"></a>
+</div>
+
+<header>
+  <span class="header-title">Athens GIS Repository</span> <span class="header-3d">3D Viewer</span>
+  <a href="./" id="viewer-switch-btn" class="header-switch-btn" title="Back to the main map"><span class="hsb-full">Main map</span><span class="hsb-short">Map</span></a>
+  <a href="https://www.linkedin.com/company/athens-gis-repo/" id="linkedin-btn" title="LinkedIn Page">
+    <img src="images/linkedin_icon.png" alt="LinkedIn">
+  </a>
+</header>
+
+<!-- Zoom in / out (same as the main page) + compass: turns with the map, click to reset north and tilt. -->
+<div id="custom-zoom-controls">
+  <button id="zoom-in" title="Zoom In" data-lock-while-loading><strong>+</strong></button>
+  <button id="zoom-out" title="Zoom Out" data-lock-while-loading><strong>-</strong></button>
+  <!-- Tilt: switches between the tilted 3D view and straight down (2D); shows the view it switches to. -->
+  <button id="tilt-btn" title="Top-down view (2D)" aria-label="Switch to top-down view" data-lock-while-loading><span class="tilt-label">2D</span></button>
+  <button id="rotate-btn" title="Reset to north (rotate the map with right-click drag, Ctrl + drag or two fingers)" aria-label="Reset bearing to north" data-lock-while-loading>
+    <svg class="compass-needle" viewBox="0 0 24 24" width="32" height="32" aria-hidden="true">
+      <path d="M12 1 L17 12 L7 12 Z" fill="#c0392b"/>
+      <path d="M12 23 L17 12 L7 12 Z" fill="rgb(55, 65, 81)"/>
+      <circle cx="12" cy="12" r="1.8" fill="#ffffff"/>
+    </svg>
+  </button>
+</div>
+
+<div id="map"></div>
+
+<!-- Loading circle: blocks the map while data loads (code_3D/loading.js). -->
+<div id="loading3d" class="active" aria-hidden="false">
+  <div class="loading3d-spinner" role="status" aria-label="Loading"></div>
+</div>
+
+<!-- Cite button + popup: same markup as the main page (styled by style.css, filled by JS/citation.js from CITATION.cff). -->
+<div id="citation-box">
+  <button id="note-btn" title="Sources, precision of the data and a note on performance" aria-controls="note-popup" aria-expanded="true">NOTE</button>
+  <button id="citation-btn" title="Show citation options">CITE</button>
+</div>
+
+<!-- Note: sources, precision of the datasets, performance (code_3D/note.js) -->
+<div id="note-popup" role="dialog" aria-labelledby="note-title">
+  <div class="note-popup-header">
+    <h3 id="note-title">NOTE</h3>
+    <button id="note-close" title="Close" aria-label="Close the note">&times;</button>
+  </div>
+  <div class="note-popup-body">
+    <h4>Sources</h4>
+    <ul>
+      <li><strong>Building shapes:</strong> OpenStreetMap contributors</li>
+      <li><strong>Building heights:</strong> Copernicus Land Monitoring Service (10 m raster)</li>
+      <li><strong>Tree positions:</strong> OpenStreetMap contributors, data.gov.gr and Copernicus Land Monitoring Service; tree heights are estimated</li>
+      <li><strong>Terrain:</strong> FABDEM, University of Bristol (30 m bare-earth terrain model, from Copernicus DEM GLO-30)</li>
+    </ul>
+    <h4>Precision of the data</h4>
+    <ul>
+      <li><strong>Terrain:</strong> the elevation model has a cell of about 30 m. Heights can be off by several metres, and small features, bridges, tunnels and steps are smoothed out.</li>
+      <li><strong>Buildings:</strong> shapes follow what OpenStreetMap contributors have mapped, so new or unmapped buildings are missing. Heights come from a 10 m raster, so they are estimates for each building, not surveys. A building with no height is drawn 1 m tall.</li>
+      <li><strong>Trees:</strong> positions come from several sources and may be incomplete or out of date, and heights are estimated. Each tree is drawn as a simple shape, and only the trees nearest the centre of the view are drawn.</li>
+      <li><strong>Sun and shadows:</strong> the sun&rsquo;s position is calculated (accurate to well under a degree). Shadows are cast by the data above, so they carry its limits. Clouds are not modelled.</li>
+    </ul>
+    <p class="note-warning">&#9888;&#65039; Graphics acceleration is recommended for better experience.</p>
+  </div>
+</div>
+
+<div id="citation-popup" hidden>
+  <div class="citation-popup-header">
+    <h3 id="citation-title">CITATION</h3>
+    <button id="citation-close" title="Close citation window" aria-label="Close citation window">&times;</button>
+  </div>
+  <p id="citation-status">Loading citation from CITATION.cff...</p>
+  <div id="citation-controls">
+    <select id="citation-style" aria-label="Citation style">
+      <option value="apa">APA</option>
+      <option value="chicago">Chicago</option>
+      <option value="mla">MLA</option>
+      <option value="asa">ASA</option>
+      <option value="ieee">IEEE</option>
+      <option value="vancouver">Vancouver</option>
+      <option value="bibtex">BibTeX</option>
+    </select>
+    <button id="citation-copy-btn" title="Copy citation"><img src="images/copy.png" alt="Copy citation"></button>
+  </div>
+  <textarea id="citation-text" readonly aria-label="Citation text"></textarea>
+</div>
+
+<!-- Short messages, e.g. when a data file is not available yet. -->
+<div id="notice3d" aria-live="polite"></div>
+
+<!-- Toolbar: measure, route shade, export -->
+<div id="toolbar">
+  <h1>TOOLBAR</h1>
+  <button id="measureBtn" title="Measure distance" aria-label="Measure distance" data-lock-while-loading>
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 10H3V8h2v4h2V8h2v4h2V8h2v4h2V8h2v4h2V8h2v8z"/></svg><span class="tb-label">MEASURE</span>
+  </button>
+  <button id="routeShadeBtn" title="Route shade: draw a route and see how much of it is in the shade through the day" aria-label="Route shade" data-lock-while-loading>
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+      <path d="M12 3a7.5 7.5 0 0 0 0 15z" fill="#f5b301"/>
+      <path d="M12 3a7.5 7.5 0 0 1 0 15z" fill="#33476e"/>
+      <circle cx="12" cy="10.5" r="7.5" fill="none" stroke="rgb(55, 65, 81)" stroke-width="1.3"/>
+      <!-- the route: a polyline across it, with a white edge so it reads on both halves -->
+      <polyline points="2.5,21 8,15.5 13,19 21.5,9.5" fill="none" stroke="#ffffff" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <polyline points="2.5,21 8,15.5 13,19 21.5,9.5" fill="none" stroke="rgb(55, 65, 81)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="2.5" cy="21" r="1.7" fill="#ffffff" stroke="rgb(55, 65, 81)" stroke-width="1.3"/>
+      <circle cx="21.5" cy="9.5" r="1.7" fill="#ffffff" stroke="rgb(55, 65, 81)" stroke-width="1.3"/>
+    </svg>
+    <span class="tb-label">ROUTE SHADE</span>
+  </button>
+  <button id="exportBtn" title="Export the current map view" aria-label="Export the current map view" data-lock-while-loading>
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg><span class="tb-label">EXPORT</span>
+  </button>
+</div>
+
+<!-- Buildings: neutral by default, optional color by height with its legend. Shown once the layer loads. -->
+<div id="buildings-panel" hidden>
+  <h1>3D BUILDINGS</h1>
+  <label class="switch3d" for="colorByHeight">
+    <input type="checkbox" id="colorByHeight">
+    <span class="switch3d-track" aria-hidden="true"></span>
+    <span class="switch3d-label">Color by height</span>
+  </label>
+  <ul id="height-legend" hidden></ul>
+</div>
+
+<!-- Sun: position + lighting for any date/time in Athens, with play/pause (code_3D/sun.js).
+     Starts at the current time; folds to the round sun button. -->
+<div id="sun-panel">
+  <button type="button" id="sun-fab" title="Sun position and lighting" aria-label="Open the sun panel" aria-controls="sun-box" aria-expanded="true">
+    <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+      <circle cx="12" cy="12" r="4.6" fill="#f5b301" stroke="#d98a00" stroke-width="1"/>
+      <g stroke="#d98a00" stroke-width="2" stroke-linecap="round">
+        <path d="M12 1.8v2.6M12 19.6v2.6M1.8 12h2.6M19.6 12h2.6M4.8 4.8l1.8 1.8M17.4 17.4l1.8 1.8M4.8 19.2l1.8-1.8M17.4 6.6l1.8-1.8"/>
+      </g>
+    </svg>
+  </button>
+  <div id="sun-box" role="group" aria-label="Sun position">
+    <div class="sun-head">
+      <h1>SUN</h1>
+      <button type="button" id="sun-fold" title="Fold the sun panel" aria-label="Fold the sun panel">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+    <label class="switch3d sun-switch" for="sun-enabled">
+      <input type="checkbox" id="sun-enabled" checked>
+      <span class="switch3d-track" aria-hidden="true"></span>
+      <span class="switch3d-label">Sun lighting</span>
+    </label>
+    <label class="switch3d sun-switch" for="sun-shadows" title="Shadows of buildings and hills on the ground and on roofs (building shadows show when zoomed in)">
+      <input type="checkbox" id="sun-shadows">
+      <span class="switch3d-track" aria-hidden="true"></span>
+      <span class="switch3d-label">Shadows</span>
+    </label>
+    <label class="switch3d sun-switch sun-switch-sub" for="sun-shade3d" title="Also show shadows falling on building walls (heavier for phones)">
+      <input type="checkbox" id="sun-shade3d">
+      <span class="switch3d-track" aria-hidden="true"></span>
+      <span class="switch3d-label">3D shade (walls)</span>
+    </label>
+
+    <div class="sun-grid sun-grid-date">
+      <label for="sun-day">Day</label>
+      <label for="sun-month">Month</label>
+      <label for="sun-year">Year</label>
+      <input type="number" id="sun-day" min="0" max="32" step="1" inputmode="numeric">
+      <select id="sun-month">
+        <option value="1">Jan</option><option value="2">Feb</option><option value="3">Mar</option>
+        <option value="4">Apr</option><option value="5">May</option><option value="6">Jun</option>
+        <option value="7">Jul</option><option value="8">Aug</option><option value="9">Sep</option>
+        <option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option>
+      </select>
+      <input type="number" id="sun-year" min="1000" max="9999" step="1" inputmode="numeric">
+    </div>
+    <div class="sun-grid sun-grid-time">
+      <label for="sun-hour">Hour</label>
+      <label for="sun-minute">Min</label>
+      <span></span>
+      <input type="number" id="sun-hour" min="-1" max="24" step="1" inputmode="numeric">
+      <input type="number" id="sun-minute" min="-1" max="60" step="1" inputmode="numeric">
+      <button type="button" id="sun-now" title="Back to the current time">Now</button>
+    </div>
+    <p id="sun-tz" class="sun-tz">Athens time</p>
+
+    <div class="sun-play">
+      <button type="button" id="sun-back" class="sun-play-btn" title="Play backward" aria-label="Play backward" aria-pressed="false">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M17 5v14L6 12z" fill="currentColor"/></svg>
+      </button>
+      <button type="button" id="sun-pause" class="sun-play-btn" title="Pause" aria-label="Pause" aria-pressed="true">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/></svg>
+      </button>
+      <button type="button" id="sun-fwd" class="sun-play-btn" title="Play forward" aria-label="Play forward" aria-pressed="false">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M7 5v14l11-7z" fill="currentColor"/></svg>
+      </button>
+      <select id="sun-speed" title="Play speed (simulated time per second)" aria-label="Play speed"></select>
+    </div>
+
+    <div class="sun-info">
+      <svg id="sun-dial" viewBox="-58 -58 116 116" width="92" height="92" role="img" aria-label="Sun position dial"></svg>
+      <dl class="sun-readout">
+        <dt>Direction</dt><dd id="sun-az">–</dd>
+        <dt>Height</dt><dd id="sun-alt">–</dd>
+        <dt>Sunrise</dt><dd id="sun-rise">–</dd>
+        <dt>Sunset</dt><dd id="sun-set">–</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<!-- Measure Instructions Modal (same as the main page) -->
+<div id="measureMsgModal" class="measure-modal">
+  <div id="measureMsgContent" class="measure-modal-content">
+    <p id="measureMsgText">Click on the map to draw your measurement. Double click to finish. Press ESC to cancel.</p>
+    <button type="button" id="measureMsgOk">OK</button>
+  </div>
+</div>
+
+<!-- Measure Result Modal -->
+<div id="measureResultModal" class="measure-modal">
+  <div id="measureResultContent" class="measure-modal-content">
+    <p id="measureResultText"></p>
+    <button type="button" id="measureResultOk">OK</button>
+  </div>
+</div>
+
+<!-- Route shade: instructions, then the chart (code_3D/route-shade.js) -->
+<div id="routeMsgModal" class="measure-modal">
+  <div class="measure-modal-content">
+    <p>Draw your route along the streets: click to add points, double click to finish. Press ESC to cancel.</p>
+    <p class="route-hint">Keep the whole route on screen, so its buildings and trees are loaded. The chart is for the date set in the sun panel.</p>
+    <button type="button" id="routeMsgOk">OK</button>
+  </div>
+</div>
+
+<div id="routeQuitModal" class="measure-modal">
+  <div class="measure-modal-content" role="alertdialog" aria-labelledby="routeQuitText">
+    <p id="routeQuitText">Close the route and its chart? The route will be cleared from the map.</p>
+    <button type="button" id="routeQuitYes">Close route</button>
+    <button type="button" id="routeQuitNo">Keep it</button>
+  </div>
+</div>
+
+<div id="route-panel" role="region" aria-label="Route shade" hidden>
+  <div class="route-head">
+    <h1>ROUTE SHADE</h1>
+    <button type="button" id="route-heat-btn" title="Sun map: % of sun by route length and time of day" aria-label="Sun map: percentage of sun by route length and time of day" disabled>
+      <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 4h4v4H4zM10 4h4v4h-4zM16 4h4v4h-4zM4 10h4v4H4zM10 10h4v4h-4zM16 10h4v4h-4zM4 16h4v4H4zM10 16h4v4h-4zM16 16h4v4h-4z" fill="currentColor" opacity="0.85"/></svg>
+    </button>
+    <button type="button" id="route-csv" title="Download the chart data as CSV" aria-label="Download the chart data as CSV" disabled>CSV</button>
+    <button type="button" id="route-download" title="Download the chart as an image" aria-label="Download the chart as an image" disabled>
+      <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button type="button" id="route-min" title="Minimize the chart" aria-label="Minimize the chart" aria-expanded="true">
+      <svg class="route-min-icon" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+      <svg class="route-max-icon" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M5 15l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button type="button" id="route-close" title="Close and clear the route" aria-label="Close and clear the route">
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <p id="route-sub" class="route-sub"></p>
+  <svg id="route-chart" viewBox="0 0 400 170" role="img" aria-label="Share of the route in shade through the day"></svg>
+  <p id="route-readout" class="route-readout"></p>
+  <div class="route-legend"><span><i class="route-sw route-sw-sun"></i>Sun</span><span><i class="route-sw route-sw-shade"></i>Shade</span><span class="route-tip">Click the chart to set the time</span></div>
+  <p id="route-height-note" class="route-note">Shade is calculated at 1.5 m above the ground (a walker's head).</p>
+  <p id="route-summary" class="route-summary"></p>
+  <div id="route-sun-wrap" hidden>
+    <p id="route-sun-sub" class="route-sub route-elev-sub"></p>
+    <svg id="route-sun" viewBox="0 0 400 120" role="img" aria-label="Share of the day in sun along the route"></svg>
+    <p id="route-sun-readout" class="route-readout"></p>
+  </div>
+  <div id="route-elev-wrap" hidden>
+    <p id="route-elev-sub" class="route-sub route-elev-sub"></p>
+    <svg id="route-elev" viewBox="0 0 400 120" role="img" aria-label="Elevation profile along the route"></svg>
+    <p id="route-elev-readout" class="route-readout"></p>
+  </div>
+  <p id="route-note" class="route-note">Note: estimates for guidance only. The sun's position is calculated (accurate to well under a degree). Shade comes from the mapped buildings (a building without a height counts as 1 m), the trees as simplified shapes and a terrain model of about 22 m resolution; awnings, arcades, small objects, new or missing buildings, leaf density and clouds are not captured, and a point drawn off the street may be moved up to 4 m. Elevations come from that terrain model, not from GPS or a survey, so they can be off by several metres and smooth out bridges, tunnels and steps.</p>
+</div>
+
+<!-- Route shade: sun by route length and time of day (code_3D/route-shade.js) -->
+<div id="route-heat" role="dialog" aria-label="Sun map: percentage of sun by route length and time of day" hidden>
+  <div class="route-head">
+    <h1>SUN MAP</h1>
+    <button type="button" id="route-heat-download" title="Download the sun map as an image" aria-label="Download the sun map as an image">
+      <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button type="button" id="route-heat-close" title="Close the sun map" aria-label="Close the sun map">
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <p id="route-heat-sub" class="route-sub"></p>
+  <canvas id="route-heat-chart" role="img" aria-label="Percentage of sun by distance along the route and time of day"></canvas>
+  <p id="route-heat-readout" class="route-readout"></p>
+  <div class="route-heat-legend"><span>Shade 0%</span><i id="route-heat-scale"></i><span>100% Sun</span><span class="route-tip">Click to set the time</span></div>
+</div>
+
+<div id="cookie-consent-box" role="dialog" aria-live="polite" aria-label="Cookie preferences" hidden>
+  <p id="cookie-consent-text">
+    This website uses analytics and advertising tools (Google Analytics, Google Ads &amp; PostHog) to improve user experience and measure advertising.
+    You can accept or reject non-essential cookies.
+  </p>
+  <div id="cookie-consent-actions">
+    <button id="cookie-accept-btn" type="button">Accept</button>
+    <button id="cookie-reject-btn" type="button">Reject</button>
+  </div>
+</div>
+
+<div id="map-scale-ratio" aria-live="polite"><span id="scale-text">Scale 1 : 100.000</span><span id="eye-alt-sep" aria-hidden="true">|</span><span id="eye-alt-text"></span><span id="elev-sep" aria-hidden="true">|</span><span id="elev-text" title="Elevation above sea level where the pointer is (terrain; the roof on a building)"></span></div>
+
+<div id="footer">
+  © 2026 Athens GIS Repository | Licensed under CC-BY 4.0 |
+  <a href="privacy.html" target="_blank" rel="noopener" style="color: inherit;">Cookies &amp; Privacy</a> |
+  <a href="https://athensgis.gr/about" id="about-btn" title="About Athens GIS" target="_blank" rel="noopener" style="color: inherit;">About</a>
+  <!-- Desktop: positioned individually (style.css, #footer .doi-badge etc.), unchanged.
+       Mobile: one shrink-to-fit line between the toolbar and the text above - see
+       #footer .footer-credits in style.css and JS/footer-credits.js. -->
+  <div class="footer-credits">
+    <a class="doi-badge" href="https://doi.org/10.5281/zenodo.18727779">
+      <img src="images/zenodo-doi-badge.svg" alt="DOI">
+    </a>
+    <a class="peekwell-badge" href="https://app.peekwell.org/a/8OnXqKbIfiS26HnDFCt8msgfQkbnHxAH/" target="_blank" rel="noopener"><img src="https://app.peekwell.org/a/8OnXqKbIfiS26HnDFCt8msgfQkbnHxAH/badge.svg" alt="PeekWell accreditation"></a>
+    <!-- Filled by code_3D/map3d.js with a live copy of the MapLibre attribution. -->
+    <div id="map-attribution" aria-label="Map attribution"></div>
+  </div>
+</div>
+
+<script>
+  // Local servers don't map /about to about.html - same fix as index.html. Runs
+  // here (after the footer, where the "About" link now lives), not right after
+  // the header, so the element already exists when this script runs.
+  (function () {
+    var aboutBtn = document.getElementById('about-btn');
+    if (aboutBtn && !isProductionSite) aboutBtn.setAttribute('href', 'about.html');
+  })();
+</script>
+
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/pmtiles@3.2.0/dist/pmtiles.js" defer></script>
+
+<script src="JS/config.js?v=20260615-1" defer></script>
+<script src="code_3D/config3d.js" defer></script>
+<script src="code_3D/loading.js" defer></script>
+<script src="code_3D/map3d.js" defer></script>
+<script src="code_3D/buildings-panel.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/earcut@2.2.4/dist/earcut.min.js" defer></script>
+<script src="code_3D/shadows.js" defer></script>
+<script src="code_3D/sun.js" defer></script>
+<script src="code_3D/measure3d.js" defer></script>
+<script src="code_3D/route-shade.js" defer></script>
+<script src="code_3D/building-info.js" defer></script>
+<script src="code_3D/landmarks.js" defer></script>
+<script src="code_3D/export3d.js" defer></script>
+<script src="JS/citation.js?v=ed58534d30" defer></script>
+<script src="code_3D/note.js" defer></script>
+<script src="JS/cookies.js?v=b8b6f976ff" defer></script>
+<script src="code_3D/cookie-position.js" defer></script>
+<script src="JS/footer-credits.js" defer></script>
+
+<script>
+  // Google Analytics: count exports as downloads (same event as the main page).
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest && e.target.closest('#exportSizeMenu li');
+    if (el && typeof gtag === 'function') {
+      try { gtag('event', 'download', { 'event_category': 'Download', 'event_label': '3d-export', 'transport_type': 'beacon' }); } catch (err) { }
+    }
+  });
+</script>
+</body>
+</html>

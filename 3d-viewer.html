@@ -285,6 +285,10 @@
 </div>
 
 <div id="route-panel" role="region" aria-label="Route shade" hidden>
+  <button type="button" id="route-dock" title="Move to the right" aria-label="Move to the right">
+    <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <div class="route-body">
   <div class="route-head">
     <h1>ROUTE SHADE</h1>
     <button type="button" id="route-heat-btn" title="Sun map: % of sun by route length and time of day" aria-label="Sun map: percentage of sun by route length and time of day" disabled>
@@ -318,7 +322,8 @@
     <svg id="route-elev" viewBox="0 0 400 120" role="img" aria-label="Elevation profile along the route"></svg>
     <p id="route-elev-readout" class="route-readout"></p>
   </div>
-  <p id="route-note" class="route-note">Note: estimates for guidance only. The sun's position is calculated (accurate to well under a degree). Shade comes from the mapped buildings (a building without a height counts as 1 m), the trees as simplified shapes and a terrain model of about 22 m resolution; awnings, arcades, small objects, new or missing buildings, leaf density and clouds are not captured, and a point drawn off the street may be moved up to 4 m. Elevations come from that terrain model, not from GPS or a survey, so they can be off by several metres and smooth out bridges, tunnels and steps.</p>
+  <p id="route-note" class="route-note">Note: estimates for guidance only. The sun's position is calculated (accurate to well under a degree). Shade comes from the mapped buildings (a building without a height counts as 1 m), the trees as simplified shapes and a terrain model of about 30 m resolution; awnings, arcades, small objects, new or missing buildings, leaf density and clouds are not captured, and a point drawn off the street may be moved up to 4 m. Elevations come from that terrain model, not from GPS or a survey, so they can be off by several metres and smooth out bridges, tunnels and steps.</p>
+  </div>
 </div>
 
 <!-- Route shade: sun by route length and time of day (code_3D/route-shade.js) -->

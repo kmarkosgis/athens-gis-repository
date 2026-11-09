@@ -1280,6 +1280,24 @@
   }
   if (minBtn) minBtn.addEventListener('click', function () { setMinimized(!panel.classList.contains('min')); });
 
+  // Dock: the arrow on the panel's edge moves it to the right side of the screen and back.
+  var dockBtn = $('route-dock'), bldPanel = $('buildings-panel');
+  // Docked, it ends 10 px above the 3D buildings panel (which grows with its legend).
+  function fitDocked() {
+    var docked = panel.classList.contains('docked') && !window.matchMedia('(max-width: 900px)').matches;
+    var top = docked && bldPanel && getComputedStyle(bldPanel).display !== 'none' ? bldPanel.getBoundingClientRect().top : 0;
+    panel.style.maxHeight = top ? Math.max(120, top - 10 - panel.getBoundingClientRect().top) + 'px' : '';
+  }
+  if (dockBtn) dockBtn.addEventListener('click', function () {
+    var on = !panel.classList.contains('docked');
+    panel.classList.toggle('docked', on);
+    dockBtn.title = on ? 'Move back to the centre' : 'Move to the right';
+    dockBtn.setAttribute('aria-label', dockBtn.title);
+    fitDocked();
+  });
+  window.addEventListener('resize', fitDocked);
+  if (bldPanel && window.ResizeObserver) new ResizeObserver(fitDocked).observe(bldPanel);
+
   function fail(e) {
     if (e === core.STALE) return;
     console.warn('[3D] Route shade failed', e);

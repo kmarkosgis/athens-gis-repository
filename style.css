@@ -774,31 +774,39 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       width: auto;
     }
 
-    /* Sits immediately left of #linkedin-btn (12px gap + 30px icon + 12px edge = 54px) */
-    #about-btn {
+    /* Switch between the 2D map and the 3D Viewer: same look as the "Open map" button
+       in about.html, just left of the LinkedIn icon. */
+    .header-switch-btn {
       position: fixed;
       top: 6px;
-      right: 60px;
+      right: 52px;
+      z-index: 1001;
+      display: inline-flex;
+      align-items: center;
       box-sizing: border-box;
       height: 28px;
-      display: flex;
-      align-items: center;
-      padding: 0 14px;
-      border: 0.5px solid transparent;
+      padding: 0 20px;
+      border: 1px solid rgba(246, 247, 245, 0.7);
       border-radius: 10px;
-      color: rgba(246, 247, 245,0.75);
+      color: rgb(246, 247, 245);
       font-size: 16px;
       font-weight: 500;
       letter-spacing: 1.5px;
+      line-height: 1;
       text-decoration: none;
       text-transform: uppercase;
+      white-space: nowrap;
       transition-duration: 0.2s;
     }
-
-    #about-btn:hover {
-      border: 00.5px solid rgba(246, 247, 245, 0.7);
-      color: rgba(246, 247, 245,1);
+    .header-switch-btn:hover {
+      background: rgba(246, 247, 245, 0.95);
+      color: #111827;
     }
+    .hsb-short { display: none; }
+
+    /* #about-btn: now a plain text link in #footer, next to Cookies & Privacy -
+       styled inline (color: inherit) like that link, same as its neighbour, no
+       dedicated rule needed. */
 
     .announcement-box {
       position: fixed;
@@ -866,8 +874,8 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       position: fixed;
       top: 50px;      /* below header */
       left: 10px;     /* left side */
-      width: 300px;   /* adjust width as needed */
-      bottom: 195px;   /* above footer */
+      width: 320px;   /* content width, matches #toolbar (both content-box + 20px padding) */
+      bottom: 183px;   /* 30px footer offset + 143px #toolbar height + 10px gap */
       background: rgba(255, 255, 255, 0.95); 
       padding:  0 10px 10px 10px;
       border-radius: 14px;
@@ -1135,7 +1143,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       position: fixed;
       bottom: 30px;
       left: 10px;
-      width: 300px;
+      width: 320px;
       background: rgba(255, 255, 255, 0.95);
       
       -webkit-backdrop-filter: blur(7px);
@@ -1175,22 +1183,27 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
        the row at equal width regardless of the 3-column template row 3 uses.
        On mobile this wrapper is unwrapped (display:contents) so the buttons go
        back to being direct grid children - see the max-width:900px block. */
-    .toolbar-row2 {
+    .toolbar-row2,
+    .toolbar-row3 {
       grid-column: 1 / -1;
       grid-row: 2;
       display: flex;
       gap: 8px;
     }
+    .toolbar-row3 { grid-row: 3; }
 
-    #opacityBtn, #drawOrderBtn {
-      flex: 1;
+    /* Every toolbar button shares this look: white pill, black icon + label, one height. */
+    #opacityBtn, #drawOrderBtn, #measureBtn, #exportBtn, #zoomSelectedBtn {
+      flex: 1 1 auto;
+      box-sizing: border-box;
+      height: 34px;
       background-color: rgba(255, 255, 255, 0.95);
       color: black;
       font-size: 12px;
       font-weight: 500;
       font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       letter-spacing: 1px;
-      padding: 8px 14px;
+      padding: 0 10px;
       border-radius: 9999px;
       border: 2px solid rgba(171, 199, 222, 0.3);
       cursor: pointer;
@@ -1199,7 +1212,8 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       align-items: center;
       justify-content: center;
     }
-    #opacityBtn:hover, #drawOrderBtn:hover {
+    #opacityBtn:hover, #drawOrderBtn:hover,
+    #measureBtn:hover, #exportBtn:hover, #zoomSelectedBtn:hover {
       border: 2px solid rgba(55, 65, 81, 0.85);
     }
     #opacityBtn.active, #drawOrderBtn.active {
@@ -1208,32 +1222,8 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       border-color: transparent;
     }
     #opacityBtn svg, #drawOrderBtn svg { margin-right: 5px; flex-shrink: 0; }
-
-    /* Tool buttons on the third row */
-    #measureBtn     { grid-row: 3; grid-column: 1; justify-self: start; }
-    #exportBtn      { grid-row: 3; grid-column: 2; justify-self: start; }
-    #zoomSelectedBtn{ grid-row: 3; grid-column: 3; justify-self: end; }
-
-    #measureBtn, #exportBtn, #zoomSelectedBtn {
-      background-color: rgba(255, 255, 255, 0.95);
-      color: black;
-      font-size: 14px;
-      padding: 10px 20px;
-      margin-left: 5px;
-      margin-right: 5px;
-      border-radius: 9999px;
-      border: 2px solid rgba(171, 199, 222, 0.3);
-      cursor: pointer;
-      transition-duration: 0.2s;
-    }
-    #exportBtn {
-      margin-left: 10px;
-    }
-    #measureBtn:hover, #exportBtn:hover, #zoomSelectedBtn:hover {
-      border: 2px solid rgba(55, 65, 81, 0.85);
-    }
-
-    #measureBtn img, #exportBtn img, #zoomSelectedBtn img { height: 18px; width: auto; vertical-align: middle; }
+    #measureBtn svg, #exportBtn svg, #zoomSelectedBtn svg { margin-right: 5px; flex-shrink: 0; }
+    .tb-label { white-space: nowrap; }
 
     /* Combined Opacity / Draw Order popup — appears to the right of the toolbar.
        One box, one panel shown at a time; JS/draw-order.js swaps the body content
@@ -1241,7 +1231,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
     #layer-popup {
       position: fixed;
       bottom: 30px;
-      left: 340px;
+      left: 360px;
       width: 300px;
       max-height: 320px;
       background: rgba(255, 255, 255, 0.95);
@@ -2167,7 +2157,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
     #custom-zoom-controls {
       position: fixed;
       top: 50px;
-      left:  340px;
+      left:  360px;
       z-index: 1000;
       display: flex;
       flex-direction: column;
@@ -2195,7 +2185,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
     #custom-basemap-switcher {
       position: fixed;
       top: 50px;
-      left: 395px;
+      left: 415px;   /* zoom controls' left (360) + 45px width + 10px gap */
       z-index: 1001;
       display: flex;
       flex-direction: column;
@@ -2643,20 +2633,28 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       header {
         box-sizing: border-box;
         width: 100%;
-        padding: 6px 30px 10px 10px;
-        font-size:20px;
+        padding: 6px 88px 10px 46px;
+        font-size:17px;
         letter-spacing: 1px;
         z-index: 8000;
       }
+      /* Compact: "3D" / "2D", between the title and the LinkedIn icon. */
+      .header-switch-btn {
+        top: 7px;
+        right: 46px;
+        z-index: 8001;
+        height: 26px;
+        padding: 0 9px;
+        font-size: 13px;
+        letter-spacing: 1px;
+      }
+      .hsb-full { display: none; }
+      .hsb-short { display: inline; }
       #linkedin-btn {
       position: fixed;
       top: 7px;
       right: 10px;
     }
-      #about-btn {
-        top: 7px;
-        right: 52px;
-      }
       #menuBtn {
         display: block !important;
         position: fixed;
@@ -2755,7 +2753,13 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
         transform: translateX(-50%);
         width: calc(100vw - 35px);
         max-width: 320px;
-        bottom: 28px;
+        /* Raised from 28px to leave room for .footer-credits (the DOI/PeekWell/
+           attribution strip) between the toolbar and the footer's text line -
+           every other mobile offset below that's measured from the toolbar
+           (layer-popup, #custom-zoom-controls, #custom-basemap-switcher, and
+           code_3D/viewer3d.css's own #custom-zoom-controls) is raised by the same
+           36px so their spacing relative to the toolbar stays the same. */
+        bottom: 64px;
         padding: 6px 8px;
         gap: 6px;
         grid-template-columns: auto auto auto auto auto;
@@ -2771,8 +2775,12 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       /* Let opacityBtn/drawOrderBtn go back to being direct grid children of
          #toolbar on mobile, so the grid-column rules below apply as if the
          desktop-only flex wrapper (.toolbar-row2) weren't there. */
-      .toolbar-row2 {
+      .toolbar-row2,
+      .toolbar-row3 {
         display: contents;
+      }
+      .tb-label {
+        display: none;
       }
       #opacityBtn {
         grid-column: 1;
@@ -2823,13 +2831,15 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
         margin-left: 4px;
         margin-right: -3px;
       }
-      #measureBtn img,
-      #exportBtn img,
-      #zoomSelectedBtn img {
+      #measureBtn svg,
+      #exportBtn svg,
+      #zoomSelectedBtn svg {
+        width: 16px;
         height: 16px;
+        margin: 0;
       }
       #layer-popup {
-        bottom: 88px;
+        bottom: 124px;
         left: 50%;
         transform: translateX(-50%);
         top: auto;
@@ -2843,7 +2853,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
         top: auto;
         left: auto;
         right: 10px;
-        bottom: 132px;
+        bottom: 168px;
         gap: 4px;
         z-index: 2002;
       }
@@ -2857,7 +2867,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
         top: auto;
         left: auto;
         right: 10px;
-        bottom: 84px;
+        bottom: 120px;
         align-items: flex-end;
         z-index: 2002;
       }
@@ -2893,24 +2903,45 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
         line-height: 12px;
         z-index: 9999;
       }
-      /* The footer text takes the whole bar on a phone, so the badges and the attribution
-         float at the left instead, just above the bottom-centre toolbar (28px up, ~50px tall):
-         the badges first, the attribution on top of them. */
-      #footer .doi-badge,
-      #footer .peekwell-badge { bottom: calc(100% + 66px); }
-      #footer .doi-badge img,
-      #footer .peekwell-badge img { height: 16px; }
-      #footer .peekwell-badge { left: 170px; }
-      #map-attribution {
-        right: auto;
-        left: 10px;
-        bottom: calc(100% + 86px);
-        padding: 0 6px;
-        border-radius: 4px;
-        background: rgba(55, 65, 81, 0.85);
-        color: rgb(246, 247, 245);
-        font-size: 10px;
+      /* The footer text takes the whole bar on a phone, so DOI, PeekWell and the live
+         basemap attribution move into their own single-line row instead: centred,
+         sitting between the toolbar and the footer's text line. #footer's higher-
+         specificity ancestor (vs. the unconditional desktop rules above, which also
+         match at this width) is what lets these actually override position:absolute
+         and the badges' height here. JS/footer-credits.js scales the whole row down
+         (never up) so it always fits one line, however narrow the phone or however
+         long the current attribution text is - see that file for why. */
+      #footer .footer-credits {
+        position: fixed;
+        left: 50%;
+        bottom: 36px;
+        transform: translateX(-50%);
+        transform-origin: center center;
+        z-index: 2000;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        white-space: nowrap;
+        pointer-events: none;
+      }
+      #footer .footer-credits > * { pointer-events: auto; }
+      #footer .footer-credits .doi-badge,
+      #footer .footer-credits .peekwell-badge,
+      #footer .footer-credits #map-attribution {
+        position: static;
+        flex: 0 0 auto;
+      }
+      #footer .footer-credits .doi-badge img,
+      #footer .footer-credits .peekwell-badge img {
+        height: 16px;
+      }
+      #footer .footer-credits #map-attribution {
+        background: none;
+        color: rgb(55, 65, 81);
+        font-size: 11px;
         line-height: 16px;
+        padding: 0;
+        white-space: nowrap;
       }
 
       #menuIcon.animated {

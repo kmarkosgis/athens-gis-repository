@@ -1,10 +1,13 @@
 // Initialize EasyPrint printer and attach export handler (no watermark)
 (function(){
-  // Export page layout (see layoutPrintOverlays): a rectangular map (frame) plus a panel with the
-  // logo and Attica locator, a box per layer shown in the map, and the legend.
-  //  Landscape: panel on the right, top to bottom: logo + locator, layer boxes, legend (stretched
+  // Export page layout (see layoutPrintOverlays), in the style of the 3D viewer's export
+  // (code_3D/export3d.js): a slate gradient header band with the logo, title and date on top, a
+  // footer line (copyright + the map's attribution) at the bottom, and between them a rectangular
+  // map with rounded corners (frame) plus a panel with the Attica locator, a box per layer shown
+  // in the map, and the legend.
+  //  Landscape: panel on the right, top to bottom: locator, layer boxes, legend (stretched
   //  to fill the rest) - all the same width.
-  //  Portrait: below the map, top to bottom: layer boxes, then one row of logo | locator | legend.
+  //  Portrait: below the map, top to bottom: layer boxes, then one row of locator | legend.
   // The panel is kept as small as its content allows and the map takes all the rest of the page,
   // so nothing is left blank (bar the end of the layer boxes' last row).
   // Everything keeps EXPORT_PAGE_MARGIN from the page border and EXPORT_GAP from its neighbours,
@@ -15,6 +18,10 @@
   var printPanelOverlay = null;
   var printHeaderOverlay = null;
   var printBrandOverlay = null;
+  var printBandOverlay = null;
+  var printBandDate = null;
+  var printFooterOverlay = null;
+  var printFooterAttr = null;
   var printLocatorOverlay = null;
   var printLayersOverlay = null;
   var printScaleOverlay = null;
@@ -33,24 +40,23 @@
   var exportLegendTooMany = false;
   var EXPORT_LEGEND_MAX_CLASSES = 120;   // above this the legend isn't even attempted - just the message
   var EXPORT_FONT_FAMILY = '"Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif';
-  var EXPORT_PAGE_MARGIN = 12;
+  var EXPORT_PAGE_MARGIN = 16;           // as in the 3D viewer's export
   var EXPORT_GAP = 12;
   var EXPORT_BORDER = '1px solid transparent';
-  var EXPORT_DARK_PAGE_BASEMAP = 'positron';   // the "Light" basemap gets the dark page
-  // Page themes. The boxes and legend are always a shade darker than the page behind them.
-  // Other basemaps: the white page. The light basemap: the app's own dark grey (rgb(55, 65, 81),
-  // as used by its panels) as a slightly diagonal gradient, with light text on darker boxes.
-  var EXPORT_THEME_WHITE = {
+  // The 3D viewer export's look (code_3D/export3d.js): same page, margin, header and footer sizes.
+  var EXPORT_BAND_HEIGHT = 84;           // header band
+  var EXPORT_FOOTER_HEIGHT = 34;
+  var EXPORT_RADIUS = 10;                // rounded corners of the map and the boxes
+  var EXPORT_SLATE = 'rgb(55, 65, 81)';  // the app's own dark grey: text, and the middle of the band
+  var EXPORT_BAND_GRADIENT = [[0, 'rgb(75, 86, 105)'], [0.5, EXPORT_SLATE], [1, 'rgb(40, 48, 61)']];
+  var EXPORT_BAND_TITLE = 'ATHENS GIS REPOSITORY';
+  var EXPORT_BAND_LOGO = 'images/63.png';
+  // The page is always white, whatever the basemap, with the boxes and legend a shade darker.
+  var EXPORT_THEME = {
     page: '#ffffff',
     fill: '#eef2f6',
     text: 'rgba(17, 24, 39, 1)',
     locator: { land: '#d9e1ea', outline: '#475569', label: '#475569', rect: '#dc2626', rectFill: 'rgba(220,38,38,0.15)' }
-  };
-  var EXPORT_THEME_DARK = {
-    page: 'linear-gradient(160deg, rgb(75, 86, 105) 0%, rgb(55, 65, 81) 50%, rgb(40, 48, 61) 100%)',
-    fill: 'rgba(15, 23, 42, 0.35)',
-    text: '#f3f4f6',
-    locator: { land: '#8693a8', outline: '#dbe3ef', label: '#cbd5e1', rect: '#f87171', rectFill: 'rgba(248,113,113,0.28)' }
   };
   var EXPORT_HEADER_MIN_WIDTH = 320;     // logo + locator width: this when the content is light...
   var EXPORT_HEADER_MAX_WIDTH = 400;     // ...up to this in a landscape column when a long legend needs the room
@@ -130,6 +136,9 @@
     frame.style.display = 'none';
     frame.style.boxSizing = 'border-box';
     frame.style.border = EXPORT_BORDER;
+    // Rounded corners: the page colour, spread just past the window, covers the map's square corners.
+    frame.style.borderRadius = EXPORT_RADIUS + 'px';
+    frame.style.boxShadow = '0 0 0 ' + EXPORT_PAGE_MARGIN + 'px ' + EXPORT_THEME.page;
     frame.style.pointerEvents = 'none';
     frame.style.zIndex = '1200';
     container.appendChild(frame);
@@ -147,7 +156,7 @@
     container.appendChild(panel);
     printPanelOverlay = panel;
 
-    // Logo with the Attica locator right next to it.
+    // The Attica locator (the logo now sits in the header band).
     var header = document.createElement('div');
     header.id = 'exportPrintHeaderOverlay';
     header.style.display = 'flex';
@@ -159,21 +168,11 @@
     panel.appendChild(header);
     printHeaderOverlay = header;
 
-    // The logo is square and always as tall as the locator (sized in layoutPrintOverlays()).
+    // Not shown any more: kept so the layout code that sizes it still has an element.
     var brand = document.createElement('div');
     brand.id = 'exportPrintBrandOverlay';
-    brand.style.flex = '0 0 auto';
+    brand.style.display = 'none';
     printBrandOverlay = brand;
-
-    var logo = document.createElement('img');
-    logo.src = 'images/6.png';
-    logo.alt = 'Athens GIS Repository';
-    logo.style.display = 'block';
-    logo.style.width = '100%';
-    logo.style.height = '100%';
-    logo.style.objectFit = 'contain';
-
-    brand.appendChild(logo);
     header.appendChild(brand);
 
     // Area shown in the map relative to Attica: outline + extent rectangle, drawn in updatePrintLocatorOverlay().
@@ -185,6 +184,7 @@
     locator.style.boxSizing = 'border-box';
     locator.style.overflow = 'hidden';
     locator.style.border = EXPORT_BORDER;
+    locator.style.borderRadius = EXPORT_RADIUS + 'px';
     header.appendChild(locator);
     printLocatorOverlay = locator;
 
@@ -245,6 +245,79 @@
     scale.style.zIndex = '1200';
     frame.appendChild(scale);
     printScaleOverlay = scale;
+
+    // Header band (as in the 3D viewer's export): logo, title and the date, on a slate gradient.
+    // Added after the panel, so it paints over the page and the map. Sized in layoutBandAndFooter().
+    var band = document.createElement('div');
+    band.id = 'exportPrintBandOverlay';
+    band.style.position = 'absolute';
+    band.style.left = '0';
+    band.style.top = '0';
+    band.style.display = 'none';
+    band.style.alignItems = 'center';
+    band.style.boxSizing = 'border-box';
+    band.style.padding = '0 ' + (EXPORT_PAGE_MARGIN + 4) + 'px';
+    band.style.gap = '18px';
+    band.style.overflow = 'hidden';
+    band.style.pointerEvents = 'none';
+    band.style.zIndex = '1200';
+    band.style.fontFamily = EXPORT_FONT_FAMILY;
+    var bandLogo = document.createElement('img');
+    bandLogo.src = EXPORT_BAND_LOGO;
+    bandLogo.alt = 'Athens GIS Repository';
+    bandLogo.style.display = 'block';
+    bandLogo.style.height = '56px';
+    bandLogo.style.width = 'auto';
+    var bandTitle = document.createElement('span');
+    bandTitle.textContent = EXPORT_BAND_TITLE;
+    bandTitle.style.flex = '1 1 auto';
+    bandTitle.style.minWidth = '0';
+    bandTitle.style.whiteSpace = 'nowrap';
+    bandTitle.style.color = '#f6f7f5';
+    bandTitle.style.fontSize = '26px';
+    bandTitle.style.fontWeight = '500';
+    bandTitle.style.letterSpacing = '2px';
+    printBandDate = document.createElement('span');
+    printBandDate.style.flex = '0 0 auto';
+    printBandDate.style.color = 'rgba(246, 247, 245, 0.8)';
+    printBandDate.style.fontSize = '14px';
+    printBandDate.style.fontWeight = '400';
+    printBandDate.style.letterSpacing = '1px';
+    band.appendChild(bandLogo);
+    band.appendChild(bandTitle);
+    band.appendChild(printBandDate);
+    container.appendChild(band);
+    printBandOverlay = band;
+
+    // Footer line: the copyright on the left, the map's attribution on the right (shrunk to fit).
+    var footer = document.createElement('div');
+    footer.id = 'exportPrintFooterOverlay';
+    footer.style.position = 'absolute';
+    footer.style.display = 'none';
+    footer.style.alignItems = 'center';
+    footer.style.boxSizing = 'border-box';
+    footer.style.height = EXPORT_FOOTER_HEIGHT + 'px';
+    footer.style.color = EXPORT_SLATE;
+    footer.style.fontFamily = EXPORT_FONT_FAMILY;
+    footer.style.fontSize = EXPORT_FONT_LABEL + 'px';
+    footer.style.fontWeight = '400';
+    footer.style.pointerEvents = 'none';
+    footer.style.zIndex = '1200';
+    var footerLeft = document.createElement('span');
+    footerLeft.style.flex = '0 0 auto';
+    footerLeft.style.whiteSpace = 'nowrap';
+    footerLeft.textContent = '© ' + new Date().getFullYear() + ' Athens GIS Repository | CC-BY 4.0 | athensgis.gr';
+    printFooterAttr = document.createElement('span');
+    printFooterAttr.style.flex = '1 1 0';
+    printFooterAttr.style.minWidth = '0';
+    printFooterAttr.style.marginLeft = '24px';
+    printFooterAttr.style.textAlign = 'right';
+    printFooterAttr.style.whiteSpace = 'nowrap';
+    printFooterAttr.style.overflow = 'hidden';
+    footer.appendChild(footerLeft);
+    footer.appendChild(printFooterAttr);
+    container.appendChild(footer);
+    printFooterOverlay = footer;
   }
 
   // Size of the image EasyPrint will capture (it reads the container's inline size, truncated).
@@ -262,20 +335,20 @@
     return 0.5 * Math.log((1 + s) / (1 - s));
   }
 
-  // Logo + locator header, for a given total width: the logo is square and as tall as the locator,
-  // which is drawn at Attica's natural proportions (the locator takes up whatever rounding leaves).
-  // Without the outline data (JS/attica-outline.js) there is no locator, just the logo.
+  // The locator header, for a given total width: the locator box is the full width, as tall as the
+  // logo + locator pair used to be (the logo moved to the header band), with Attica drawn at its
+  // natural proportions inside it.
+  // Without the outline data (JS/attica-outline.js) there is no locator, so no header at all.
   function getHeaderMetrics(headerWidth){
     var outline = window.ATTICA_OUTLINE;
     if(!outline || !outline.bbox || !outline.polygons || !outline.polygons.length){
-      var only = Math.round(headerWidth * 0.55);
-      return { logo: only, locatorW: 0, width: only, height: only };
+      return { logo: 0, locatorW: 0, width: 0, height: 0 };
     }
     var b = outline.bbox;
     var aspect = (mercatorX(b[2]) - mercatorX(b[0])) / (mercatorY(b[3]) - mercatorY(b[1]));
     var chrome = 2 + 2 * EXPORT_LOCATOR_PADDING;            // locator border and padding
-    var logo = Math.floor((headerWidth - EXPORT_GAP - chrome * (1 - aspect)) / (1 + aspect));
-    return { logo: logo, locatorW: headerWidth - logo - EXPORT_GAP, width: headerWidth, height: logo };
+    var height = Math.floor((headerWidth - EXPORT_GAP - chrome * (1 - aspect)) / (1 + aspect));
+    return { logo: 0, locatorW: headerWidth, width: headerWidth, height: height };
   }
 
   // Header widths to try, narrowest first: from the compact default up to the roomy width a
@@ -306,6 +379,7 @@
     box.style.maxWidth = '100%';
     box.style.padding = '6px 11px';
     box.style.border = EXPORT_BORDER;
+    box.style.borderRadius = EXPORT_RADIUS + 'px';
     box.style.background = exportTheme.fill;
     box.style.color = exportTheme.text;
     box.style.fontFamily = EXPORT_FONT_FAMILY;
@@ -335,8 +409,7 @@
   }
 
   function getExportTheme(){
-    var key = window.AthensGIS && window.AthensGIS.currentBaseLayerKey;
-    return key === EXPORT_DARK_PAGE_BASEMAP ? EXPORT_THEME_DARK : EXPORT_THEME_WHITE;
+    return EXPORT_THEME;
   }
 
   // Page background (the four strips around the map window) and the theme's box/text colours.
@@ -531,6 +604,10 @@
     under.top = nh + 'px';
     under.width = around ? nw + 'px' : '0';
     under.height = Math.max(0, box.height - nh) + 'px';
+    // Rounded outer corners; where the two rectangles meet (the L's inside) they stay square.
+    var r = EXPORT_RADIUS + 'px';
+    right.borderRadius = around && nw ? r + ' ' + r + ' ' + r + ' 0' : r;
+    under.borderRadius = r + ' 0 0 ' + r;
   }
 
   // ---- Page layout ----------------------------------------------------------------------------
@@ -556,7 +633,9 @@
     var landscape = size.w >= size.h;
     var names = getExportLayerNames();
     var widths = getHeaderWidths();
-    var contentW = size.w - 2 * m, contentH = size.h - 2 * m;
+    // Everything sits between the header band and the footer (+8: the footer's text has room to spare).
+    var top0 = EXPORT_BAND_HEIGHT + m;
+    var contentW = size.w - 2 * m, contentH = size.h - top0 - m - EXPORT_FOOTER_HEIGHT + 8;
     var textWidths = EXPORT_LEGEND_WIDTHS;                // as designed first, then narrower ones that wrap the labels
     var hasLegend = !!exportLegendItems;
     var mustFit = hasLegend && !exportLegendTooMany;      // too many classes: straight to the message
@@ -601,8 +680,8 @@
       if(!chosen) chosen = arrange(widths[0], EXPORT_LAYERS_SHARES[0]);   // no legend, or just its message
       header = chosen.header;
       legend = chosen.legend;
-      frame = { left: m, top: m, w: contentW - gap - chosen.column, h: contentH };
-      panel = { left: m + frame.w + gap, top: m, width: chosen.column, height: contentH };
+      frame = { left: m, top: top0, w: contentW - gap - chosen.column, h: contentH };
+      panel = { left: m + frame.w + gap, top: top0, width: chosen.column, height: contentH };
     } else {
       printLayersOverlay.style.left = '0';
       printLayersOverlay.style.top = '0';
@@ -654,8 +733,8 @@
       }
       if(!legendFits) notch = notchFor(header);              // no legend, or just its message
       legend = boxFor(rowH);
-      frame = { left: m, top: m, w: contentW, h: contentH - gap - rowTop - rowH };
-      panel = { left: m, top: m + frame.h + gap, width: contentW, height: rowTop + rowH };
+      frame = { left: m, top: top0, w: contentW, h: contentH - gap - rowTop - rowH };
+      panel = { left: m, top: top0 + frame.h + gap, width: contentW, height: rowTop + rowH };
       headerPos.top = rowTop;
     }
 
@@ -687,6 +766,36 @@
     printHeaderOverlay.style.top = headerPos.top + 'px';
 
     applyExportTheme(exportGeo);
+    layoutBandAndFooter(map, size);
+  }
+
+  // The header band (full width, at the top) and the footer line (between the page margins, at
+  // the bottom). The attribution text is the map's own (its control is hidden in the export, see
+  // placeControlCorners), shrunk until it fits beside the copyright.
+  function layoutBandAndFooter(map, size){
+    var m = EXPORT_PAGE_MARGIN;
+    var band = printBandOverlay.style;
+    band.width = size.w + 'px';
+    band.height = EXPORT_BAND_HEIGHT + 'px';
+    // The same gradient line as the 3D export's canvas one: from the top-left corner to the
+    // bottom-right one of the band.
+    var angle = Math.atan2(size.w, -EXPORT_BAND_HEIGHT) * 180 / Math.PI;
+    band.background = 'linear-gradient(' + angle.toFixed(1) + 'deg, ' +
+      EXPORT_BAND_GRADIENT.map(function(s){ return s[1] + ' ' + (s[0] * 100) + '%'; }).join(', ') + ')';
+    printBandDate.textContent = new Date().toLocaleDateString('en-GB');
+
+    var footer = printFooterOverlay.style;
+    footer.left = m + 'px';
+    footer.width = (size.w - 2 * m) + 'px';
+    footer.top = (size.h - EXPORT_FOOTER_HEIGHT - 2) + 'px';
+    var attribution = map.getContainer().querySelector('.leaflet-control-attribution');
+    printFooterAttr.textContent = attribution ? attribution.textContent.replace(/\s+/g, ' ').trim() : '';
+    var fontSize = EXPORT_FONT_LABEL;
+    printFooterAttr.style.fontSize = fontSize + 'px';
+    while(fontSize > 8 && printFooterAttr.scrollWidth > printFooterAttr.clientWidth){
+      fontSize--;
+      printFooterAttr.style.fontSize = fontSize + 'px';
+    }
   }
 
   // Leaflet controls (notably the tile attribution) live in the corners of the map container.
@@ -703,8 +812,9 @@
       if(cls.contains('leaflet-left')) corner.style.left = f.left + 'px';
       if(cls.contains('leaflet-right')) corner.style.right = right + 'px';
     });
+    // The attribution moves into the page footer (layoutBandAndFooter), so the map's own is hidden.
     Array.prototype.forEach.call(map.getContainer().querySelectorAll('.leaflet-control-attribution'), function(el){
-      el.style.fontSize = EXPORT_FONT_LABEL + 'px';
+      el.style.display = 'none';
     });
   }
 
@@ -715,7 +825,7 @@
       corner.style.top = corner.style.right = corner.style.bottom = corner.style.left = '';
     });
     Array.prototype.forEach.call(container.querySelectorAll('.leaflet-control-attribution'), function(el){
-      el.style.fontSize = '';
+      el.style.display = '';
     });
   }
 
@@ -966,6 +1076,8 @@
     if(printFrameOverlay) printFrameOverlay.style.display = 'block';
     if(printPanelOverlay) printPanelOverlay.style.display = 'block';
     if(printScaleOverlay) printScaleOverlay.style.display = 'inline-block';
+    if(printBandOverlay) printBandOverlay.style.display = 'flex';
+    if(printFooterOverlay) printFooterOverlay.style.display = 'flex';
     layoutPrintOverlays(map);
     placeControlCorners(map);
   }
@@ -975,6 +1087,8 @@
     if(printFrameOverlay) printFrameOverlay.style.display = 'none';
     if(printPanelOverlay) printPanelOverlay.style.display = 'none';
     if(printScaleOverlay) printScaleOverlay.style.display = 'none';
+    if(printBandOverlay) printBandOverlay.style.display = 'none';
+    if(printFooterOverlay) printFooterOverlay.style.display = 'none';
     if(printLayersOverlay) printLayersOverlay.style.display = 'none';
     if(printLegendOverlay) printLegendOverlay.style.display = 'none';
     resetControlCorners();

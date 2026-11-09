@@ -369,6 +369,22 @@
     return { 'fill-color': cfg.greens.color, 'fill-opacity': cfg.greens.opacity, 'fill-antialias': true };
   }
 
+  // The basemap's streets are white on near-white land: tint them slightly darker so
+  // the street network reads against the background. Only the car roads (surface and
+  // outline); paths, rail and tunnels keep the basemap's own look.
+  function styleStreets() {
+    var st = cfg.streets;
+    if (!st) return;
+    (map.getStyle().layers || []).forEach(function (l) {
+      if (l.type !== 'line' || l['source-layer'] !== 'roads') return;
+      var id = l.id, color = null;
+      if (/^(road|bridge)_.*_fill/.test(id)) color = st.fill;
+      else if (/^bridge_.*_case/.test(id)) color = st.bridgeCasing || st.casing;
+      else if (/^road_.*_case/.test(id)) color = st.casing;
+      if (color) map.setPaintProperty(id, 'line-color', color);
+    });
+  }
+
   function addParks(info) {
     if (!info) return;
     var layers = (info.metadata && info.metadata.vector_layers) || [];
@@ -597,6 +613,7 @@
 
   Promise.all([styleLoaded, probeTerrain(), probeBuildings(), probeParks(), probeTrees()]).then(function (r) {
     try { addTerrain(r[1]); } catch (e) { console.error('[3D] Terrain setup failed', e); }
+    try { styleStreets(); } catch (e) { console.error('[3D] Street colours failed', e); }
     try { addParks(r[3]); } catch (e) { console.error('[3D] Parks setup failed', e); }
     try { addGardens(); } catch (e) { console.error('[3D] Gardens setup failed', e); }
     var b = null;

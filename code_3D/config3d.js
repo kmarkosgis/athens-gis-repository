@@ -97,7 +97,7 @@
       familyField: 'family',
       minZoom: 15,                  // trees are drawn from this zoom in
       extentBuffer: 500,            // trees only within the buildings data's extent + this many metres
-      maxTrees: 10000,             // most trees built at once (the nearest to the view centre)
+      maxTrees: 11000,             // most trees built at once (the nearest to the view centre)
       ringSides: 10,                 // corners of each tree slice's outline (fewer = lighter geometry)
       slices: { round: 7, conifer: 7, palm: 5 },   // stacked tiers in a crown (fewer = lighter geometry)
       defaultHeight: 6,             // for a tree with no usable height
@@ -142,6 +142,14 @@
         maxzoom: 12,
         attribution: 'Terrain: <a href="https://mapterhorn.com/attribution">© Mapterhorn</a> (Copernicus DEM GLO-30)'
       }
+    },
+
+    // Streets a touch darker than the light land behind them (the basemap draws them
+    // white on near-white). Set to null for the basemap's own colours.
+    streets: {
+      fill: '#e2e4e8',         // road surface
+      casing: '#cfd3d9',       // thin outline around it
+      bridgeCasing: '#c2c7ce'
     },
 
     // Daytime sky (also the look with the sun lighting switched off).

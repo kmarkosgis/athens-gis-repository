@@ -753,7 +753,7 @@
   function groundShadowBefore(map) {
     var layers = map.getStyle().layers || [], last = -1;
     for (var i = 0; i < layers.length; i++) {
-      if (FLAT[layers[i].type] && layers[i].id !== COARSE_ID && layers[i].id !== FINE_ID) last = i;
+      if (FLAT[layers[i].type] && !isShadowImage(layers[i].id)) last = i;
     }
     return layers[last + 1] ? layers[last + 1].id : undefined;
   }
@@ -765,27 +765,91 @@
     return undefined;
   }
 
+  // MapLibre (4.x) drapes an image on the terrain only over the terrain tiles inside
+  // ONE map tile: the tile, at the zoom matching the image's size, that holds the
+  // image's centre. Anything of the image outside that tile is simply not drawn, so a
+  // shadow image crossing a tile line was cut off along it (shade missing in blocks).
+  // Each image is therefore shown as up to 4 pieces, each lying inside its own tile
+  // and sized so that tile is the one MapLibre picks.
+  var PIECES = 4;
+  function tilePieces(x0, y0, x1, y1) {
+    // The finest zoom where the image spans at most 2 x 2 tiles.
+    var z = 0, n = 1;
+    for (var zz = 22; zz >= 0; zz--) {
+      n = Math.pow(2, zz);
+      if (Math.floor(x1 * n - 1e-9) - Math.floor(x0 * n) <= 1 && Math.floor(y1 * n - 1e-9) - Math.floor(y0 * n) <= 1) { z = zz; break; }
+    }
+    n = Math.pow(2, z);
+    var t = 1 / n, eps = t * 1e-7, out = [];
+    for (var ty = Math.floor(y0 * n); ty * t < y1; ty++) {
+      for (var tx = Math.floor(x0 * n); tx * t < x1; tx++) {
+        var tx0 = tx * t + eps, ty0 = ty * t + eps, tx1 = (tx + 1) * t - eps, ty1 = (ty + 1) * t - eps;
+        var p = [Math.max(x0, tx0), Math.max(y0, ty0), Math.min(x1, tx1), Math.min(y1, ty1)];
+        if (p[2] <= p[0] || p[3] <= p[1]) continue;
+        // MapLibre picks the zoom from the piece's longer side: it must be over half a
+        // tile, or a smaller tile would be picked. A small piece grows (transparent,
+        // still inside its tile) to just over that.
+        var want = 0.51 * t;
+        if (Math.max(p[2] - p[0], p[3] - p[1]) < want) {
+          if (p[0] + want <= tx1) p[2] = p[0] + want; else p[0] = p[2] - want;
+        }
+        out.push(p);
+      }
+    }
+    return out;
+  }
+  // Copies the part of an image (Mercator box x0, y0 + W x H pixels of size pm) inside
+  // piece p onto that piece's canvas.
+  function drawPiece(cv, img, m, p) {
+    var w = notPow2(Math.max(2, Math.ceil((p[2] - p[0]) / m.pm))), h = notPow2(Math.max(2, Math.ceil((p[3] - p[1]) / m.pm)));
+    if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+    var ctx = cv.getContext('2d');
+    ctx.clearRect(0, 0, w, h);
+    var mx1 = m.x0 + m.W * m.pm, my1 = m.y0 + m.H * m.pm;
+    var ox0 = Math.max(p[0], m.x0), oy0 = Math.max(p[1], m.y0), ox1 = Math.min(p[2], mx1), oy1 = Math.min(p[3], my1);
+    if (ox1 <= ox0 || oy1 <= oy0) return;
+    var kx = w / (p[2] - p[0]), ky = h / (p[3] - p[1]);
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(img, (ox0 - m.x0) / m.pm, (oy0 - m.y0) / m.pm, (ox1 - ox0) / m.pm, (oy1 - oy0) / m.pm,
+      (ox0 - p[0]) * kx, (oy0 - p[1]) * ky, (ox1 - ox0) * kx, (oy1 - oy0) * ky);
+  }
+  function pieceIds(base) {
+    var ids = [];
+    for (var k = 0; k < PIECES; k++) ids.push(base + '-' + k);
+    return ids;
+  }
+  function isShadowImage(id) { return id.indexOf(COARSE_ID + '-') === 0 || id.indexOf(FINE_ID + '-') === 0; }
+
   var nudge = false;
+  var shown = {};   // id -> piece in use this update
   function showOnMap() {
     var map = ns.map, g = GPU, r = region;
     if (!map || !g || !r) return;
-    var cc = corners(r.c.x0, r.c.y0, r.c.x0 + r.c.W * r.c.pm, r.c.y0 + r.c.H * r.c.pm);
-    var fc = corners(r.f.x0, r.f.y0, r.f.x0 + r.f.W * r.f.pm, r.f.y0 + r.f.H * r.f.pm);
     var before = groundShadowBefore(map);
-    // The draped images.
-    [[COARSE_ID, g.coarseCanvas, cc, true], [FINE_ID, g.fineCanvas, fc, r.buildingsOn]].forEach(function (s) {
-      var src = map.getSource(s[0]);
-      if (!s[3] && !src) return;
-      if (!src) {
-        map.addSource(s[0], { type: 'canvas', canvas: s[1], coordinates: s[2], animate: false });
-        map.addLayer({ id: s[0], type: 'raster', source: s[0],
-          // Not exactly 1: at 1 MapLibre draws the image as opaque (depth-writing).
-          paint: { 'raster-opacity': 0.99, 'raster-fade-duration': 0, 'raster-resampling': 'linear' } }, before);
-        src = map.getSource(s[0]);
-      } else if (JSON.stringify(src.coordinates) !== JSON.stringify(s[2])) {
-        src.setCoordinates(s[2]);
-      }
-      if (src.play) { src.play(); src.pause(); }
+    shown = {};
+    // The draped images, in pieces.
+    [[COARSE_ID, g.coarseCanvas, r.c, true], [FINE_ID, g.fineCanvas, r.f, r.buildingsOn]].forEach(function (s) {
+      var m = s[2], ids = pieceIds(s[0]);
+      var parts = s[3] ? tilePieces(m.x0, m.y0, m.x0 + m.W * m.pm, m.y0 + m.H * m.pm) : [];
+      g.pieceCanvases = g.pieceCanvases || {};
+      ids.forEach(function (id, k) {
+        var p = parts[k], src = map.getSource(id);
+        if (!p) return;
+        var cv = g.pieceCanvases[id] = g.pieceCanvases[id] || document.createElement('canvas');
+        drawPiece(cv, s[1], m, p);
+        var co = corners(p[0], p[1], p[2], p[3]);
+        if (!src) {
+          map.addSource(id, { type: 'canvas', canvas: cv, coordinates: co, animate: false });
+          map.addLayer({ id: id, type: 'raster', source: id,
+            // Not exactly 1: at 1 MapLibre draws the image as opaque (depth-writing).
+            paint: { 'raster-opacity': 0.99, 'raster-fade-duration': 0, 'raster-resampling': 'linear' } }, before);
+          src = map.getSource(id);
+        } else if (JSON.stringify(src.coordinates) !== JSON.stringify(co)) {
+          src.setCoordinates(co);
+        }
+        if (src.play) { src.play(); src.pause(); }
+        shown[id] = true;
+      });
     });
     // The roofs/walls layer.
     if (ns.buildings && !map.getLayer(LAYER3D_ID)) map.addLayer(layer3d, afterBuildings(map));
@@ -795,7 +859,7 @@
     // Re-drape: the terrain caches what's drawn on it and redraws it after any style
     // change - a tiny opacity nudge is that change.
     nudge = !nudge;
-    [COARSE_ID, FINE_ID].forEach(function (id) {
+    pieceIds(COARSE_ID).concat(pieceIds(FINE_ID)).forEach(function (id) {
       if (map.getLayer(id)) map.setPaintProperty(id, 'raster-opacity', nudge ? 0.99 : 0.985);
     });
     map.triggerRepaint();
@@ -810,8 +874,8 @@
       var v = show ? 'visible' : 'none';
       if (map.getLayoutProperty(id, 'visibility') !== v) map.setLayoutProperty(id, 'visibility', v);
     }
-    vis(COARSE_ID, on && region.terrainOn);
-    vis(FINE_ID, on && region.buildingsOn);
+    pieceIds(COARSE_ID).forEach(function (id) { vis(id, on && region.terrainOn && !!shown[id]); });
+    pieceIds(FINE_ID).forEach(function (id) { vis(id, on && region.buildingsOn && !!shown[id]); });
     map.triggerRepaint();
   }
 

@@ -162,21 +162,11 @@
 
 <header>
   Athens GIS Repository
-  <a href="https://athensgis.gr/about" id="about-btn" title="About Athens GIS" target="_blank" rel="noopener">about</a>
+  <a href="3d-viewer.html" id="viewer-switch-btn" class="header-switch-btn" title="Open the 3D Viewer"><span class="hsb-full">3D Viewer</span><span class="hsb-short">3D</span></a>
   <a href="https://www.linkedin.com/company/athens-gis-repo/" id="linkedin-btn" title="LinkedIn Page">
     <img src="images/linkedin_icon.png" alt="LinkedIn">
   </a>
 </header>
-
-<script>
-  // Production serves about.html at the clean URL /about (the href above); local
-  // servers (VS Code Live Preview etc.) don't map /about to the file, so point
-  // the button at the local copy instead of jumping to the live site.
-  (function () {
-    var aboutBtn = document.getElementById('about-btn');
-    if (aboutBtn && !isProductionSite) aboutBtn.setAttribute('href', 'about.html');
-  })();
-</script>
 
 <div id="custom-zoom-controls">
   <button id="zoom-in" title="Zoom In"><strong>+</strong></button>
@@ -229,9 +219,17 @@
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="4" rx="1"/><rect x="3" y="16" width="18" height="4" rx="1"/></svg>DRAW ORDER
     </button>
   </div>
-  <button id="measureBtn" title="Measure distance"><img src="images/length.png" alt="Measure"></button>
-  <button id="exportBtn" title="Export the current map view"><img src="images/import-export.png" alt="Export"> </button>
-  <button id="zoomSelectedBtn" title="Zoom to selected layers"><img src="images/extend.png" alt="Zoom Selected"></button>
+  <div class="toolbar-row3">
+    <button id="measureBtn" title="Measure distance" aria-label="Measure distance">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 10H3V8h2v4h2V8h2v4h2V8h2v4h2V8h2v4h2V8h2v8z"/></svg><span class="tb-label">MEASURE</span>
+    </button>
+    <button id="exportBtn" title="Export the current map view" aria-label="Export the current map view">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg><span class="tb-label">EXPORT</span>
+    </button>
+    <button id="zoomSelectedBtn" title="Zoom to selected layers" aria-label="Zoom to selected layers">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 4h6v2H6v4H4V4zm10 0h6v6h-2V6h-4V4zM4 14h2v4h4v2H4v-6zm14 0h2v6h-6v-2h4v-4zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg><span class="tb-label">ZOOM</span>
+    </button>
+  </div>
 </div>
 
 <!-- Combined Opacity / Draw Order popup - one box, one panel visible at a time,
@@ -312,18 +310,36 @@
      (the map's own controls are in #map's stacking context, below the footer). -->
 <div id="footer">
   © 2026 Athens GIS Repository | Licensed under CC-BY 4.0 |
-  <a href="privacy.html" target="_blank" rel="noopener" style="color: inherit;">Cookies &amp; Privacy</a>
-  <a class="doi-badge" href="https://doi.org/10.5281/zenodo.18727779">
-    <!-- Self-hosted snapshot of Zenodo's own badge SVG (https://zenodo.org/badge/DOI/...) -
-         that endpoint intermittently 403s plain requests and rate-limits at 120 req/window
-         (see its own response headers), and hotlinking it costs an uncached cross-origin
-         round trip for an image that never changes once this DOI is published. -->
-    <img src="images/zenodo-doi-badge.svg" alt="DOI">
-  </a>
-  <a class="peekwell-badge" href="https://app.peekwell.org/a/8OnXqKbIfiS26HnDFCt8msgfQkbnHxAH/" target="_blank" rel="noopener"><img src="https://app.peekwell.org/a/8OnXqKbIfiS26HnDFCt8msgfQkbnHxAH/badge.svg" alt="PeekWell accreditation"></a>
-  <!-- Filled by JS/map-init.js with a live copy of the Leaflet attribution. -->
-  <div id="map-attribution" aria-label="Map attribution"></div>
+  <a href="privacy.html" target="_blank" rel="noopener" style="color: inherit;">Cookies &amp; Privacy</a> |
+  <a href="https://athensgis.gr/about" id="about-btn" title="About Athens GIS" target="_blank" rel="noopener" style="color: inherit;">About</a>
+  <!-- Desktop: positioned individually (style.css, #footer .doi-badge etc.), unchanged.
+       Mobile: one shrink-to-fit line between the toolbar and the text above - see
+       #footer .footer-credits in style.css and JS/footer-credits.js. -->
+  <div class="footer-credits">
+    <a class="doi-badge" href="https://doi.org/10.5281/zenodo.18727779">
+      <!-- Self-hosted snapshot of Zenodo's own badge SVG (https://zenodo.org/badge/DOI/...) -
+           that endpoint intermittently 403s plain requests and rate-limits at 120 req/window
+           (see its own response headers), and hotlinking it costs an uncached cross-origin
+           round trip for an image that never changes once this DOI is published. -->
+      <img src="images/zenodo-doi-badge.svg" alt="DOI">
+    </a>
+    <a class="peekwell-badge" href="https://app.peekwell.org/a/8OnXqKbIfiS26HnDFCt8msgfQkbnHxAH/" target="_blank" rel="noopener"><img src="https://app.peekwell.org/a/8OnXqKbIfiS26HnDFCt8msgfQkbnHxAH/badge.svg" alt="PeekWell accreditation"></a>
+    <!-- Filled by JS/map-init.js with a live copy of the Leaflet attribution. -->
+    <div id="map-attribution" aria-label="Map attribution"></div>
+  </div>
 </div>
+
+<script>
+  // Production serves about.html at the clean URL /about (the href above); local
+  // servers (VS Code Live Preview etc.) don't map /about to the file, so point
+  // the button at the local copy instead of jumping to the live site. Runs here
+  // (after the footer, where the "About" link now lives) rather than right after
+  // the header, so the element already exists when this script runs.
+  (function () {
+    var aboutBtn = document.getElementById('about-btn');
+    if (aboutBtn && !isProductionSite) aboutBtn.setAttribute('href', 'about.html');
+  })();
+</script>
 
 <!-- Welcome Modal -->
 <div id="welcomeModal">
@@ -391,6 +407,7 @@
 <script src="JS/draw-order.js?v=8cf8712f1c" defer></script>
 <script src="JS/utils.js?v=8a5cd85dcd" defer></script>
 <script src="JS/cookies.js?v=b8b6f976ff" defer></script>
+<script src="JS/footer-credits.js" defer></script>
 
 <script>
   // Google Analytics download tracking (event name: "download")

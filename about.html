@@ -1068,6 +1068,13 @@
         </ol>
       </li>
       <li class="toc-group">
+        <a class="toc-parent" href="#viewer-3d">3D Viewer</a>
+        <ol class="toc-sub">
+          <li><a href="#viewer-3d-basics">What the 3D viewer shows</a></li>
+          <li><a href="#route-shade">Route shade</a></li>
+        </ol>
+      </li>
+      <li class="toc-group">
         <a class="toc-parent" href="#contact">Contact</a>
       </li>
     </ol>
@@ -1591,6 +1598,65 @@
         <li><strong>Check the date and coverage.</strong> Each layer&rsquo;s description states its coverage area and when it was uploaded.</li>
       </ul>
       <p>If you spot an error, or know of a better or newer source for a layer, please get in touch &mdash; see the contact details below.</p>
+    </section>
+
+    <h2 class="category-title" id="viewer-3d" tabindex="-1">3D Viewer</h2>
+
+    <section id="viewer-3d-basics" aria-labelledby="viewer-3d-basics-h">
+      <h2 id="viewer-3d-basics-h">What the 3D viewer shows</h2>
+      <p>
+        The <a href="3d-viewer.html">3D Viewer</a> shows Athens in three dimensions: buildings at their real height, trees,
+        and the terrain, lit by the sun for any date and time. These are the main things you can do.
+      </p>
+      <dl>
+        <dt>Move around in 3D</dt>
+        <dd>Zoom with the + and &minus; buttons or the mouse wheel. Rotate the view with right-click drag, Ctrl + drag, or two fingers on a touch screen. The compass button turns the map back to north, and the 2D button switches to a top-down view.</dd>
+
+        <dt>Buildings, trees and terrain</dt>
+        <dd>Buildings are raised to their height, and the <em>Color by height</em> switch colors them by height with a legend. Trees are drawn as 3D shapes, and the terrain shows the hills around the city. The bar at the bottom shows the elevation under the pointer.</dd>
+
+        <dt>Sun and shadows</dt>
+        <dd>The sun panel sets the date and time (Athens time) and can play the day forward or backward at several speeds. <em>Sun lighting</em> lights the scene from the sun&rsquo;s position, <em>Shadows</em> casts the shadows of buildings and hills on the ground and on roofs, and <em>3D shade</em> also shows shadows on building walls, which is heavier on phones.</dd>
+
+        <dt>Measure, export and notes</dt>
+        <dd>The toolbar measures distances and exports the current view as an image, as on the main map. The <em>Note</em> button lists the sources, the precision of the data, and a note on performance.</dd>
+      </dl>
+    </section>
+
+    <section id="route-shade" aria-labelledby="route-shade-h">
+      <h2 id="route-shade-h">Route shade</h2>
+      <p>
+        Route shade shows how much of a walk is in the shade through the day. You draw a route along the streets, and the
+        tool charts the share of the route in shade, from sunrise to sunset, for the date set in the sun panel.
+      </p>
+      <h3>How to use it</h3>
+      <ol>
+        <li>Zoom in to street level, so the buildings and trees are loaded, and keep the whole route on screen.</li>
+        <li>Press <em>Route shade</em> in the toolbar, then <em>OK</em>.</li>
+        <li>Click along the streets to add points, and double-click to finish. Press ESC to cancel.</li>
+      </ol>
+      <h3>What you get</h3>
+      <ul>
+        <li><strong>Shade chart</strong> &mdash; the share of the route in shade through the day; click it to set the time on the map.</li>
+        <li><strong>The route on the map</strong>, colored sun or shade for the time shown in the sun panel, with a short summary of the day.</li>
+        <li><strong>Sun along the route</strong> and the <strong>elevation profile</strong>, point by point.</li>
+        <li><strong>Sun map</strong> &mdash; the share of sun by time of day and distance along the route.</li>
+        <li><strong>Downloads</strong> &mdash; the chart and the sun map as images, and the data as CSV.</li>
+      </ul>
+      <h3>How the shade is calculated</h3>
+      <p>
+        The calculation is geometric. The route is tested every 5 m, at <strong>1.5 m above the ground</strong> (a walker&rsquo;s head),
+        every 10 minutes from sunrise to sunset. From each point, the tool follows a straight line toward the sun across a height
+        model of the terrain, the buildings and the tree crowns within 400 m of the route, and of the hills within 6 km. If anything
+        stands above that line, the point is in shade.
+      </p>
+      <h3>What it cannot see</h3>
+      <ul>
+        <li>Arcades, balconies, awnings and covered passages: the model has one height per spot, so they give no shade.</li>
+        <li>Light through foliage: trees are treated as solid, in every season.</li>
+        <li>Roof shapes: each building has one flat roof height.</li>
+        <li>Buildings and trees the map had not loaded when you finished drawing, for example parts of the route off screen.</li>
+      </ul>
     </section>
 
     <section id="contact" aria-labelledby="contact-h">

@@ -16,37 +16,18 @@
    a flex row - centered, at a height equal to the main page's header (style.css:
    24px text + 4px/7px padding = 43px) - keeps the two pages' headers the same height
    regardless of the badge's size. */
-@media (min-width: 901px) {
-  .viewer-3d header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    height: 43px;
-    padding-top: 0;
-    padding-bottom: 0;
-    box-sizing: border-box;
-  }
-}
-
-/* "Athens GIS Repository" - 2px smaller than the header's default 24px, so the
-   "3D Viewer" badge next to it reads as the page title. */
-.header-title { font-size: 20px; }
-
-/* "3D Viewer" badge - 1px larger than the title next to it, and picked out with the
-   app's own accent blue (the scrollbar, input borders and focus rings elsewhere in
-   the site: #4682B4) rather than an unrelated color. */
+/* The page name leads: "3D VIEWER" larger and bold in full white, the site name
+   quieter beside it, the two split by a thin light rule. */
+.header-title { font-size: 17px; letter-spacing: 3px; opacity: 0.78; }
 .header-3d {
   display: inline-block;
-  
-  background: transparent;
-  border: 0px solid rgba(255, 255, 255, 0.5);
-  border-radius: 8px;
+  padding-left: 14px;
+  border-left: 1px solid rgba(246, 247, 245, 0.4);
   color: #ffffff;
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: 2.5px;
-  vertical-align: middle;
+  font-size: 25px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  line-height: 26px;
 }
 
 /* ---------- Zoom + compass (no layer panel on this page, so they sit at the left) ---------- */
@@ -135,12 +116,12 @@
 #note-btn[aria-expanded="true"] { border: 2px solid rgba(55, 65, 81, 0.85); }
 
 /* Note and Cite sit 10px from the right edge (style.css puts them 50px in on the main page). */
-.viewer-3d #citation-box { right: 10px; }
+/* #citation-box keeps style.css placement, left of the info button (#openWelcome). */
 .viewer-3d #citation-popup { right: 10px; }
 
 #note-popup {
   position: fixed;
-  top: 90px;
+  top: calc(var(--below-hdr) + 40px);
   right: 10px;
   width: 380px;
   max-width: calc(100vw - 20px);
@@ -245,7 +226,7 @@
 #route-panel.docked {
   left: auto;
   right: 10px;
-  top: 90px;                /* below NOTE / CITE */
+  top: calc(var(--below-hdr) + 40px);   /* below NOTE / CITE */
   bottom: auto;
   transform: none;
   max-height: calc(100dvh - 265px);   /* above the 3D buildings panel */
@@ -425,7 +406,7 @@
 /* ---------- Notices ---------- */
 #notice3d {
   position: fixed;
-  top: 52px;
+  top: calc(var(--below-hdr) + 2px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 1300;
@@ -767,16 +748,17 @@
   /* The longer title doesn't fit beside the LinkedIn icon: two lines, left-aligned.
      Right padding just clears that icon now - "About" moved to the footer. */
   .viewer-3d header {
+    justify-content: flex-start;
     text-align: left;
     font-size: 15px;
     line-height: 18px;
-    padding: 7px 92px 7px 12px;
+    padding: 0 92px 0 12px;
   }
   /* .header-title/.header-3d set their own font-size unconditionally above (an
      inherited value never wins over an explicit rule) - restate the mobile sizes
      here so they still shrink with the rest of the header. */
   .header-title { display: none; }   /* phones: "3D Viewer" only */
-  .header-3d { display: inline-block; margin: 3px 0 0; font-size: 16px; letter-spacing: 1.5px; }
+  .header-3d { display: inline-block; margin: 0; padding-left: 0; border-left: 0; font-size: 16px; letter-spacing: 1.5px; }
 
   /* +36px, matching style.css's #toolbar shift on mobile - keeps the same
      clearance above the toolbar now that it's been raised for .footer-credits. */
@@ -793,9 +775,9 @@
   #routeShadeBtn svg { width: 16px; height: 16px; margin: 0; }
   #exportBtn     { grid-row: 1; grid-column: 3; }
 
-  .viewer-3d #citation-box { right: 10px; }
+  /* #citation-box: style.css mobile placement, left of #openWelcome. */
   #note-btn { height: 40px; min-width: 90px; font-size: 12px; letter-spacing: 0.8px; }
-  #note-popup { top: 102px; right: 10px; left: 10px; width: auto; max-width: none; z-index: 3501; }
+  #note-popup { top: calc(var(--below-hdr) + 52px); right: 10px; left: 10px; width: auto; max-width: none; z-index: 3501; }
 
   /* Above the toolbar, full width. */
   #route-panel { bottom: 124px; width: calc(100vw - 20px); z-index: 2004; }
@@ -804,10 +786,10 @@
   #route-panel.docked { left: 50%; right: auto; top: auto; bottom: 124px; transform: translateX(-50%); max-height: calc(100dvh - 190px); }
   .route-legend .route-tip { display: none; }
 
-  #notice3d { top: 62px; }
+  #notice3d { top: calc(var(--below-hdr) + 12px); }
 
   #buildings-panel {
-    top: 98px;                /* clear of the CITE button (style.css: 50px from the top, 40px high) */
+    top: calc(var(--below-hdr) + 48px);   /* clear of the CITE button (40px high) */
     bottom: auto;
     right: 10px;
     width: 170px;

@@ -38,113 +38,505 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
 
     }
 
-    .logo-container {
-
-      position: fixed;
-      top: 0px;
-      left: 5px;
-      z-index: 2000;
+    /* Header geometry, shared by everything placed below it. The header floats 10px in
+       from the viewport edges (like every other panel), 50px tall; panels under it start
+       10px below its bottom edge. */
+    :root {
+      --hdr-gap: 10px;
+      --hdr-h: 50px;
+      --below-hdr: calc(var(--hdr-gap) + var(--hdr-h) + 10px);
+      /* The header's backdrop-filter makes it the containing block of the fixed buttons
+         inside it, so their offsets are measured from the header's own (1px-bordered) box. */
+      --hdr-btn-top: calc((var(--hdr-h) - 28px) / 2 - 1px);
     }
 
-    .logo {
-      height: 40px; /* Adjust size as needed */
-      width: auto;
-    }
-
-    /* Modal overlay */
+    /* ── Welcome dialog (JS/welcome.js) ─────────────────────────────────────
+       Shared by the main map and the 3D Viewer (both load this stylesheet).
+       Opens on every page load; the ⓘ button (#openWelcome) reopens it.
+       Same recipe as every floating panel: near-opaque white, 14px corners,
+       a slate band carrying the white wordmark, slate pill for the main action. */
     #welcomeModal {
-      position:fixed;
-      z-index: 9999; /* above everything else */
-      left: 0;
-      top: 0;
+      /* Native <dialog> (showModal): reset the browser's dialog box so the element fills
+         the window and centres the panel; the dim lives on ::backdrop. */
+      position: fixed;
+      inset: 0;
+      box-sizing: border-box;
       width: 100%;
       height: 100%;
-      overflow: auto;
-      background-color: rgba(0,0,0,0.6); /* dark overlay */
+      max-width: none;
+      max-height: none;
+      margin: 0;
+      padding: 16px;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      overflow-y: auto;
       display: none;
       align-items: center;
       justify-content: center;
     }
-    
-    /* Modal content box */
+    #welcomeModal[open] { display: flex; }
+    #welcomeModal::backdrop { background-color: rgba(17, 24, 39, 0.55); }
+
     #welcomeContent {
-      background-color: rgba(255, 255, 255, 0.8);
-      
+      position: relative;
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 540px;
+      margin: auto; /* centres, and still scrolls from the top when taller than the window */
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.97);
       -webkit-backdrop-filter: blur(7px);
       backdrop-filter: blur(7px);
-      padding: 30px;
       border-radius: 14px;
-      max-width: 500px;
-      text-align: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+      color: #1f2937;
       font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
-      font-weight: 400;
       font-size: 14px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.4);
-    }
-    
-    #welcomeContent h2 {
-      margin-top: 0;
-      letter-spacing: 1px;
-      font-weight: 600;
-      font-size: 23px;
+      font-weight: 400;
+      line-height: 1.55;
+      text-align: left;
     }
 
-    #welcomeContent strong {
-      font-weight: 500;
+    #welcomeContent:focus { outline: none; }
+
+    /* The wordmark set in type instead of the logo image: the name on one line,
+       the tagline under it in a light weight, both wide-tracked uppercase like the logo. */
+    .welcome-band {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 20px 56px 18px;
+      background: #374151;
+      text-align: center;
     }
-    
-    #welcomeContent button {
-      margin-top: 20px;
-      padding: 8px 20px;
-      background-color: white;
-      border: 2px solid transparent;
-      color: black;
-      font-size: 14px;
-      border-radius: 10px;
-      cursor: pointer;
-      transition-duration: 0.2s;
-      letter-spacing: 1px;
-      font-weight: 500;
-    }
-    
-    #welcomeContent button:hover {
-      background: rgba(55, 65, 81, 0.85);
-      color:white
-    }
-    .welcome-logo {
-      display: block;
-      margin: 0 auto 20px auto;
-      padding: 4px 20px;
-      width: auto;
-      height: 70px;
-      background:linear-gradient(to bottom, rgba(55, 65, 81, 0.6), rgba(55, 65, 81, 0.8));
-      
-    }
-    #welcomeContent input{
-      position: relative;
-      border: 1px solid #4682B4;
+    .welcome-band-title {
+      margin: 0;
+      color: #f6f7f5;
       font-size: 20px;
+      font-weight: 500;
+      line-height: 1.2;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .welcome-band-tagline {
+      margin: 0;
+      color: rgba(246, 247, 245, 0.78);
+      font-size: 11px;
+      font-weight: 300;
+      line-height: 1.3;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    .welcome-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      display: grid;
+      place-items: center;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border: 1px solid rgba(246, 247, 245, 0.35);
+      border-radius: 10px;
+      background: transparent;
+      color: #f6f7f5;
       cursor: pointer;
-    }    
-    /* Info Button top-right */
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+    .welcome-close:hover {
+      background: rgba(246, 247, 245, 0.14);
+      border-color: rgba(246, 247, 245, 0.75);
+    }
+    .welcome-close svg { display: block; }
+
+    .welcome-body { padding: 22px 26px 22px; }
+
+    #welcomeTitle {
+      margin: 0 0 8px;
+      color: #111827;
+      font-size: 22px;
+      font-weight: 600;
+      line-height: 1.25;
+      letter-spacing: 0.3px;
+      text-wrap: balance;
+    }
+    .welcome-lead {
+      margin: 0 0 18px;
+      color: #374151;
+      font-size: 16px;
+      line-height: 1.55;
+    }
+
+    .welcome-steps {
+      display: grid;
+      gap: 9px;
+      margin: 0 0 20px;
+      padding: 0;
+      list-style: none;
+    }
+    .welcome-steps li {
+      display: grid;
+      grid-template-columns: 18px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+    .welcome-steps svg {
+      display: block;
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      color: #374151;
+    }
+
+    /* The two destination links (3D Viewer + About, or Main map + About).
+       Real links, so they open in a new tab like every other page switch. */
+    .welcome-go {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 0 0 20px;
+    }
+    .welcome-go-link {
+      display: grid;
+      grid-template-columns: 20px 1fr 14px;
+      column-gap: 10px;
+      row-gap: 3px;
+      align-items: center;
+      padding: 12px 12px 13px;
+      border: 2px solid rgba(55, 65, 81, 0.18);
+      border-radius: 10px;
+      background: #ffffff;
+      color: #1f2937;
+      text-decoration: none;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .welcome-go-link:hover {
+      border-color: rgba(55, 65, 81, 0.85);
+      background: #f6f7f5;
+    }
+    .welcome-go-icon {
+      display: block;
+      width: 20px;
+      height: 20px;
+      color: #374151;
+    }
+    .welcome-go-title {
+      color: #111827;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .welcome-go-ext {
+      display: block;
+      width: 14px;
+      height: 14px;
+      color: #4b5563;
+    }
+    /* The new feature (3D Viewer on the main map): a pale ochre tint, an ochre edge and a
+       "New" tag, in the same Attic Ochre as the header switch button that leads there. */
+    .welcome-go-link.is-new {
+      border-color: #c99a2e;
+      background: #f8f0dc;
+    }
+    .welcome-go-link.is-new:hover {
+      border-color: #374151;
+      background: #f3e6c4;
+    }
+    .welcome-go-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .welcome-go-badge {
+      padding: 2px 8px;
+      border-radius: 9999px;
+      background: #c99a2e;
+      color: #111827;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.3;
+      letter-spacing: 1px;
+    }
+    .welcome-go-desc {
+      grid-column: 2 / 4;
+      color: #4b5563;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .welcome-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(55, 65, 81, 0.18);
+    }
+    .welcome-meta {
+      margin: 0;
+      color: #4b5563;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .welcome-meta strong {
+      color: #1f2937;
+      font-weight: 600;
+    }
+
+    #closeWelcome {
+      flex: 0 0 auto;
+      height: 40px;
+      padding: 0 22px;
+      border: 2px solid transparent;
+      border-radius: 9999px;
+      background: #374151;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    #closeWelcome:hover { background: #1f2937; }
+
+    /* The note and the two buttons share a line when there's room; otherwise the
+       buttons drop below, right-aligned, and the note keeps a readable width. */
+    .welcome-foot { flex-wrap: wrap; row-gap: 14px; }
+    .welcome-foot .welcome-meta { flex: 1 1 280px; }
+    .welcome-actions {
+      display: flex;
+      flex: 0 0 auto;
+      gap: 8px;
+      margin-left: auto;
+    }
+    /* Secondary action beside "Explore the map": same pill, outlined */
+    #startTour {
+      height: 40px;
+      padding: 0 18px;
+      border: 1.5px solid rgba(55, 65, 81, 0.45);
+      border-radius: 9999px;
+      background: #ffffff;
+      color: #1f2937;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    #startTour:hover { border-color: #c99a2e; background: #f8f0dc; }
+
+    /* ── Guided tour (JS/tour.js) ─────────────────────────────────────────
+       A card beside the control each step is about, and an Attic Ochre ring
+       around that control. The map stays usable underneath. */
+    .tour-ring {
+      position: fixed;
+      z-index: 9100; /* above the cookie box (9000) */
+      box-sizing: border-box;
+      border: 2px solid #c99a2e;
+      border-radius: 14px;
+      pointer-events: none;
+      transition: left 0.25s cubic-bezier(0.16, 1, 0.3, 1), top 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                  width 0.25s cubic-bezier(0.16, 1, 0.3, 1), height 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .tour-ring[hidden], .tour-card[hidden] { display: none; }
+
+    .tour-card {
+      position: fixed;
+      z-index: 9101;
+      box-sizing: border-box;
+      width: 300px;
+      padding: 14px 16px 14px;
+      border-radius: 14px;
+      background: #ffffff;
+      color: #1f2937;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
+      transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1), top 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .tour-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .tour-count {
+      margin: 0;
+      color: #4b5563;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      font-variant-numeric: tabular-nums;
+    }
+    .tour-progress {
+      display: flex;
+      gap: 4px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .tour-progress li {
+      width: 14px;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(55, 65, 81, 0.15);
+    }
+    .tour-progress li.is-past { background: rgba(201, 154, 46, 0.55); }
+    .tour-progress li.is-now { background: #c99a2e; }
+    .tour-close {
+      display: grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      margin: -4px -6px 0 auto;
+      padding: 0;
+      border: 0;
+      border-radius: 9999px;
+      background: transparent;
+      color: #4b5563;
+      cursor: pointer;
+    }
+    .tour-close:hover { background: rgba(55, 65, 81, 0.08); color: #111827; }
+
+    .tour-title {
+      margin: 0 0 6px;
+      color: #111827;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      line-height: 1.3;
+      outline: none;
+    }
+    .tour-text {
+      margin: 0;
+      color: #374151;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .tour-status {
+      margin: 8px 0 0;
+      color: #4b5563;
+      font-size: 12px;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+    }
+    .tour-status:empty { display: none; }
+    .tour-card.is-done .tour-status { color: #7a5a12; }
+    .tour-card.is-done .tour-status::before {
+      content: "";
+      display: inline-block;
+      width: 9px;
+      height: 5px;
+      margin: 0 7px 3px 1px;
+      border-left: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      transform: rotate(-45deg);
+    }
+
+    .tour-foot {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .tour-back, .tour-next {
+      height: 32px;
+      padding: 0 16px;
+      border-radius: 9999px;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+    .tour-back {
+      border: 1.5px solid rgba(55, 65, 81, 0.3);
+      background: #ffffff;
+      color: #1f2937;
+    }
+    .tour-back:hover { border-color: rgba(55, 65, 81, 0.7); }
+    .tour-back[hidden] { display: none; }
+    .tour-next {
+      border: 1.5px solid transparent;
+      background: #374151;
+      color: #ffffff;
+    }
+    .tour-next:hover { background: #1f2937; }
+    .tour-card button:focus-visible,
+    #startTour:focus-visible {
+      outline: 3px solid #4682b4;
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 560px) {
+      .welcome-actions { flex-direction: column-reverse; }
+      #startTour { width: 100%; }
+      .tour-card { width: calc(100vw - 20px); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .tour-ring, .tour-card { transition: none; }
+    }
+
+    #welcomeModal a:focus-visible,
+    #welcomeModal button:focus-visible,
+    #openWelcome:focus-visible {
+      outline: 3px solid #4682b4;
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 560px) {
+      #welcomeModal { padding: 12px; }
+      .welcome-band { padding: 16px 48px 14px; }
+      .welcome-band-title { font-size: 15px; letter-spacing: 2px; }
+      .welcome-band-tagline { letter-spacing: 2px; }
+      .welcome-body { padding: 18px 18px 18px; }
+      .welcome-lead { font-size: 14px; }
+      .welcome-go { grid-template-columns: 1fr; }
+      .welcome-foot { flex-direction: column; align-items: stretch; }
+      #closeWelcome { width: 100%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #welcomeContent { animation: none !important; }
+      .welcome-go-link, #closeWelcome, .welcome-close { transition: none; }
+    }
+
+    /* Info button top-right: reopens the welcome dialog */
     #openWelcome {
       position: fixed;
-      top: 50px;
+      top: var(--below-hdr);
       right: 10px;
-      border: 2px solid transparent;
-      background: rgb(255, 255, 255);
-      height: 30px;
+      display: grid;
+      place-items: center;
+      box-sizing: border-box;
       width: 30px;
-      color: black;
-      font-size: 20px;
-      text-align: center;
-      padding: 1px 10px;
-      border-radius: 100%;
+      height: 30px;
+      padding: 0;
+      border: 2px solid transparent;
+      border-radius: 50%;
+      background: rgb(255, 255, 255);
+      color: #111827;
       cursor: pointer;
       z-index: 1100;
       transition-duration: 0.2s;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
+    #openWelcome svg { display: block; }
     #openWelcome:hover {
       border: 2px solid rgba(55, 65, 81, 0.85);
     }
@@ -739,12 +1131,23 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       animation: datasetSearchPulse 0.7s ease-out 2;
     }
 
+    /* A floating slate bar: inset from the viewport edges, rounded like the panels, with
+       a faint light hairline so its edge reads against dark map areas too. On the main
+       map it starts right of the layer panel (which now runs to the top). */
     header {
       position: absolute;
-      top: 0;
-      /* Replace 100vw with 100% to avoid horizontal overflow caused by scrollbar width */
-      width: 100%;
-      background: rgba(55, 65, 81, 0.7);
+      top: var(--hdr-gap);
+      left: var(--hdr-gap);
+      right: var(--hdr-gap);
+      height: var(--hdr-h);
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      border: 1px solid rgba(246, 247, 245, 0.16);
+      border-radius: 14px;
+      background: rgba(55, 65, 81, 0.9);
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
       color: rgb(246, 247, 245);
       
@@ -752,9 +1155,10 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       backdrop-filter: blur(7px);
       text-align: center;
       font-weight: 400;
-      letter-spacing: 2px;
+      letter-spacing: 3px;
       text-transform: uppercase;
-      padding: 4px 1px 7px 1px;
+      padding: 0 200px;      /* both sides, so the title stays centered clear of the buttons */
+      white-space: nowrap;
       font-size: 24px;
       font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       font-style: normal;
@@ -762,10 +1166,21 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       
     }
 
+    /* Main map: the layer panel runs to the top, so the header starts right of it
+       (panel 10px + 340px wide, then the 10px gutter). */
+    @media (min-width: 901px) {
+      body:not(.viewer-3d) header { left: 360px; }
+    }
+    /* Narrower desktops: the main map's header is short (it starts after the layer
+       panel), so the title gives up its left reserve and steps down a size. */
+    @media (min-width: 901px) and (max-width: 1265px) {
+      body:not(.viewer-3d) header { padding: 0 196px 0 16px; font-size: 20px; letter-spacing: 2px; }
+    }
+
     #linkedin-btn {
       position: fixed;
-      top: 6px;
-      right: 12px;
+      top: var(--hdr-btn-top);
+      right: 11px;
     }
 
     #linkedin-btn img {
@@ -774,33 +1189,42 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       width: auto;
     }
 
-    /* Switch between the 2D map and the 3D Viewer: same look as the "Open map" button
-       in about.html, just left of the LinkedIn icon. */
+    /* Switch between the 2D map and the 3D Viewer, just left of the LinkedIn icon.
+       Filled in Attic Ochre (#c99a2e) so the one control that moves between the two views
+       stands out from the slate header on both pages - the single sanctioned accent in the
+       chrome (DESIGN.md). Ink text on it reads ~6.5:1. */
     .header-switch-btn {
       position: fixed;
-      top: 6px;
-      right: 52px;
+      top: var(--hdr-btn-top);
+      right: 51px;
       z-index: 1001;
       display: inline-flex;
       align-items: center;
       box-sizing: border-box;
       height: 28px;
       padding: 0 20px;
-      border: 1px solid rgba(246, 247, 245, 0.7);
+      border: 1px solid #c99a2e;
       border-radius: 10px;
-      color: rgb(246, 247, 245);
+      background: #c99a2e;
+      color: #111827;
       font-size: 16px;
-      font-weight: 500;
+      font-weight: 600;
       letter-spacing: 1.5px;
       line-height: 1;
       text-decoration: none;
       text-transform: uppercase;
       white-space: nowrap;
-      transition-duration: 0.2s;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      transition: background-color 0.2s, border-color 0.2s;
     }
     .header-switch-btn:hover {
-      background: rgba(246, 247, 245, 0.95);
+      background: #d9ae4a;
+      border-color: #d9ae4a;
       color: #111827;
+    }
+    .header-switch-btn:focus-visible {
+      outline: 3px solid #f6f7f5;
+      outline-offset: 2px;
     }
     .hsb-short { display: none; }
 
@@ -810,7 +1234,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
 
     .announcement-box {
       position: fixed;
-      top: 50px; /* adjust based on your header height */
+      top: var(--below-hdr);
       left:50%; /* adjust based on your layout */
       right: 400px; /* adjust based on your layout */
       transform: translateX(-50%);
@@ -872,10 +1296,10 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
 
     #layerControl {
       position: fixed;
-      top: 50px;      /* below header */
+      top: 10px;      /* runs to the top: the header starts right of it */
       left: 10px;     /* left side */
       width: 320px;   /* content width, matches #toolbar (both content-box + 20px padding) */
-      bottom: 183px;   /* 30px footer offset + 143px #toolbar height + 10px gap */
+      bottom: 171px;   /* 30px footer offset + 131px #toolbar height + 10px gap */
       background: rgba(255, 255, 255, 0.95); 
       padding:  0 10px 10px 10px;
       border-radius: 14px;
@@ -1155,7 +1579,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       display: grid;
       grid-template-rows: auto auto auto;
       grid-template-columns: 1fr 1fr 80px;
-      gap: 14px;
+      gap: 8px;
       align-items: center;
       font-family: "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, "Helvetica", Arial, sans-serif;
       font-size: 14px;
@@ -1412,7 +1836,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
 
     #citation-box {
       position: fixed;
-      top: 50px;
+      top: var(--below-hdr);
       right: 50px;
       z-index: 1000;
       display: flex;
@@ -1496,7 +1920,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
 
     #citation-popup {
       position: fixed;
-      top: 90px;
+      top: calc(var(--below-hdr) + 40px);
       right: 50px;
       width: 360px;
       max-width: calc(100vw - 20px);
@@ -1847,7 +2271,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
     /* Announcement box dismissed/hidden -> cookie box rises to sit below the header,
        same horizontal position (left/right/transform unchanged above). */
     body.announcement-hidden #cookie-consent-box {
-      top: 50px;
+      top: var(--below-hdr);
     }
 
     #cookie-consent-box[hidden] {
@@ -1918,6 +2342,13 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       overflow: hidden; /* required for smooth max-height transition */
     }
 
+    /* Room above the first row, so an active row's shadow isn't clipped by the
+       group's overflow:hidden (the groups are display:none while closed). */
+    .category-content,
+    .subcategory-content {
+      padding-top: 5px;
+    }
+
     .layer-item-actions {
       order: 2;
       display: flex;
@@ -1945,7 +2376,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
 
     /* Highlight selected layer with colored background */
     .layer-item.selected {
-      border: 2px solid rgba(55, 65, 81, 0.85);
+      border: 2px solid transparent; /* active state reads from the switch, card and shadow; no outline */
       background: white;
       border-radius: 12px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
@@ -1957,7 +2388,127 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       transition: border 0.2s, max-height 0.4s, padding 0.15s ;
     }
     .layer-item.selected:hover {
-      border: 2px solid rgba(55, 65, 81, 0.4);
+      border: 2px solid transparent;
+    }
+
+    /* On/off switch at the right of every layer row (drawn by the label, no extra markup):
+       grey with the knob left when the layer is off, Attic Ochre with the knob right when it
+       is on - the same switch language as the search / Athena toggle - so active layers can
+       be read at a glance down the whole list. The active row's name also goes bold. */
+    .layer-item label::after {
+      content: "";
+      flex: 0 0 auto;
+      align-self: center;
+      width: 30px;
+      height: 18px;
+      margin-left: auto;
+      border-radius: 9999px;
+      background:
+        radial-gradient(circle at 9px 50%, #ffffff 0 6px, transparent 6.5px),
+        rgba(55, 65, 81, 0.22);
+      transition: background-color 0.2s;
+    }
+    .layer-item.selected label::after {
+      background:
+        radial-gradient(circle at 21px 50%, #ffffff 0 6px, transparent 6.5px),
+        #c99a2e; /* Attic Ochre: the "on" state (DESIGN.md accent) */
+    }
+    .layer-item.selected label { font-weight: 600; }
+
+    /* Collapse All + Close All Layers side by side on one line */
+    .layer-panel-btnrow {
+      display: flex;
+      gap: 6px;
+      width: 93%;
+    }
+    .layer-panel-btnrow .layer-panel-btn { flex: 1 1 0; min-width: 0; }
+
+    /* Recently opened layers (JS/layer-control.js): names only, newest first.
+       Active layers read in ink; closed ones lighter. */
+    .recent-layers {
+      width: 96%;
+      margin: 0 0 2px;
+    }
+    .recent-layers[hidden] { display: none; }
+    .recent-layers-label {
+      margin: 0 0 4px 2px;
+      color: #6b7280;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+    }
+    .recent-layers-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .recent-layers-list li { max-width: 100%; min-width: 0; }
+    .recent-layer {
+      display: block;
+      max-width: 100%;
+      overflow: hidden;
+      padding: 2px 7px;
+      border: 1px solid rgba(55, 65, 81, 0.14);
+      border-radius: 9999px;
+      background: transparent;
+      color: #6b7280;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 1.35;
+      letter-spacing: 0;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+    }
+    .recent-layer.is-on {
+      border-color: rgba(55, 65, 81, 0.4);
+      background: #ffffff;
+      color: #111827;
+      font-weight: 500;
+    }
+    .recent-layer:hover {
+      border-color: #c99a2e;
+      background: #f8f0dc;
+      color: #111827;
+    }
+    .recent-layer:focus-visible {
+      outline: 3px solid #4682b4;
+      outline-offset: 2px;
+    }
+
+    /* A row found from the recent list: a pale ochre fill only (no ring - an outer ring
+       is clipped by the list's overflow), until that layer is switched on/off or its
+       group is collapsed. Active rows keep their own soft shadow. */
+    .layer-item.is-located,
+    .layer-item.is-located:hover,
+    .layer-item.selected.is-located {
+      background: #f8f0dc;
+    }
+
+    /* Category header: title over a one-line summary of its subcategories
+       (built in JS/layer-control.js). Light, soft and truncated with an ellipsis;
+       the full list is in the tooltip. */
+    .category-title-wrap {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    .category-summary {
+      margin: 0 0 1px;
+      overflow: hidden;
+      color: #6b7280;
+      font-size: 11px;
+      font-weight: 300;
+      line-height: 1.35;
+      letter-spacing: 0.3px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .layer-item label {
@@ -2007,11 +2558,12 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
     .color-button {
       text-transform: uppercase;
     }
+    /* Attic Ochre on hover (DESIGN.md: the site's one accent) */
     .download-button:hover {
-      background-color: rgba(55, 65, 81, 0.85);
-      border: 1px solid transparent;
-      color: white;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      background-color: #c99a2e;
+      border: 1px solid #c99a2e;
+      color: #111827;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     }
 
     .color-button:hover {
@@ -2156,7 +2708,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
     /* Custom zoom controls */
     #custom-zoom-controls {
       position: fixed;
-      top: 50px;
+      top: var(--below-hdr);
       left:  360px;
       z-index: 1000;
       display: flex;
@@ -2184,7 +2736,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
 
     #custom-basemap-switcher {
       position: fixed;
-      top: 50px;
+      top: var(--below-hdr);
       left: 415px;   /* zoom controls' left (360) + 45px width + 10px gap */
       z-index: 1001;
       display: flex;
@@ -2285,7 +2837,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
 
     #legend-bar {
       position: fixed;
-      top: 90px;
+      top: calc(var(--below-hdr) + 40px);
       right: 10px;
       background: rgba(255, 255, 255, 1);
       border: none;
@@ -2436,10 +2988,10 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       cursor: default;
     }
     .filter-button:not(:disabled):hover {
-      background-color: rgba(55, 65, 81, 0.85);
-      border: 1px solid transparent;
-      color: white;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      background-color: #c99a2e;
+      border: 1px solid #c99a2e;
+      color: #111827;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     }
     .filter-button.filter-active {
       background: rgba(55, 65, 81, 0.1);
@@ -2548,7 +3100,6 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
         max-height: 100dvh;
         overflow: hidden;
       }
-      .logo-container,
       .announcement-box,
       #legend-bar,
       #map-scale-ratio,
@@ -2585,7 +3136,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       }
 
       #citation-box {
-        top: 50px;
+        top: var(--below-hdr);
         right: 56px;
         z-index: 3002;
       }
@@ -2597,7 +3148,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
         border-radius: 10px;
       }
       #citation-popup {
-        top: 102px;
+        top: calc(var(--below-hdr) + 52px);
         right: 10px;
         left: 10px;
         width: auto;
@@ -2625,23 +3176,19 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
         font-size: 12px;
       }
 
-      #welcomeContent {
-        
-        margin-left: 10px;
-        margin-right: 10px;
-      }
+      /* Phones: the same floating bar, closer to the edges and a little lower. */
+      :root { --hdr-gap: 6px; --hdr-h: 42px; }
       header {
-        box-sizing: border-box;
-        width: 100%;
-        padding: 6px 88px 10px 46px;
+        border-radius: 12px;
+        padding: 0 84px 0 44px;
         font-size:17px;
         letter-spacing: 1px;
         z-index: 8000;
       }
       /* Compact: "3D" / "2D", between the title and the LinkedIn icon. */
       .header-switch-btn {
-        top: 7px;
-        right: 46px;
+        top: calc((var(--hdr-h) - 26px) / 2 - 1px);
+        right: 43px;
         z-index: 8001;
         height: 26px;
         padding: 0 9px;
@@ -2651,15 +3198,15 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       .hsb-full { display: none; }
       .hsb-short { display: inline; }
       #linkedin-btn {
-      position: fixed;
-      top: 7px;
-      right: 10px;
-    }
+        position: fixed;
+        top: var(--hdr-btn-top);
+        right: 5px;
+      }
       #menuBtn {
         display: block !important;
         position: fixed;
-        left: 5px;
-        top: 2px;
+        left: calc(var(--hdr-gap) + 2px);
+        top: calc(var(--hdr-gap) + 2px);
         height: 38px;
         width: 40px;
         z-index: 9000;
@@ -2672,7 +3219,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
         line-height: 1;
       }
       #openWelcome {
-        top: 50px;
+        top: var(--below-hdr);
         right: 8px;
         width: 40px;
         height: 40px;
@@ -2683,7 +3230,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       #layerControl {
         display: none;
         position: fixed;
-        top: 100px;
+        top: calc(var(--below-hdr) + 50px);
         left: 50%;
         transform: translateX(-50%);
         width: calc(100vw - 35px);
@@ -2888,12 +3435,6 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
         min-width: 120px;
         max-height: 45vh;
         overflow-y: auto;
-      }
-      #welcomeContent {
-        width: calc(100vw - 24px);
-        max-width: 420px;
-        padding: 20px 14px;
-        font-size: 15px;
       }
       #footer {
         width: 100%;

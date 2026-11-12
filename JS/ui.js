@@ -92,35 +92,6 @@ document.addEventListener('click', function(e) {
 	}
 });
 
-// Welcome modal logic
-document.addEventListener("DOMContentLoaded", function () {
-	const modal = document.getElementById("welcomeModal");
-	const closeBtn = document.getElementById("closeWelcome");
-	const openBtn = document.getElementById("openWelcome");
-
-	// Check if already visited
-	if (!localStorage.getItem("welcomeShown")) {
-		modal.style.display = "flex";
-	}
-
-	// Close modal + mark as shown
-	closeBtn.addEventListener("click", function () {
-		modal.style.display = "none";
-		localStorage.setItem("welcomeShown", "true");
-	});
-
-	// Allow reopening manually
-	openBtn.addEventListener("click", function () {
-		modal.style.display = "flex";
-	});
-
-	// Close modal on outside click
-	window.addEventListener("click", function (e) {
-		if (e.target === modal) {
-			modal.style.display = "none";
-			localStorage.setItem("welcomeShown", "true");
-		}
-	});
-});
+// Welcome dialog: moved to JS/welcome.js (shared with the 3D Viewer).
 
 

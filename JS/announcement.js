@@ -1,17 +1,8 @@
 (function () {
-  // Set to 1 to show the announcement box, 0 to hide it for everyone.
-  var ANNOUNCEMENT_ENABLED = 1;
+  // The announcements come from data/site-state.json, which the admin dashboard
+  // writes. JS/site-state.js loads it and exposes window.AthensGIS.siteStateReady.
 
-  // Add new announcements at the top. Newest entry first.
-  var ANNOUNCEMENTS = [
-    { date: '29/10/2026', text: 'Employment, Unemployment, and inactive census 2021 added. (Population and Social conditions - Empolyment)' },
-    { date: '21/10/2026', text: 'TrolleyBus routes and stops added (Transportation Systems - Road Transport).' },
-    { date: '14/10/2026', text: 'Dominant leaf type and Street Trees added (Environment - Vegetation & Urban Planning - Land Cover).' },
-    { date: '30/09/2026', text: '2021 Population Census Density added (Population and social conditions).' },
-            
-  ];
-
-  function buildContent(box) {
+  function buildContent(box, items) {
     var h3 = document.createElement('h3');
     h3.textContent = 'NEWS - ANNOUNCEMENTS';
     var closeBtn = document.createElement('button');
@@ -21,7 +12,7 @@
     h3.appendChild(closeBtn);
     box.appendChild(h3);
 
-    ANNOUNCEMENTS.forEach(function (item) {
+    items.forEach(function (item) {
       var p = document.createElement('p');
       var strong = document.createElement('strong');
       strong.textContent = item.date + ':';
@@ -31,19 +22,33 @@
     });
   }
 
-  document.addEventListener('DOMContentLoaded', function () {
+  // Keep only entries that have text; date falls back to an empty string.
+  function cleanItems(list) {
+    if (!Array.isArray(list)) return [];
+    return list.filter(function (item) {
+      return item && typeof item === 'object' && typeof item.text === 'string' && item.text !== '';
+    }).map(function (item) {
+      return { date: typeof item.date === 'string' ? item.date : '', text: item.text };
+    });
+  }
+
+  var domReady = new Promise(function (resolve) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () { resolve(); });
+    } else {
+      resolve();
+    }
+  });
+
+  var AthensGIS = window.AthensGIS || {};
+  var stateReady = AthensGIS.siteStateReady || Promise.resolve(null);
+
+  Promise.all([domReady, stateReady]).then(function (results) {
+    var state = results[1];
     var box = document.getElementById('announcement-box');
     if (!box) return;
 
-    buildContent(box);
-
-    var closeBtn = document.getElementById('closeAnnouncementBtn');
-    if (!closeBtn) return;
-
     var STORAGE_KEY = 'announcementDismissedSignature';
-    var signature = ANNOUNCEMENTS.map(function (item) {
-      return item.date + '\x1f' + item.text;
-    }).join('|');
 
     function hide() {
       box.hidden = true;
@@ -57,11 +62,28 @@
       document.body.classList.remove('announcement-hidden');
     }
 
-    if (ANNOUNCEMENT_ENABLED !== 1) {
+    var announcements = state && state.announcements;
+
+    if (announcements && announcements.enabled === false) {
       localStorage.removeItem(STORAGE_KEY);
       hide();
       return;
     }
+
+    var items = announcements && announcements.enabled === true ? cleanItems(announcements.items) : [];
+    if (items.length === 0) {
+      hide();
+      return;
+    }
+
+    buildContent(box, items);
+
+    var closeBtn = document.getElementById('closeAnnouncementBtn');
+    if (!closeBtn) return;
+
+    var signature = items.map(function (item) {
+      return item.date + '\x1f' + item.text;
+    }).join('|');
 
     if (localStorage.getItem(STORAGE_KEY) === signature) {
       hide();
@@ -74,5 +96,7 @@
       localStorage.setItem(STORAGE_KEY, signature);
       hide();
     });
+  }).catch(function () {
+    // Announcements are optional; a failure here must not affect the page.
   });
 })();

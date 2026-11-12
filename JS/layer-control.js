@@ -46,7 +46,7 @@ var layerCategories = {
     "Protection Zones": [
       { name: "Natura 2000 sites", file: "Environment/Natura.pmtiles", geojson: "Environment/Natura.geojson", geom: "polygon" },
     ],
-    "Vegetation": [ 
+    "Trees and Vegetation": [ 
       {"name": "Dominant Leaf Type (2024)", file: "Environment/leaf_type.tif", type: "raster"},
       { name: "Vegetation Index (Center Sector)", file: "Environment/AthensGreenCenter.pmtiles", geojson: "Environment/AthensGreenCenter.geojson", geom: "polygon" },
       { name: "Vegetation Index (North Sector)", file: "Environment/AthensGreenNorth.pmtiles", geojson: "Environment/AthensGreenNorth.geojson", geom: "polygon" },
@@ -1654,10 +1654,10 @@ function renderLayerControl(){
   var controlDiv = document.getElementById('layerControl'); if(!controlDiv) return;
 
   if(!controlDiv.querySelector('#collapseAllBtn')){
-    var wrap=document.createElement('div'); wrap.id='layerControlContainer'; wrap.style.display='flex'; wrap.style.flexDirection='column'; wrap.style.alignItems='center'; wrap.style.gap='8px';
-    var title = document.createElement('div'); title.style.fontSize = '14px'; title.style.fontWeight = '500'; title.style.margin = '2px 0 8px 0'; title.style.padding = '6px 10px'; title.style.background = 'rgba(55, 65, 81, 0.85)'; title.style.color = 'white'; title.style.borderRadius = '10px'; title.style.letterSpacing = '2px'; title.style.width='93%'; title.style.display='flex'; title.style.alignItems='center'; title.style.justifyContent='center'; title.style.position='relative';
+    var wrap=document.createElement('div'); wrap.id='layerControlContainer'; wrap.style.display='flex'; wrap.style.flexDirection='column'; wrap.style.alignItems='center'; wrap.style.gap='6px';
+    var title = document.createElement('div'); title.style.fontSize = '14px'; title.style.fontWeight = '500'; title.style.margin = '2px 0 0 0'; title.style.padding = '6px 10px'; title.style.background = 'rgba(55, 65, 81, 0.85)'; title.style.color = 'white'; title.style.borderRadius = '10px'; title.style.letterSpacing = '2px'; title.style.width='93%'; title.style.display='flex'; title.style.alignItems='center'; title.style.justifyContent='center'; title.style.position='relative';
     var titleText = document.createElement('span'); titleText.textContent = 'LAYERS';
-    var countBadge = document.createElement('span'); countBadge.textContent = countTotalLayers(); countBadge.style.position='absolute'; countBadge.style.right='7px'; countBadge.style.fontSize='12px'; countBadge.style.fontWeight='500'; countBadge.style.letterSpacing='0'; countBadge.style.background='rgba(255,255,255,0.2)'; countBadge.style.borderRadius='6px'; countBadge.style.padding='1px 10px';
+    var countBadge = document.createElement('span'); countBadge.textContent = countTotalLayers(); countBadge.style.position='absolute'; countBadge.style.right='7px'; countBadge.style.fontSize='12px'; countBadge.style.fontWeight='500'; countBadge.style.letterSpacing='0'; countBadge.style.background='rgba(201,154,46,0.28)'; countBadge.style.border='1.5px solid #c99a2e'; countBadge.style.color='#f6f7f5'; countBadge.style.fontWeight='600'; /* Attic Ochre outline over a see-through ochre fill on the slate title bar; paper text (DESIGN.md) */ countBadge.style.borderRadius='6px'; countBadge.style.padding='1px 10px';
     title.appendChild(titleText); title.appendChild(countBadge);
 
     // Shared look for the panel's action buttons (colors/hover live in style.css
@@ -1713,10 +1713,148 @@ function renderLayerControl(){
     });
     updateCloseAllLayersButtonState();
 
+    // ── Recent layers ───────────────────────────────────────────────────────
+    // The 5 layers most recently switched on, newest first, remembered in this browser
+    // (localStorage). Rebuilt from the live layer list on every change, so a renamed or
+    // removed layer simply drops out. Active layers read normally, closed ones lighter.
+    // Clicking a name opens its category/subcategory, scrolls to the row and marks it
+    // (.is-located) until that layer is switched on/off or its group is collapsed.
+    var RECENT_KEY = 'athensgis.recentLayers';
+    var RECENT_MAX = 5;
+    var recentWrap = document.createElement('div');
+    recentWrap.className = 'recent-layers';
+    recentWrap.hidden = true;
+    var recentLabel = document.createElement('p');
+    recentLabel.className = 'recent-layers-label';
+    recentLabel.id = 'recentLayersLabel';
+    recentLabel.textContent = 'Recently opened';
+    var recentList = document.createElement('ul');
+    recentList.className = 'recent-layers-list';
+    recentList.setAttribute('aria-labelledby', 'recentLayersLabel');
+    recentWrap.appendChild(recentLabel);
+    recentWrap.appendChild(recentList);
+
+    function readRecent(){
+      try { var v = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); return Array.isArray(v) ? v : []; }
+      catch(e){ return []; }
+    }
+    function writeRecent(list){
+      try { localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, RECENT_MAX))); } catch(e){}
+    }
+    function findLayerCheckbox(name){
+      var boxes = controlDiv.querySelectorAll('.layer-item input[type=checkbox]');
+      for(var i = 0; i < boxes.length; i++){ if(boxes[i].dataset.layername === name) return boxes[i]; }
+      return null;
+    }
+    function renderRecent(){
+      var names = readRecent().filter(function(n){ return !!findLayerCheckbox(n); }).slice(0, RECENT_MAX);
+      recentList.textContent = '';
+      names.forEach(function(name){
+        var cb = findLayerCheckbox(name);
+        var li = document.createElement('li');
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'recent-layer' + (cb && cb.checked ? ' is-on' : '');
+        btn.textContent = name;
+        btn.title = (cb && cb.checked ? 'Active' : 'Closed') + ' – show "' + name + '" in the list';
+        btn.addEventListener('click', function(){ locateLayer(name); });
+        li.appendChild(btn);
+        recentList.appendChild(li);
+      });
+      recentWrap.hidden = names.length === 0;
+    }
+
+    var locatedRow = null;
+    function clearLocated(){
+      if(locatedRow) locatedRow.classList.remove('is-located');
+      locatedRow = null;
+    }
+    function locateLayer(name){
+      var cb = findLayerCheckbox(name);
+      var row = cb && cb.closest('.layer-item');
+      if(!row) return;
+      clearLocated();
+      var catContent = row.dataset.categoryId ? document.getElementById(row.dataset.categoryId) : null;
+      var catHeader = catContent && catContent.previousElementSibling;
+      // The header's .open class is the reliable "expanded" signal (a folded group's
+      // content can still report display:block while its close animation runs).
+      var openedCat = !!(catHeader && !catHeader.classList.contains('open'));
+      if(openedCat) catHeader.click();
+      var subContent = row.dataset.subcategoryId ? document.getElementById(row.dataset.subcategoryId) : null;
+      var subHeader = subContent && subContent.previousElementSibling;
+      var openedSub = !!(subHeader && !subHeader.classList.contains('open'));
+      if(openedSub) subHeader.click();
+      row.classList.add('is-located');
+      locatedRow = row;
+      // Centre the row in the part of the panel below its pinned header (title, buttons,
+      // recent list). Done after the opened groups finish growing (0.3s), and once more
+      // a moment later in case a layout shift moved it.
+      function centreRow(){
+        var pinned = document.getElementById('layerControlContainer');
+        var panelBox = controlDiv.getBoundingClientRect();
+        var topEdge = panelBox.top + (pinned ? pinned.offsetHeight : 0);
+        var rowBox = row.getBoundingClientRect();
+        var target = topEdge + Math.max(0, (panelBox.bottom - topEdge - rowBox.height) / 2);
+        controlDiv.scrollBy({ top: rowBox.top - target, behavior: 'smooth' });
+      }
+      var wait = (openedCat || openedSub) ? 420 : 0;
+      setTimeout(centreRow, wait);
+      setTimeout(centreRow, wait + 450);
+    }
+
+    controlDiv.addEventListener('change', function(e){
+      var cb = e.target;
+      if(!(cb && cb.matches && cb.matches('.layer-item input[type=checkbox]'))) return;
+      var name = cb.dataset.layername;
+      if(cb.checked && name){
+        writeRecent([name].concat(readRecent().filter(function(n){ return n !== name; })));
+      }
+      if(locatedRow && locatedRow.contains(cb)) clearLocated();
+      renderRecent();
+    });
+    // Collapsing the group that holds the marked row (or Collapse All) ends the marking.
+    controlDiv.addEventListener('click', function(e){
+      if(!locatedRow || !e.target.closest) return;
+      if(!e.target.closest('.category-header, .subcategory-header, #collapseAllBtn')) return;
+      // Headers carry .open while expanded; if either group above the row is no
+      // longer open after this click, the row is being folded away.
+      setTimeout(function(){
+        if(!locatedRow) return;
+        var ids = [locatedRow.dataset.categoryId, locatedRow.dataset.subcategoryId];
+        var folded = ids.some(function(id){
+          var content = id && document.getElementById(id);
+          var header = content && content.previousElementSibling;
+          return header && !header.classList.contains('open');
+        });
+        if(folded) clearLocated();
+      }, 0);
+    });
+
+    var panelBtnRow = document.createElement('div');
+    panelBtnRow.className = 'layer-panel-btnrow';
+    [collapseAllBtn, closeAllLayersBtn].forEach(function(b){
+      b.style.width = 'auto';
+      b.style.marginBottom = '0';
+      panelBtnRow.appendChild(b);
+    });
+
     wrap.appendChild(title);
-    wrap.appendChild(collapseAllBtn);
-    wrap.appendChild(closeAllLayersBtn);
+    wrap.appendChild(panelBtnRow);
+    wrap.appendChild(recentWrap);
     controlDiv.appendChild(wrap);
+    // Layer rows are built after this point; draw the list once they exist.
+    if(controlDiv.querySelector('.layer-item input[type=checkbox]')){
+      renderRecent();
+    } else if(window.MutationObserver){
+      var recentObserver = new MutationObserver(function(){
+        if(controlDiv.querySelector('.layer-item input[type=checkbox]')){
+          recentObserver.disconnect();
+          setTimeout(renderRecent, 0);
+        }
+      });
+      recentObserver.observe(controlDiv, { childList: true, subtree: true });
+    }
+    window.AthensGISRecentLayers = { render: renderRecent, locate: locateLayer };
     // Attach the zoom-to-selected behavior to the toolbar button if present
     (function(){
       var extBtn = document.getElementById('zoomSelectedBtn');
@@ -2074,6 +2212,20 @@ function renderLayerControl(){
     }, {});
   }
 
+  // "Commerce · Education · Healthcare ..." - the subcategory names of a category, or its
+  // layer names when it has no subcategories (a plain array is shown as one "General"
+  // group, so list the layers instead of that placeholder name).
+  function categorySummary(catData){
+    var names;
+    if(Array.isArray(catData)){
+      names = catData.map(function(i){ return i && i.name; });
+    } else {
+      names = Object.keys(normalizeSubcategories(catData));
+      if(!names.length) names = getCategoryItems(catData).map(function(i){ return i && i.name; });
+    }
+    return names.filter(Boolean).join(' · ');
+  }
+
   function getCategoryItems(catData){
     if(!catData || typeof catData !== 'object' || Array.isArray(catData)) return [];
     return Array.isArray(catData._items) ? catData._items : [];
@@ -2105,9 +2257,10 @@ function renderLayerControl(){
   }
 
   var SUBCATEGORY_HEADER_BG = 'rgba(255, 255, 255, 1)';
-  var SUBCATEGORY_HEADER_BG_ACTIVE = 'linear-gradient(135deg, rgba(55, 65, 81, 0.16) 0%, rgba(255, 255, 255, 1) 70%)';
+  // The original soft diagonal gradient, in Attic Ochre (#c99a2e) instead of slate.
+  var SUBCATEGORY_HEADER_BG_ACTIVE = 'linear-gradient(135deg, rgba(201, 154, 46, 0.28) 0%, rgba(255, 255, 255, 1) 70%)';
 
-  // Give the subcategory title box a soft gradient fill while at least one
+  // Give the subcategory title box a soft ochre gradient fill while at least one
   // of its layers is checked on, so an active subcategory reads at a glance.
   function updateSubcategoryActiveState(subHeader, subContentId){
     if(!subHeader || !subContentId) return;
@@ -2519,7 +2672,10 @@ function renderLayerControl(){
     // Row layout so title and arrow are in the same line, arrow on the right
     header.style.display = 'flex';
     header.style.alignItems = 'center';
-    header.style.height = '30px';
+    // Grows with the summary line under the title (min 30px, as before).
+    header.style.minHeight = '30px';
+    header.style.padding = '5px 0 5px 6px';
+    header.style.boxSizing = 'border-box';
     header.style.gap = '8px';
     header.style.marginTop = '10px';
     header.style.marginBottom = '10px';
@@ -2555,23 +2711,45 @@ function renderLayerControl(){
   arrow.style.alignItems = 'top';
 
 
-    header.appendChild(title);
+    // Title + a one-line summary of what the category holds (its subcategories, or its
+    // layers when it has none). Built from the same layerCategories data as the panel,
+    // so it stays in step automatically when categories or subcategories change.
+    var titleWrap = document.createElement('div');
+    titleWrap.className = 'category-title-wrap';
+    titleWrap.appendChild(title);
+    var summaryText = categorySummary(layerCategories[cat]);
+    if(summaryText){
+      var summary = document.createElement('p');
+      summary.className = 'category-summary';
+      summary.textContent = summaryText;
+      summary.title = summaryText;
+      titleWrap.appendChild(summary);
+    }
+    header.appendChild(titleWrap);
     // Active layers count badge (appears when any checkbox in the category is checked)
     var countSpan = document.createElement('span');
     countSpan.className = 'category-count';
     // Keep the arrow at the far right; place the count slightly left of the arrow
     countSpan.style.marginLeft = 'auto';
     countSpan.style.display = 'none';
-    countSpan.style.minWidth = '7px';
-    countSpan.style.padding = '3px 8px 2px 9px';
+    // A true circle for one digit (20x20) that grows into a pill for 10+; flex
+    // centring with line-height 1 keeps the number in the middle, whatever its width.
+    countSpan.style.boxSizing = 'border-box';
+    countSpan.style.minWidth = '20px';
+    countSpan.style.height = '20px';
+    countSpan.style.padding = '0 6px';
+    countSpan.style.alignItems = 'center';
+    countSpan.style.justifyContent = 'center';
+    countSpan.style.fontVariantNumeric = 'tabular-nums';
     countSpan.style.borderRadius = '9999px';
-    countSpan.style.border = 'none';
+    countSpan.style.border = '1.5px solid #c99a2e';
     countSpan.style.fontSize = '11px';
-    countSpan.style.fontWeight = '500';
-    countSpan.style.color = 'white';
-    countSpan.style.background = 'rgba(55, 65, 81, 0.85)';
+    countSpan.style.fontWeight = '600';
+    // Attic Ochre outline over a see-through ochre fill, ink text (DESIGN.md accent)
+    countSpan.style.color = '#111827';
+    countSpan.style.background = 'rgba(201, 154, 46, 0.2)';
     countSpan.style.textAlign = 'center';
-    countSpan.style.lineHeight = '19px';
+    countSpan.style.lineHeight = '1';
     countSpan.setAttribute('aria-hidden','true');
     header.appendChild(countSpan);
     header.appendChild(arrow);

@@ -906,6 +906,8 @@
       cb.dispatchEvent(new Event('change', { bubbles: true }));
     }
     flyToDataset(entry);
+    // The guided tour (JS/tour.js) listens for this to finish its search step.
+    document.dispatchEvent(new CustomEvent('athensgis:dataset-selected', { detail: { name: entry.name } }));
   }
 
   // Unchecks the layer's checkbox, reusing the exact same uncheck path as clicking it

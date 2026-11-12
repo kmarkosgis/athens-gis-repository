@@ -20,6 +20,13 @@
   document.addEventListener('click', function () { if (!popup.hidden) setOpen(false); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
 
-  // Open when the page loads (the performance note is most useful before the map starts).
-  setOpen(true);
+  // Open when the page loads (the performance note is most useful before the map starts) -
+  // but after the welcome dialog (JS/welcome.js) is closed, so the two don't stack. Only
+  // the first close opens it; reopening the welcome later leaves the NOTE alone.
+  if (document.getElementById('welcomeModal')) {
+    setOpen(false);
+    document.addEventListener('athensgis:welcome-closed', function () { setOpen(true); }, { once: true });
+  } else {
+    setOpen(true);
+  }
 })();

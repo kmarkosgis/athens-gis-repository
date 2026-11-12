@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="style.css?v=7e4828b9a3">
+  <link rel="stylesheet" href="style.css?v=e39dae0614">
   <meta charset="utf-8" />
   <title>Athens GIS Repository</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -156,13 +156,9 @@
   <span id="menuIcon" style="transition: all 0.5s;">☰</span>
 </button>
 
-<div class="logo-container">
-  <img src="images/63.png" alt="Athens GIS Logo" class="logo">
-</div>
-
 <header>
   Athens GIS Repository
-  <a href="3d-viewer.html" id="viewer-switch-btn" class="header-switch-btn" title="Open the 3D Viewer"><span class="hsb-full">3D Viewer</span><span class="hsb-short">3D</span></a>
+  <a href="3d-viewer.html" target="_blank" rel="noopener" id="viewer-switch-btn" class="header-switch-btn" title="Open the 3D Viewer"><span class="hsb-full">3D Viewer</span><span class="hsb-short">3D</span></a>
   <a href="https://www.linkedin.com/company/athens-gis-repo/" id="linkedin-btn" title="LinkedIn Page">
     <img src="images/linkedin_icon.png" alt="LinkedIn">
   </a>
@@ -341,28 +337,66 @@
   })();
 </script>
 
-<!-- Welcome Modal -->
-<div id="welcomeModal">
-  <div id="welcomeContent">
-    <h2>Welcome to Athens GIS Repository</h2>    
-    <img src="images/63.png" alt="Athens GIS Repository Logo" class="welcome-logo">
-    <strong>by Konstantinos Markos | PhD Candidate, SRSGE, NTUA</strong>
-    <p>
-      Explore the geography of the Athens Metropolitan Area with interactive maps and data. Here you’ll find layers on administrative boundaries, transportation networks, environment, natural hazards, POIs, energy and population statistics, all in one place.
-    </p>
-    <p>
-      Use the panel on the left to select the layers you want to view, and download data. Click on features to see detailed information, and use the tools provided to explore Athens in more depth.
-    </p>
-    <p>
-      This repository is a work in progress. More data and features will be added over time, so check back often for updates!
-    </p>
-    <p>Have fun exploring Athens!</p>
-    <p>Licenced under <strong>Commons Attribution 4.0 International (CC-BY 4.0)</strong></p>
-    <button id="closeWelcome">OK</button>
+<!-- Welcome dialog: opens on every visit (JS/welcome.js); the info button reopens it. -->
+<dialog id="welcomeModal" aria-labelledby="welcomeTitle" aria-describedby="welcomeLead">
+  <div id="welcomeContent" tabindex="-1">
+    <div class="welcome-band">
+      <p class="welcome-band-title">Athens GIS Repository</p>
+      <p class="welcome-band-tagline">Open access geospatial data</p>
+    </div>
+    <button type="button" class="welcome-close" data-welcome-close aria-label="Close the welcome message">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+    <div class="welcome-body">
+      <h2 id="welcomeTitle">Welcome to the Athens GIS Repository</h2>
+      <p class="welcome-lead" id="welcomeLead">
+        Explore the geography of the Athens Metropolitan Area and the wider region of Greece: boundaries, transport, environment, natural hazards, points of interest, energy and population, together on one map and free to download.
+      </p>
+      <ul class="welcome-steps">
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 2.5 8 12 13l9.5-5L12 3Z"/><path d="m2.5 12.5 9.5 5 9.5-5"/><path d="m2.5 17 9.5 5 9.5-5"/></svg>
+          <span>Switch layers on in the layers panel, and download the data you need.</span>
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11Z"/><circle cx="12" cy="10" r="2.6"/></svg>
+          <span>Click a feature on the map to see its attributes.</span>
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+          <span>Search the database, or ask Athena, from the box at the bottom of the map.</span>
+        </li>
+      </ul>
+      <nav class="welcome-go" aria-label="More from the Athens GIS Repository">
+        <a class="welcome-go-link is-new" href="3d-viewer.html" target="_blank" rel="noopener">
+          <svg class="welcome-go-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 2.8 20.5 7.5v9L12 21.2 3.5 16.5v-9L12 2.8Z"/><path d="M3.5 7.5 12 12l8.5-4.5"/><path d="M12 12v9.2"/></svg>
+          <span class="welcome-go-title">3D Viewer <span class="welcome-go-badge">New</span></span>
+          <svg class="welcome-go-ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 4h6v6"/><path d="M20 4 11 13"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>
+          <span class="welcome-go-desc">Buildings, trees and terrain in 3D, lit by the sun for any date and time, with Route shade for walks.</span>
+        </a>
+        <a class="welcome-go-link js-about-link" href="https://athensgis.gr/about" target="_blank" rel="noopener">
+          <svg class="welcome-go-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><path d="M12 7.5h.01"/></svg>
+          <span class="welcome-go-title">About</span>
+          <svg class="welcome-go-ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 4h6v6"/><path d="M20 4 11 13"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>
+          <span class="welcome-go-desc">What the repository contains, where the data comes from, and how to cite it.</span>
+        </a>
+      </nav>
+      <div class="welcome-foot">
+        <p class="welcome-meta">
+          By <strong>Konstantinos Markos</strong>, PhD Candidate, SRSGE, NTUA.<br>
+          Licensed under Creative Commons Attribution 4.0 (CC BY 4.0). A work in progress: new data and features are added over time.
+        </p>
+        <div class="welcome-actions">
+          <button type="button" id="startTour">Take the tour</button>
+          <button type="button" id="closeWelcome" data-welcome-close>Explore the map</button>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
+</dialog>
 <!-- Reopen Welcome Button -->
-<button id="openWelcome" title="Open Info Message">&#8505;</button>
+<button type="button" id="openWelcome" title="Show the welcome message" aria-label="Show the welcome message" aria-controls="welcomeModal">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M12 11v6"/><path d="M12 7h.01"/></svg>
+</button>
 
 <!-- Dataset Search Widget -->
 <div id="datasetSearchWidget">
@@ -379,9 +413,10 @@
 
 <!-- Corrected folder name capitalization (JS instead of js) for case-sensitive hosting -->
 <script src="JS/map-init.js?v=a86e149202" defer></script>
-<script src="JS/legend.js?v=6e60d93c9b" defer></script>
+<script src="JS/legend.js?v=a823b82830" defer></script>
 <script src="JS/info-box.js?v=829f0d2632" defer></script>
 <script src="JS/config.js?v=20260615-1" defer></script>
+<script src="JS/site-state.js?v=ace3bb816a" defer></script>
 
 <!-- PMTiles vector-tile rendering: archive reader, protobuf reader, and a vendored
      local copy of the Mapbox Vector Tile decoder (no browser build published for it -
@@ -392,22 +427,24 @@
 <script src="JS/vendor/vector-tile.js?v=30a75ab43f" defer></script>
 <script src="JS/pmtiles-loader.js?v=c68b1fdc99" defer></script>
 
-<script src="JS/layer-filter.js?v=53682328d0" defer></script>
+<script src="JS/layer-filter.js?v=05a748368c" defer></script>
 <script src="JS/attribute-report.js?v=83a8e5c328" defer></script>
-<script src="JS/metadata-score.js?v=70b9bbc2ec" defer></script>
-<script src="JS/layer-control.js?v=476ac4a784" defer></script>
+<script src="JS/metadata-score.js?v=90b6b96d72" defer></script>
+<script src="JS/layer-control.js?v=5cb7873f0b" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/7.0.0/fuse.min.js" defer></script>
-<script src="JS/dataset-search.js?v=205f355b17" defer></script>
+<script src="JS/dataset-search.js?v=59e6e2ff9c" defer></script>
 <script src="JS/citation.js?v=ed58534d30" defer></script>
 <script src="JS/measure.js?v=0675687776" defer></script>
-<script src="JS/attica-outline.js" defer></script>
-<script src="JS/export.js?v=df63f77bf9" defer></script>
-<script src="JS/ui.js?v=181aa2e3e6" defer></script>
-<script src="JS/announcement.js?v=c17b79b28f" defer></script>
+<script src="JS/attica-outline.js?v=a4f2003c8d" defer></script>
+<script src="JS/export.js?v=625e3f9fed" defer></script>
+<script src="JS/ui.js?v=06c9425aee" defer></script>
+<script src="JS/welcome.js?v=c8381ae67f" defer></script>
+<script src="JS/tour.js?v=6a97ca0a8b" defer></script>
+<script src="JS/announcement.js?v=c6083ba0a4" defer></script>
 <script src="JS/draw-order.js?v=8cf8712f1c" defer></script>
 <script src="JS/utils.js?v=8a5cd85dcd" defer></script>
-<script src="JS/cookies.js?v=b8b6f976ff" defer></script>
-<script src="JS/footer-credits.js" defer></script>
+<script src="JS/cookies.js?v=eeaacfe22f" defer></script>
+<script src="JS/footer-credits.js?v=7e87ec8d7d" defer></script>
 
 <script>
   // Google Analytics download tracking (event name: "download")
@@ -442,4 +479,5 @@
     });
   }
 </script>
+</body>
 </html>

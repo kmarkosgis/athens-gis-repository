@@ -295,6 +295,11 @@
     { name: 'Shaded Relief', file: 'Environment/shadedrelief.pmtiles', infoFile: 'Environment/Hillshade.txt', geojson: null, type: 'raster' }
   ];
 
+  function isInactiveCommonLayer(key) {
+    var inactive = (window.AthensGIS && AthensGIS._inactiveLayerSet) || {};
+    return Object.prototype.hasOwnProperty.call(inactive, key);
+  }
+
   function buildManifest() {
     var layerCategories = (window.AthensGIS && AthensGIS.layerCategories) || window.layerCategories || {};
     var usedIds = {};
@@ -309,6 +314,8 @@
     });
 
     COMMON_LAYERS.forEach(function (info) {
+      // Terrain / Shaded Relief the admin dashboard switched off are not drawn, so not searchable.
+      if (isInactiveCommonLayer(info.file)) return;
       entries.push(buildManifestEntry(info, 'Common Layers', null, usedIds));
     });
 
@@ -1419,10 +1426,19 @@
     });
   }
 
+  // The catalogue is built from AthensGIS.layerCategories, so init waits until JS/layer-control.js
+  // has removed the layers the admin dashboard switched off (AthensGIS.layersReady). Without it
+  // (script missing) it waits for the state itself, and with neither it starts straight away.
+  function start() {
+    var ag = window.AthensGIS || {};
+    var ready = ag.layersReady || ag.siteStateReady || Promise.resolve();
+    ready.then(init, init);
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', start);
   } else {
-    init();
+    start();
   }
 
 })();

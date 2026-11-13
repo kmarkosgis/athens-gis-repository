@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="style.css?v=7eaa06af85">
+  <link rel="stylesheet" href="style.css?v=9f94323c24">
   <meta charset="utf-8" />
   <title>Athens GIS Repository</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -152,12 +152,16 @@
 
 <body>
 
-<button id="menuBtn" title="Show Layers" style="display:none;"">
-  <span id="menuIcon" style="transition: all 0.5s;">☰</span>
+<!-- Keyboard shortcut past the header, zoom and basemap controls straight to the layer list
+     (desktop; on phones the list sits behind #menuBtn). Hidden until focused. -->
+<a class="skip-link" href="#layerControl">Skip to layers</a>
+
+<button id="menuBtn" title="Show Layers" aria-label="Show layers" aria-controls="layerControl" aria-expanded="false" style="display:none;">
+  <span id="menuIcon" style="transition: all 0.5s;" aria-hidden="true">☰</span>
 </button>
 
 <header>
-  Athens GIS Repository
+  <h1 class="site-title">Athens GIS Repository</h1>
   <a href="3d-viewer.html" target="_blank" rel="noopener" id="viewer-switch-btn" class="header-switch-btn" title="Open the 3D Viewer"><span class="hsb-full">3D Viewer</span><span class="hsb-short">3D</span></a>
   <a href="https://www.linkedin.com/company/athens-gis-repo/" id="linkedin-btn" title="LinkedIn Page">
     <img src="images/linkedin_icon.png" alt="LinkedIn">
@@ -165,8 +169,8 @@
 </header>
 
 <div id="custom-zoom-controls">
-  <button id="zoom-in" title="Zoom In"><strong>+</strong></button>
-  <button id="zoom-out" title="Zoom Out"><strong>-</strong></button>
+  <button id="zoom-in" title="Zoom In" aria-label="Zoom in"><strong aria-hidden="true">+</strong></button>
+  <button id="zoom-out" title="Zoom Out" aria-label="Zoom out"><strong aria-hidden="true">-</strong></button>
 </div>
 
 <!-- Custom Basemap Switcher Button -->
@@ -186,16 +190,20 @@
 
 <div class="announcement-box" id="announcement-box" hidden></div>
 
+<!-- The map and the panels that work on it. Every child is fixed/absolutely positioned,
+     so this landmark changes nothing visually. -->
+<main>
+
 <div id="map"></div>
 
 <div id="layerInfoBox">
-  <h1></h1>
-  <h4>LAYER INFORMATION</h4>
+  <div class="box-mask" aria-hidden="true"></div>
+  <h2>LAYER INFORMATION</h2>
 
   <div id="layerInfoContent"></div>
 </div>
 
-<div id="layerControl">
+<div id="layerControl" role="region" aria-label="Layers" tabindex="-1">
   <!-- Categories and checkboxes will be generated here -->
 </div>
 
@@ -206,7 +214,7 @@
 
 <!-- Toolbar container -->
 <div id="toolbar">
-  <h1>TOOLBAR</h1>
+  <h2>TOOLBAR</h2>
   <div class="toolbar-row2">
     <button id="opacityBtn" title="Adjust layer opacity">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.66 8L12 2.35 6.34 8C4.78 9.56 4 11.64 4 13.64s.78 4.19 2.34 5.75 3.61 2.34 5.66 2.34 4.1-.78 5.66-2.34S20 15.64 20 13.64 19.22 9.56 17.66 8zM6 14c.01-2 .62-3.27 1.76-4.4L12 5.27l4.24 4.38C17.38 10.77 17.99 12 18 14H6z"/></svg>OPACITY
@@ -267,7 +275,7 @@
     <h3 id="citation-title">CITATION</h3>
     <button id="citation-close" title="Close citation window" aria-label="Close citation window">&times;</button>
   </div>
-  <p id="citation-status">Loading citation from CITATION.cff...</p>
+  <p id="citation-status" aria-live="polite">Loading the citation…</p>
   <div id="citation-controls">
     <select id="citation-style" aria-label="Citation style">
       <option value="apa">APA</option>
@@ -284,10 +292,12 @@
 </div>
 
 <div id="legend-bar" style="display:none;">
-  <h1></h1>
-  <h4 id="legend-title">LEGEND</h4>
+  <div class="box-mask" aria-hidden="true"></div>
+  <h2 id="legend-title">LEGEND</h2>
   <ul id="legend-list"></ul>
 </div>
+
+</main>
 
 <div id="cookie-consent-box" role="dialog" aria-live="polite" aria-label="Cookie preferences" hidden>
   <p id="cookie-consent-text">
@@ -304,7 +314,7 @@
 
 <!-- The badges and the Leaflet attribution live inside the footer so they sit in front of it
      (the map's own controls are in #map's stacking context, below the footer). -->
-<div id="footer">
+<footer id="footer">
   © 2026 Athens GIS Repository | Licensed under CC-BY 4.0 |
   <a href="privacy.html" target="_blank" rel="noopener" style="color: inherit;">Cookies &amp; Privacy</a> |
   <a href="https://athensgis.gr/about" id="about-btn" title="About Athens GIS" target="_blank" rel="noopener" style="color: inherit;">About</a>
@@ -323,7 +333,7 @@
     <!-- Filled by JS/map-init.js with a live copy of the Leaflet attribution. -->
     <div id="map-attribution" aria-label="Map attribution"></div>
   </div>
-</div>
+</footer>
 
 <script>
   // Production serves about.html at the clean URL /about (the href above); local
@@ -416,7 +426,7 @@
 <script src="JS/legend.js?v=a823b82830" defer></script>
 <script src="JS/info-box.js?v=829f0d2632" defer></script>
 <script src="JS/config.js?v=20260615-1" defer></script>
-<script src="JS/site-state.js?v=ace3bb816a" defer></script>
+<script src="JS/site-state.js?v=7518e7219e" defer></script>
 
 <!-- PMTiles vector-tile rendering: archive reader, protobuf reader, and a vendored
      local copy of the Mapbox Vector Tile decoder (no browser build published for it -
@@ -430,15 +440,15 @@
 <script src="JS/layer-filter.js?v=05a748368c" defer></script>
 <script src="JS/attribute-report.js?v=83a8e5c328" defer></script>
 <script src="JS/metadata-score.js?v=90b6b96d72" defer></script>
-<script src="JS/layer-control.js?v=5cb7873f0b" defer></script>
+<script src="JS/layer-control.js?v=e143dfdea0" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/7.0.0/fuse.min.js" defer></script>
-<script src="JS/dataset-search.js?v=59e6e2ff9c" defer></script>
-<script src="JS/citation.js?v=ed58534d30" defer></script>
+<script src="JS/dataset-search.js?v=1b14a0d3b0" defer></script>
+<script src="JS/citation.js?v=572c6c83a6" defer></script>
 <script src="JS/measure.js?v=0675687776" defer></script>
 <script src="JS/attica-outline.js?v=a4f2003c8d" defer></script>
 <script src="JS/export.js?v=625e3f9fed" defer></script>
-<script src="JS/ui.js?v=06c9425aee" defer></script>
-<script src="JS/welcome.js?v=c8381ae67f" defer></script>
+<script src="JS/ui.js?v=f391aa95c0" defer></script>
+<script src="JS/welcome.js?v=62a2bb1608" defer></script>
 <script src="JS/tour.js?v=6a97ca0a8b" defer></script>
 <script src="JS/announcement.js?v=c6083ba0a4" defer></script>
 <script src="JS/draw-order.js?v=8cf8712f1c" defer></script>

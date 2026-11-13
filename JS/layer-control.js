@@ -561,16 +561,6 @@ function lightenHexColor(hex, amount){
   }).join('');
 }
 
-function getReadableTextColor(bgHex){
-  var normalized = normalizeHexColor(bgHex);
-  if(!normalized) return '#FFFFFF';
-  var r = parseInt(normalized.slice(1, 3), 16);
-  var g = parseInt(normalized.slice(3, 5), 16);
-  var b = parseInt(normalized.slice(5, 7), 16);
-  var luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.62 ? '#111827' : '#FFFFFF';
-}
-
 function getLayerColorState(layerName){
   var store = AthensGIS.customLayerColors = AthensGIS.customLayerColors || {};
   var existing = store[layerName];
@@ -1637,6 +1627,15 @@ function startLoadingSpinner(label){
   };
 }
 
+// Terrain and Shaded Relief are drawn outside layerCategories, so the dashboard's switches
+// (inactiveLayers in data/site-state.json) reach them through these two keys.
+var COMMON_TERRAIN_KEY = 'Environment/Relief0.pmtiles';
+var COMMON_SHADED_RELIEF_KEY = 'Environment/shadedrelief.pmtiles';
+function isCommonLayerInactive(key){
+  var inactive = AthensGIS._inactiveLayerSet || {};
+  return Object.prototype.hasOwnProperty.call(inactive, key);
+}
+
 function countTotalLayers(){
   var count = 0;
   Object.keys(layerCategories).forEach(function(cat){
@@ -1646,7 +1645,8 @@ function countTotalLayers(){
       if(Array.isArray(val)) count += val.length;
     });
   });
-  return count + 2; // +2 for the common layers (Terrain, Shaded Relief)
+  // + the common layers (Terrain, Shaded Relief) that are switched on
+  return count + (isCommonLayerInactive(COMMON_TERRAIN_KEY) ? 0 : 1) + (isCommonLayerInactive(COMMON_SHADED_RELIEF_KEY) ? 0 : 1);
 }
 
 function renderLayerControl(){
@@ -1657,6 +1657,7 @@ function renderLayerControl(){
     var wrap=document.createElement('div'); wrap.id='layerControlContainer'; wrap.style.display='flex'; wrap.style.flexDirection='column'; wrap.style.alignItems='center'; wrap.style.gap='6px';
     var title = document.createElement('div'); title.style.fontSize = '14px'; title.style.fontWeight = '500'; title.style.margin = '2px 0 0 0'; title.style.padding = '6px 10px'; title.style.background = 'rgba(55, 65, 81, 0.85)'; title.style.color = 'white'; title.style.borderRadius = '10px'; title.style.letterSpacing = '2px'; title.style.width='93%'; title.style.display='flex'; title.style.alignItems='center'; title.style.justifyContent='center'; title.style.position='relative';
     var titleText = document.createElement('span'); titleText.textContent = 'LAYERS';
+    titleText.setAttribute('role','heading'); titleText.setAttribute('aria-level','2'); // same level as the other panel titles
     var countBadge = document.createElement('span'); countBadge.textContent = countTotalLayers(); countBadge.style.position='absolute'; countBadge.style.right='7px'; countBadge.style.fontSize='12px'; countBadge.style.fontWeight='500'; countBadge.style.letterSpacing='0'; countBadge.style.background='rgba(201,154,46,0.28)'; countBadge.style.border='1.5px solid #c99a2e'; countBadge.style.color='#f6f7f5'; countBadge.style.fontWeight='600'; /* Attic Ochre outline over a see-through ochre fill on the slate title bar; paper text (DESIGN.md) */ countBadge.style.borderRadius='6px'; countBadge.style.padding='1px 10px';
     title.appendChild(titleText); title.appendChild(countBadge);
 
@@ -1664,7 +1665,7 @@ function renderLayerControl(){
     // under .layer-panel-btn / .is-active); this only wires up the shared layout.
     function createLayerPanelButton(id, text){
       var btn=document.createElement('button'); btn.type='button'; btn.id=id; btn.className='layer-panel-btn'; btn.textContent=text;
-      btn.style.width='93%'; btn.style.padding='3px 4px'; btn.style.marginBottom='6px'; btn.style.borderRadius='12px'; btn.style.fontSize='10px'; btn.style.fontWeight='500'; btn.style.letterSpacing='1px'; btn.style.cursor='pointer';
+      btn.style.width='93%'; btn.style.padding='3px 4px'; btn.style.marginBottom='6px'; btn.style.borderRadius='12px'; btn.style.fontSize='11px'; btn.style.fontWeight='500'; btn.style.letterSpacing='1px'; btn.style.cursor='pointer';
       return btn;
     }
 
@@ -1673,6 +1674,7 @@ function renderLayerControl(){
     function updateCollapseAllButtonState(){
       var anyOpen = !!controlDiv.querySelector('.category-header.open, .subcategory-header.open');
       collapseAllBtn.classList.toggle('is-active', anyOpen);
+      collapseAllBtn.setAttribute('aria-disabled', String(!anyOpen)); // nothing open: nothing to collapse
     }
     collapseAllBtn.addEventListener('click', function(){
       // Re-use each header's own click handler (which toggles + animates it closed)
@@ -1694,6 +1696,7 @@ function renderLayerControl(){
     function updateCloseAllLayersButtonState(){
       var anyActive = !!(AthensGIS.activeLayerOrder && AthensGIS.activeLayerOrder.length);
       closeAllLayersBtn.classList.toggle('is-active', anyActive);
+      closeAllLayersBtn.setAttribute('aria-disabled', String(!anyActive)); // no layer on: nothing to close
     }
     closeAllLayersBtn.addEventListener('click', function(){
       // Uncheck + dispatch 'change' so each row's own handler does the real
@@ -1921,10 +1924,9 @@ function renderLayerControl(){
   function updateColorButtonPreview(buttonEl, layerName){
     if(!buttonEl || !layerName) return;
     var colors = getLayerColorState(layerName);
-    // Keep border styling identical to the shared button CSS; only tint the button fill.
-    buttonEl.style.backgroundColor = colors.border;
-    buttonEl.style.color = getReadableTextColor(colors.border);
-    buttonEl.style.boxShadow = 'inset 0 0 0 1px rgba(255,255,255,0.15)';
+    // The button stays white (DOWNLOAD is the filled primary beside it); the layer's
+    // colour shows as a dot before the label (.color-button::before in style.css).
+    buttonEl.style.setProperty('--layer-swatch', colors.border);
   }
 
   function applyLayerRowColorSelection(layerName, layerKey, borderColor, colorButton, colorPanel){
@@ -1983,7 +1985,8 @@ function renderLayerControl(){
     // The Terrain (elevation contour) layer renders exclusively from this pre-tiled
     // vector archive on R2 - fetched viewport-by-viewport like every other .pmtiles
     // layer (see the isPmtilesFile() branch in createLayerRow() and JS/pmtiles-loader.js).
-    var TERRAIN_PMTILES = 'Environment/Relief0.pmtiles';
+    var TERRAIN_PMTILES = COMMON_TERRAIN_KEY;
+    if(isCommonLayerInactive(TERRAIN_PMTILES)) return; // switched off in the admin dashboard
     // Matches the name.replace(/\s+/g,'_') convention every other layer's checkbox id
     // follows (see createLayerRow), so JS/dataset-search.js's
     // document.getElementById(entry.name.replace(...)) lookup finds this one too -
@@ -1999,6 +2002,8 @@ function renderLayerControl(){
     var row=document.createElement('div'); row.className='layer-item'; row.title='Activate layer';
     var cb=document.createElement('input'); cb.type='checkbox'; cb.id=id;
     cb.dataset.layername='Terrain'; cb.dataset.filename=TERRAIN_PMTILES;
+    cb.setAttribute('role','switch'); // focusable on/off switch, as in createLayerRow
+    cb.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); cb.click(); } });
     var label=document.createElement('label'); label.htmlFor=id; setLayerLabel(label, 'Terrain', 'line'); // contour lines
     row.appendChild(cb); row.appendChild(label);
     commonWrap.appendChild(row);
@@ -2060,7 +2065,7 @@ function renderLayerControl(){
             if(err && err.name==='AbortError') return;
             if(!cb.checked || row._abortController !== _terrainAbortCtrl) return;
             console.error('Failed to load Terrain layer data:', err);
-            AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>';
+            AthensGIS.activeLayerInfos[layerName]='<em>Could not load this layer’s data. To retry, switch it off and on again.</em>';
             ensureInfoBoxUpdate();
           });
         // Terrain is drawn outside layerCategories, so the attribute report has no entry for it (its "Empty attribute fields" factor is left out).
@@ -2103,7 +2108,8 @@ function renderLayerControl(){
     // R2. Rendered in its own pane just above the basemap, so it always sits
     // beneath the Terrain contours and every other data layer - see
     // ensureHillshadePane() below.
-    var SHADED_RELIEF_PMTILES = 'Environment/shadedrelief.pmtiles';
+    var SHADED_RELIEF_PMTILES = COMMON_SHADED_RELIEF_KEY;
+    if(isCommonLayerInactive(SHADED_RELIEF_PMTILES)) return; // switched off in the admin dashboard
     // Matches 'Shaded Relief'.replace(/\s+/g,'_') - see the comment on Terrain's id above.
     var id='Shaded_Relief';
     var commonWrap = document.getElementById('common-layers-wrap');
@@ -2115,6 +2121,8 @@ function renderLayerControl(){
     var row=document.createElement('div'); row.className='layer-item'; row.title='Activate layer';
     var cb=document.createElement('input'); cb.type='checkbox'; cb.id=id;
     cb.dataset.layername='Shaded Relief'; cb.dataset.filename=SHADED_RELIEF_PMTILES;
+    cb.setAttribute('role','switch'); // focusable on/off switch, as in createLayerRow
+    cb.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); cb.click(); } });
     var label=document.createElement('label'); label.htmlFor=id; setLayerLabel(label, 'Shaded Relief', 'raster');
     row.appendChild(cb); row.appendChild(label);
     commonWrap.appendChild(row); // appended after the Terrain row => sits below it
@@ -2170,7 +2178,7 @@ function renderLayerControl(){
             if(err && err.name==='AbortError') return;
             if(!cb.checked || row._abortController !== _hsAbortCtrl) return;
             console.error('Failed to load Shaded Relief layer data:', err);
-            AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>';
+            AthensGIS.activeLayerInfos[layerName]='<em>Could not load this layer’s data. To retry, switch it off and on again.</em>';
             ensureInfoBoxUpdate();
           });
         loadLayerInfo('Environment/Hillshade.txt', _hsSignal).then(function(t){ return recordMetadataScore({ name: layerName, file: SHADED_RELIEF_PMTILES, type: 'raster' }, t); }).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); })
@@ -2256,16 +2264,17 @@ function renderLayerControl(){
     }
   }
 
-  var SUBCATEGORY_HEADER_BG = 'rgba(255, 255, 255, 1)';
-  // The original soft diagonal gradient, in Attic Ochre (#c99a2e) instead of slate.
-  var SUBCATEGORY_HEADER_BG_ACTIVE = 'linear-gradient(135deg, rgba(201, 154, 46, 0.28) 0%, rgba(255, 255, 255, 1) 70%)';
+  // Category header fill: a faint wash of the brand slate (rgb 55, 65, 81) over the panel, so each
+  // category reads as its own band. Alpha-based, so the difference holds on light and dark basemaps.
+  // Subcategories are not a second card: they hang off a hairline rule inside their category
+  // (.subcategory-section / .subcategory-header in style.css), which owns their fills.
+  var CATEGORY_HEADER_BG = 'rgba(55, 65, 81, 0.05)';
 
-  // Give the subcategory title box a soft ochre gradient fill while at least one
-  // of its layers is checked on, so an active subcategory reads at a glance.
+  // Mark a subcategory header while at least one of its layers is on; style.css gives
+  // .has-active-layer a soft ochre gradient so an active subcategory reads at a glance.
   function updateSubcategoryActiveState(subHeader, subContentId){
     if(!subHeader || !subContentId) return;
     var count = countCheckedByDataset('subcategoryId', subContentId);
-    subHeader.style.background = count > 0 ? SUBCATEGORY_HEADER_BG_ACTIVE : SUBCATEGORY_HEADER_BG;
     subHeader.classList.toggle('has-active-layer', count > 0);
   }
 
@@ -2297,7 +2306,7 @@ function renderLayerControl(){
   // show a short thank-you note beside it. The last-shown time is kept in localStorage.
   var CITE_REMINDER_KEY = 'athensgis_cite_reminder_shown';
   var citeReminderTimer = null;
-  function showCitationReminder(){
+  function showCitationReminder(layerName){
     var btn = document.getElementById('citation-btn');
     var box = document.getElementById('citation-box');
     if(!btn || !box || !window.matchMedia || !window.matchMedia('(min-width: 901px)').matches) return;
@@ -2316,9 +2325,12 @@ function renderLayerControl(){
       msg = document.createElement('div');
       msg.id = 'citation-reminder';
       msg.setAttribute('role', 'status');
-      msg.textContent = 'Thank you for using Athens GIS Repository. Don’t forget to cite the app in your project.';
       box.insertBefore(msg, btn);
     }
+    // Names the layer just downloaded and says where its provenance is: the .txt in the zip
+    // holds its source, coverage and upload date (info/<Category>/<Layer>.txt).
+    msg.textContent = (layerName ? layerName + ' downloaded. ' : 'Download complete. ') +
+      'Its source, coverage and date are in the .txt file in the zip. To cite the repository, use CITE.';
     // Light note on the dark basemap, dark note otherwise.
     msg.classList.toggle('on-dark-basemap', (window.AthensGIS || {}).currentBaseLayerKey === 'maptilerStreetsDark');
     msg.hidden = false;
@@ -2356,6 +2368,10 @@ function renderLayerControl(){
     var zipFilename = getLayerZipFileName(info.name);
 
     setDownloadButtonBusy(buttonEl, true);
+    // Clear an earlier failure message for this row before trying again
+    var prevRow = buttonEl && buttonEl.closest ? buttonEl.closest('.layer-item') : null;
+    var prevErr = prevRow ? prevRow.querySelector('.layer-download-error') : null;
+    if(prevErr) prevErr.hidden = true;
     return Promise.all([
       isRaster ? loadRasterArrayBuffer(sourceFile) : loadLayerData(sourceFile),
       loadLayerInfo(txtRelativePath)
@@ -2382,10 +2398,26 @@ function renderLayerControl(){
         file: zipFilename,
         sourceFile: sourceFile
       }, categoryName, subcategoryName);
-      showCitationReminder();
+      showCitationReminder(info.name);
     }).catch(function(err){
       console.error('Failed to create zip for layer "' + (info.name || sourceFile) + '":', err);
-      alert('Could not create the zip file for "' + (info.name || sourceFile) + '". Please try again.');
+      var failText = 'Could not create the zip for ' + (info.name || 'this layer') + '. Check your connection, then select DOWNLOAD again.';
+      // In the row, under its buttons (no blocking dialog); a download started without a
+      // row (the AI assistant passes no button) falls back to an alert.
+      var rowEl = buttonEl && buttonEl.closest ? buttonEl.closest('.layer-item') : null;
+      if(rowEl){
+        var errEl = rowEl.querySelector('.layer-download-error');
+        if(!errEl){
+          errEl = document.createElement('p');
+          errEl.className = 'layer-download-error';
+          errEl.setAttribute('role', 'alert');
+          rowEl.appendChild(errEl);
+        }
+        errEl.textContent = failText;
+        errEl.hidden = false;
+      } else {
+        alert(failText);
+      }
     }).then(function(){
       setDownloadButtonBusy(buttonEl, false);
     });
@@ -2413,6 +2445,10 @@ function renderLayerControl(){
     var hasLegend = !!((window.legendConfigs||{})[info.name]);
     var row=document.createElement('div'); row.className='layer-item'; row.title='Activate layer';
     var cb=document.createElement('input'); cb.type='checkbox'; cb.id=id; cb.dataset.layername=info.name; if(info.file) cb.dataset.filename=info.file;
+    // The checkbox is the layer's real control: visually hidden (style.css) but focusable,
+    // announced as an on/off switch named by its label. Space toggles natively; Enter too.
+    cb.setAttribute('role','switch');
+    cb.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); cb.click(); } });
     var label=document.createElement('label'); label.htmlFor=id; setLayerLabel(label, info.name, layerGeomOf(info));
     var actions = null;
     var dl=document.createElement('a'); dl.href='#'; dl.innerHTML='DOWNLOAD'; dl.className='download-button'; dl.style.display='none'; dl.title='Download the selected layer as ZIP';
@@ -2533,7 +2569,7 @@ function renderLayerControl(){
             AthensGIS.geojsonLayers[file]=rasterLyr;
             AthensGIS.rasterLayers=AthensGIS.rasterLayers || {};
             AthensGIS.rasterLayers[file]={ layer: rasterLyr, georaster: georaster, legendConfig: lcRaster, layerName: layerName, valueLabel: (lcRaster && lcRaster.title) || layerName };
-          }).catch(function(err){ stopRowSpinner(); if(err && err.name==='AbortError') return; console.error('Failed to load raster layer data for "' + layerName + '":', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>'; ensureInfoBoxUpdate(); });
+          }).catch(function(err){ stopRowSpinner(); if(err && err.name==='AbortError') return; console.error('Failed to load raster layer data for "' + layerName + '":', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load this layer’s data. To retry, switch it off and on again.</em>'; ensureInfoBoxUpdate(); });
           var txtRaster=file.replace(/\.[^/.]+$/, '')+'.txt'; loadLayerInfo(txtRaster, _signal).then(function(t){ return recordMetadataScore(info, t); }).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(err){ if(err && err.name==='AbortError') return; AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
         } else if(file && isPmtilesFile(file)){
           // Tiled rendering: fetch only the tiles covering the current viewport at
@@ -2586,7 +2622,7 @@ function renderLayerControl(){
             // nothing would refresh it until the next pan - leaving features missing.
             if(getMap().getZoom() !== _reqZoom3 || !_reqBounds3.equals(getMap().getBounds())) lyr3.updateViewportData();
             if(window.LayerFilter) window.LayerFilter.onLayerLoaded(layerName, file, null, geojsonPath3);
-          }).catch(function(err){ stopRowSpinner(); if(!cb.checked || row._abortController !== _abortCtrl) return; console.error('Failed to load tiled layer data for "' + layerName + '":', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>'; ensureInfoBoxUpdate(); });
+          }).catch(function(err){ stopRowSpinner(); if(!cb.checked || row._abortController !== _abortCtrl) return; console.error('Failed to load tiled layer data for "' + layerName + '":', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load this layer’s data. To retry, switch it off and on again.</em>'; ensureInfoBoxUpdate(); });
           var txt3=file.replace(/\.[^/.]+$/, '')+'.txt'; loadLayerInfo(txt3, _signal).then(function(t){ return recordMetadataScore(info, t); }).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(err){ if(err && err.name==='AbortError') return; AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
         } else if(file){
           loadLayerData(file, _signal).then(function(data){
@@ -2602,7 +2638,7 @@ function renderLayerControl(){
             AthensGIS._viewportLayers[file] = lyr2;
             setupViewportUpdateHandler();
             if(window.LayerFilter) window.LayerFilter.onLayerLoaded(layerName, file, data);
-          }).catch(function(err){ stopRowSpinner(); if(err && err.name==='AbortError') return; console.error('Failed to load layer data for "' + layerName + '":', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load layer data.</em>'; ensureInfoBoxUpdate(); });
+          }).catch(function(err){ stopRowSpinner(); if(err && err.name==='AbortError') return; console.error('Failed to load layer data for "' + layerName + '":', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load this layer’s data. To retry, switch it off and on again.</em>'; ensureInfoBoxUpdate(); });
           var txt=file.replace(/\.[^/.]+$/, '')+'.txt'; loadLayerInfo(txt, _signal).then(function(t){ return recordMetadataScore(info, t); }).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(err){ if(err && err.name==='AbortError') return; AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
         }
         if(AthensGIS.activeLayerOrder.indexOf(layerName)===-1) AthensGIS.activeLayerOrder.push(layerName);
@@ -2682,7 +2718,7 @@ function renderLayerControl(){
     header.style.paddingLeft = '6px';
     header.style.cursor = 'pointer';
     header.style.border = '0px solid rgba(204, 204, 204, 0.4)';
-    header.style.background = 'rgba(255, 255, 255, 1)';
+    header.style.background = CATEGORY_HEADER_BG;
     header.style.borderRadius = '10px';
     header.style.boxShadow = '0 1px 4px rgba(0, 0, 0, 0.18)';
     
@@ -2788,21 +2824,13 @@ function renderLayerControl(){
       subHeader.className = 'subcategory-header';
       subHeader.tabIndex = 0;
       subHeader.setAttribute('role','button');
+      // Size, indent, fills and hover live in style.css (.subcategory-header)
       subHeader.style.display = 'flex';
       subHeader.style.alignItems = 'center';
-      subHeader.style.width = '95%';
       subHeader.style.height = '26px';
       subHeader.style.gap = '8px';
-      subHeader.style.marginTop = '6px';
-      subHeader.style.marginBottom = '8px';
-      subHeader.style.marginLeft = '2px';  
-      subHeader.style.paddingLeft = '10px';
       subHeader.style.cursor = 'pointer';
-      subHeader.style.border = '0px solid rgba(204, 204, 204, 0.4)';
-      subHeader.style.background = 'rgba(255, 255, 255, 1)';
-      subHeader.style.borderRadius = '10px';
-      subHeader.style.boxShadow = '0 1px 4px rgba(0, 0, 0, 0.1)';
-      
+
 
       var subTitle = document.createElement('h5');
       subTitle.textContent = subcat;
@@ -2996,6 +3024,22 @@ function ensureGeoJSONStyleRefreshListener(){
   map.on('zoomend moveend', function(){ try{ refreshGeoJSONStyles(); }catch(e){} });
 }
 
-if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', function(){ renderLayerControl(); ensureGeoJSONStyleRefreshListener(); }); } else { renderLayerControl(); ensureGeoJSONStyleRefreshListener(); }
+// Layers the admin dashboard switched off (data/site-state.json, loaded by JS/site-state.js) are
+// removed from layerCategories before anything reads it: AthensGIS.layerCategories is the same
+// object, so dataset search and the rest see the filtered list too. If the state cannot be read
+// (missing file, bad JSON, or nothing within 3 s) siteStateReady gives null and every layer stays.
+// AthensGIS.layersReady resolves once this has run; JS/dataset-search.js waits for it.
+AthensGIS.layersReady = (AthensGIS.siteStateReady || Promise.resolve(null)).then(function(state){
+  var inactive = typeof AthensGIS.inactiveLayerSet === 'function' ? AthensGIS.inactiveLayerSet(state) : {};
+  AthensGIS._inactiveLayerSet = inactive;
+  if(typeof AthensGIS.filterLayerCategories === 'function') AthensGIS.filterLayerCategories(layerCategories, inactive);
+}).catch(function(err){
+  console.warn('Layer state not applied, showing every layer:', err);
+});
+
+AthensGIS.layersReady.then(function(){
+  function start(){ renderLayerControl(); ensureGeoJSONStyleRefreshListener(); }
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', start); } else { start(); }
+});
 
 // === End Layer Control Module ===

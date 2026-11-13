@@ -1999,7 +1999,9 @@
     var SVG_NS = 'http://www.w3.org/2000/svg';
 
     // Terrain and Shaded Relief are rendered by layer-control.js outside layerCategories (its layer-count
-    // badge adds them as "+ 2"), so they are listed here. Keep in step with that if common layers change.
+    // badge adds the ones that are switched on), so they are listed here. Keep in step with that if common
+    // layers change. COMMON_KEYS holds their data keys, which is how the admin dashboard switches them off.
+    var COMMON_KEYS = { 'Terrain': 'Environment/Relief0.pmtiles', 'Shaded Relief': 'Environment/shadedrelief.pmtiles' };
     var COMMON_LAYERS = ['Terrain', 'Shaded Relief'];
     // Colour-blind-safe set (Okabe-Ito based); further categories get generated hues.
     var PALETTE = ['#0072B2', '#E69F00', '#009E73', '#CC79A7', '#D55E00', '#56B4E9', '#374151', '#B8A400', '#7C5CBF', '#8D99A6'];
@@ -2028,6 +2030,22 @@
       throw new Error('unbalanced braces after "' + marker + '"');
     }
 
+    // The layers the admin dashboard switched off (data/site-state.json, loaded by JS/site-state.js, a script
+    // further down the page): wait for the page to finish parsing, then for the state. It resolves to an
+    // object of hidden layer keys, empty when the state is missing, late (3 s) or site-state.js is absent.
+    // The "Metadata score" script below reads window.aboutInactiveLayers, set here before the layer list resolves.
+    function loadInactiveLayers() {
+      var parsed = document.readyState === 'loading'
+        ? new Promise(function (resolve) { document.addEventListener('DOMContentLoaded', resolve); })
+        : Promise.resolve();
+      return parsed.then(function () {
+        var ag = window.AthensGIS;
+        return ag && ag.siteStateReady ? ag.siteStateReady.then(function (state) {
+          return typeof ag.inactiveLayerSet === 'function' ? ag.inactiveLayerSet(state) : {};
+        }) : {};
+      }).catch(function () { return {}; });
+    }
+
     function loadLayerCategories() {
       // no-cache: always revalidate, so a freshly edited layer-control.js shows up straight away.
       return fetch('JS/layer-control.js', { cache: 'no-cache' }).then(function (res) {
@@ -2036,6 +2054,15 @@
       }).then(function (source) {
         var literal = extractObjectLiteral(source, 'var layerCategories =');
         return new Function('return (' + literal + ');')();   // data literal from this site's own script
+      }).then(function (raw) {
+        // The same filter the map applies (JS/site-state.js), so the counts here match the layer panel.
+        return loadInactiveLayers().then(function (inactive) {
+          var ag = window.AthensGIS;
+          if (ag && typeof ag.filterLayerCategories === 'function') ag.filterLayerCategories(raw, inactive);
+          COMMON_LAYERS = COMMON_LAYERS.filter(function (name) { return !inactive[COMMON_KEYS[name]]; });
+          window.aboutInactiveLayers = inactive;
+          return raw;
+        });
       });
     }
 
@@ -2056,7 +2083,7 @@
         if (count) cats.push({ name: name, count: count, groups: groups });
       });
       var categoryCount = cats.length;
-      cats.push({
+      if (COMMON_LAYERS.length) cats.push({
         name: 'Terrain and relief', count: COMMON_LAYERS.length,
         groups: [{ label: null, layers: COMMON_LAYERS.slice() }],
         note: 'General-purpose layers that sit outside the categories.'
@@ -2174,7 +2201,9 @@
       });
 
       noteEl.textContent = model.total + ' layers in total: ' + (model.total - COMMON_LAYERS.length) + ' in ' +
-        model.categoryCount + ' categories, plus ' + COMMON_LAYERS.length + ' general-purpose terrain layers.';
+        model.categoryCount + ' categories' + (COMMON_LAYERS.length
+          ? ', plus ' + COMMON_LAYERS.length + ' general-purpose terrain ' + (COMMON_LAYERS.length === 1 ? 'layer' : 'layers')
+          : '') + '.';
       noteEl.hidden = false;
       statusEl.hidden = true;
       bodyEl.hidden = false;
@@ -2198,6 +2227,7 @@
 
 <!-- config.js: only R2_BASE_URL is used here, to find the layer description files. -->
 <script src="JS/config.js?v=20260615-1"></script>
+<script src="JS/site-state.js?v=7518e7219e"></script>
 <script src="JS/attribute-report.js?v=83a8e5c328"></script>
 <script src="JS/metadata-score.js?v=90b6b96d72"></script>
 <script>
@@ -2290,7 +2320,10 @@
         });
         if (layers.length) cats.push({ name: name, layers: layers });
       });
-      cats.push({ name: 'Terrain and relief', layers: COMMON_LAYERS.map(function (l) { return Object.assign({}, l); }) });
+      // Terrain and Shaded Relief the admin dashboard switched off are left out, as in the layer panel.
+      var inactive = window.aboutInactiveLayers || {};
+      var common = COMMON_LAYERS.filter(function (l) { return !inactive[l.file]; });
+      if (common.length) cats.push({ name: 'Terrain and relief', layers: common.map(function (l) { return Object.assign({}, l); }) });
       return cats;
     }
 

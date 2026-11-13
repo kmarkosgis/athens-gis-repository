@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="style.css?v=7eaa06af85">
+  <link rel="stylesheet" href="style.css?v=9f94323c24">
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" crossorigin="anonymous">
   <link rel="stylesheet" href="code_3D/viewer3d.css?v=c4619da75e">
   <meta charset="utf-8" />
@@ -110,7 +110,7 @@
     <h3 id="citation-title">CITATION</h3>
     <button id="citation-close" title="Close citation window" aria-label="Close citation window">&times;</button>
   </div>
-  <p id="citation-status">Loading citation from CITATION.cff...</p>
+  <p id="citation-status" aria-live="polite">Loading the citation…</p>
   <div id="citation-controls">
     <select id="citation-style" aria-label="Citation style">
       <option value="apa">APA</option>
@@ -429,7 +429,9 @@
           By <strong>Konstantinos Markos</strong>, PhD Candidate, SRSGE, NTUA.<br>
           Licensed under Creative Commons Attribution 4.0 (CC BY 4.0). A work in progress: new data and features are added over time.
         </p>
-        <button type="button" id="closeWelcome" data-welcome-close>Explore in 3D</button>
+        <div class="welcome-actions">
+          <button type="button" id="closeWelcome" data-welcome-close>Explore in 3D</button>
+        </div>
       </div>
     </div>
   </div>
@@ -454,9 +456,9 @@
 <script src="code_3D/building-info.js?v=e0bf53ded4" defer></script>
 <script src="code_3D/landmarks.js?v=2daf6e37e1" defer></script>
 <script src="code_3D/export3d.js?v=7b1ae0f9ba" defer></script>
-<script src="JS/citation.js?v=ed58534d30" defer></script>
+<script src="JS/citation.js?v=572c6c83a6" defer></script>
 <script src="code_3D/note.js?v=fdbe6bd6fc" defer></script>
-<script src="JS/welcome.js?v=c8381ae67f" defer></script>
+<script src="JS/welcome.js?v=62a2bb1608" defer></script>
 <script src="JS/cookies.js?v=eeaacfe22f" defer></script>
 <script src="code_3D/cookie-position.js?v=b271ae4997" defer></script>
 <script src="JS/footer-credits.js?v=7e87ec8d7d" defer></script>

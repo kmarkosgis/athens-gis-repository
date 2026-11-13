@@ -85,6 +85,9 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       max-width: 540px;
       margin: auto; /* centres, and still scrolls from the top when taller than the window */
       overflow: hidden;
+      /* clip, not hidden: clips the band to the corners without becoming a scroll container,
+         so the actions' sticky bar (narrow screens, below) sticks to the dialog's scroll. */
+      overflow: clip;
       background: rgba(255, 255, 255, 0.97);
       -webkit-backdrop-filter: blur(7px);
       backdrop-filter: blur(7px);
@@ -509,6 +512,36 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       .welcome-go { grid-template-columns: 1fr; }
       .welcome-foot { flex-direction: column; align-items: stretch; }
       #closeWelcome { width: 100%; }
+    }
+
+    /* Phones, portrait or landscape: the dialog is taller than the screen, so dock the two
+       actions to its bottom edge while the text scrolls - "Explore the map" is always one tap
+       away. At the end of the scroll the bar settles into place as the box's last row.
+       .welcome-foot steps aside (display: contents) so the bar can stick anywhere inside
+       .welcome-body; a sticky box cannot leave its parent, and the foot starts below the fold. */
+    @media (max-width: 560px), (max-height: 600px) {
+      .welcome-foot { display: contents; }
+      .welcome-meta {
+        padding-top: 16px;
+        border-top: 1px solid rgba(55, 65, 81, 0.18);
+      }
+      .welcome-actions {
+        position: sticky;
+        bottom: -16px; /* the dialog's own padding, so the bar meets the screen edge */
+        z-index: 1;
+        justify-content: flex-end;
+        margin: 14px -26px -22px;
+        padding: 12px 26px calc(22px + env(safe-area-inset-bottom, 0px));
+        border-top: 1px solid rgba(55, 65, 81, 0.18);
+        background: rgba(255, 255, 255, 0.97);
+      }
+    }
+    @media (max-width: 560px) {
+      .welcome-actions {
+        bottom: -12px;
+        margin: 14px -18px -18px;
+        padding: 12px 18px calc(18px + env(safe-area-inset-bottom, 0px));
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -1166,6 +1199,38 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       
     }
 
+    /* The main map's page title (an h1 for the document outline) looks exactly like the
+       header text it replaced: it inherits the header's size, tracking and case. */
+    header .site-title {
+      margin: 0;
+      font: inherit;
+      letter-spacing: inherit;
+    }
+
+    /* "Skip to layers": off-screen until focused, then a slate pill over the header. */
+    .skip-link {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 3000;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      background: rgba(55, 65, 81, 0.9);
+      color: #ffffff;
+      font: 500 12px/1.4 "Avenir Next", Avenir, "Helvetica Neue", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      letter-spacing: 1px;
+      text-decoration: none;
+      transform: translateY(-200%);
+    }
+    .skip-link:focus-visible {
+      transform: none;
+      outline: 3px solid #4682b4;
+      outline-offset: 2px;
+    }
+    @media (max-width: 900px) {
+      .skip-link { display: none; }
+    }
+
     /* Main map: the layer panel runs to the top, so the header starts right of it
        (panel 10px + 340px wide, then the 10px gutter). */
     @media (min-width: 901px) {
@@ -1351,7 +1416,8 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       flex: 1 1 auto;
       min-height: 0;
     }
-     #layerInfoBox h1 {
+     /* White strip under the sticky title bar (decorative, aria-hidden in index.html) */
+     #layerInfoBox .box-mask {
       flex: 0 0 auto;
       position: -webkit-sticky;
       position: sticky;
@@ -1365,10 +1431,10 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       font-size: 14px;
       font-weight: 600;
       text-align: center;
-      z-index: 2; /* keep below the h4 which has z-index:10 */
+      z-index: 2; /* keep below the title bar, which has z-index:10 */
     }
 
-    #layerInfoBox h4 {
+    #layerInfoBox h2 {
       flex: 0 0 auto;
       position: -webkit-sticky;
       position: sticky;
@@ -1587,8 +1653,9 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       letter-spacing: 1px;
     }
 
-    /* Title / header row */
-    #toolbar h1 {
+    /* Title / header row (h2 on the main map, h1 on the 3D Viewer) */
+    #toolbar h1,
+    #toolbar h2 {
       grid-column: 1 / -1;
       grid-row: 1;
       margin: 0;
@@ -2349,6 +2416,38 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       padding-top: 5px;
     }
 
+    /* Subcategory: a level inside its category, not a second card. The header and its
+       rows hang off one hairline rule (DESIGN.md rule token), indented to sit with the
+       category's root-level rows. The 6px + 6px inset keeps a selected row's Float
+       shadow clear of .subcategory-content's overflow:hidden. */
+    /* Sections touch (padding, not margin), so the rule runs unbroken down a category. */
+    .subcategory-section {
+      margin-left: 6px;
+      padding: 2px 0 2px 6px;
+      border-left: 1px solid rgba(55, 65, 81, 0.18);
+    }
+    .subcategory-section:not(.subcategory-section + .subcategory-section) { margin-top: 4px; }
+    .subcategory-section:last-child { margin-bottom: 8px; }
+    .subcategory-header {
+      width: 95%;
+      margin: 0;
+      padding-left: 8px;
+      border-radius: 10px;
+      background: transparent;
+      transition: background-color 0.2s;
+    }
+    .subcategory-header:hover {
+      background: rgba(55, 65, 81, 0.07);
+    }
+    /* At least one of its layers is on (updateSubcategoryActiveState in JS/layer-control.js):
+       the soft ochre gradient, fading to nothing so it ends on the panel itself. */
+    .subcategory-header.has-active-layer {
+      background: linear-gradient(135deg, rgba(201, 154, 46, 0.28) 0%, rgba(201, 154, 46, 0) 70%);
+    }
+    .subcategory-header.has-active-layer:hover {
+      background: linear-gradient(135deg, rgba(201, 154, 46, 0.28) 0%, rgba(201, 154, 46, 0) 70%), rgba(55, 65, 81, 0.07);
+    }
+
     .layer-item-actions {
       order: 2;
       display: flex;
@@ -2359,12 +2458,64 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       opacity: 0;
       overflow: hidden;
       pointer-events: none;
-      transition: max-height 0.25s ease, opacity 0.2s ease;
+      /* visibility keeps the hidden buttons out of the Tab order and the accessibility
+         tree; it flips only after the collapse has finished, so the fade still shows. */
+      visibility: hidden;
+      transition: max-height 0.25s ease, opacity 0.2s ease, visibility 0s linear 0.25s;
     }
 
-    /* Remove checkbox styles */
+    /* One keyboard focus ring for the main map's controls (DESIGN.md: 3px steel, 2px
+       offset). Mouse clicks don't show it (:focus-visible). Subcategory headers sit inside
+       an overflow:hidden group, so their ring is drawn inside the edge instead. */
+    .category-header:focus-visible,
+    #custom-zoom-controls button:focus-visible,
+    #basemap-btn:focus-visible,
+    #toolbar button:focus-visible,
+    #citation-btn:focus-visible,
+    #citation-popup button:focus-visible,
+    #citation-style:focus-visible,
+    .layer-panel-btn:focus-visible,
+    .recent-layer:focus-visible,
+    #menuBtn:focus-visible,
+    #viewer-switch-btn:focus-visible,
+    #linkedin-btn:focus-visible,
+    #datasetSearchModeToggle:focus-visible,
+    #datasetSearchClear:focus-visible,
+    #layer-popup button:focus-visible,
+    #footer a:focus-visible {
+      outline: 3px solid #4682b4;
+      outline-offset: 2px;
+    }
+    .subcategory-header:focus-visible,
+    .layer-item-actions .download-button:focus-visible,
+    .layer-item-actions .color-button:focus-visible,
+    .layer-item-actions button:focus-visible,
+    .layer-color-panel button:focus-visible {
+      outline: 3px solid #4682b4;
+      outline-offset: -1px;
+    }
+
+    /* Keyboard focus on a layer's switch rings the whole row (DESIGN.md focus ring);
+       0 offset so the ring stays inside the group's overflow:hidden. */
+    .layer-item:has(> input[type="checkbox"]:focus-visible) {
+      outline: 3px solid #4682b4;
+      outline-offset: 0;
+    }
+
+    /* The layer's on/off checkbox (role="switch", see createLayerRow in JS/layer-control.js):
+       visually hidden but still focusable, so Tab reaches every layer and Space/Enter
+       switch it; the visible switch is drawn by the label. The row shows the focus ring. */
     .layer-item input[type="checkbox"] {
-      display: none !important;
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      margin: -1px !important;
+      padding: 0 !important;
+      border: 0 !important;
+      overflow: hidden !important;
+      clip-path: inset(50%) !important;
+      white-space: nowrap !important;
+      opacity: 0 !important;
     }
 
     .layer-item:hover {
@@ -2502,9 +2653,9 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
     .category-summary {
       margin: 0 0 1px;
       overflow: hidden;
-      color: #6b7280;
+      color: #4b5563; /* Ink Soft: secondary text, 4.5:1+ on the header wash */
       font-size: 11px;
-      font-weight: 300;
+      font-weight: 400;
       line-height: 1.35;
       letter-spacing: 0.3px;
       text-overflow: ellipsis;
@@ -2558,6 +2709,37 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
     .color-button {
       text-transform: uppercase;
     }
+    /* DOWNLOAD is the row's primary action: filled slate (the toolbar's active state),
+       so it leads the quieter white COLOR and FILTER buttons beside it. */
+    .download-button {
+      background: rgba(55, 65, 81, 0.9);
+      border-color: transparent;
+      color: #ffffff;
+      font-weight: 500;
+    }
+    /* COLOR shows the layer's current colour as a dot beside its label
+       (--layer-swatch, set by updateColorButtonPreview in JS/layer-control.js). */
+    .color-button::before {
+      content: "";
+      flex: 0 0 auto;
+      width: 10px;
+      height: 10px;
+      margin-right: 6px;
+      border-radius: 50%;
+      background: var(--layer-swatch, #9ca3af);
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
+    }
+    /* A failed download, said in the row itself (downloadLayerAsZip in JS/layer-control.js):
+       meta-size text in the score ramp's "Bad" red, the one text-safe red in DESIGN.md. */
+    .layer-download-error {
+      order: 4;
+      margin: 0 0 4px;
+      color: #b3261e;
+      font-size: 11px;
+      line-height: 1.4;
+      letter-spacing: 0.3px;
+    }
+    .layer-download-error[hidden] { display: none; }
     /* Attic Ochre on hover (DESIGN.md: the site's one accent) */
     .download-button:hover {
       background-color: #c99a2e;
@@ -2576,6 +2758,8 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       padding: 0px 0;
       opacity: 1;
       pointer-events: auto;
+      visibility: visible;
+      transition: max-height 0.25s ease, opacity 0.2s ease, visibility 0s;
     }
 
     /* Reveal action buttons when layer is selected */
@@ -2602,14 +2786,16 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       opacity: 0;
       overflow: hidden;
       pointer-events: none;
-      
-      transition: max-height 0.2s ease, opacity 0.2s ease, padding 0.2s ease, margin 0.2s ease;
+      visibility: hidden; /* swatches stay out of the Tab order while closed */
+      transition: max-height 0.2s ease, opacity 0.2s ease, padding 0.2s ease, margin 0.2s ease, visibility 0s linear 0.2s;
     }
 
     .layer-color-panel.open {
       max-height: 120px;
       opacity: 1;
       pointer-events: auto;
+      visibility: visible;
+      transition: max-height 0.2s ease, opacity 0.2s ease, padding 0.2s ease, margin 0.2s ease, visibility 0s;
       padding: 8px;
       margin-top: 2px;
       margin-bottom: 4px;
@@ -2686,10 +2872,13 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       color: rgba(55, 65, 81, 0.9);
       transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
     }
-    /* Inactive: nothing to act on - lighter border, muted text, no hover feedback */
+    /* Inactive: nothing to act on (aria-disabled, set in JS/layer-control.js) - lighter
+       border, muted text, no hover feedback. Muted, not faded out: the label stays legible
+       (3.3:1), so the button reads as "nothing to do yet" rather than broken. */
     .layer-panel-btn:not(.is-active) {
-      border-color: #eee;
-      color: rgba(55, 65, 81, 0.25);
+      border-color: rgba(55, 65, 81, 0.18);
+      color: rgba(55, 65, 81, 0.6);
+      cursor: default !important;
     }
     .layer-panel-btn.is-active:hover {
       background: rgba(55, 65, 81, 0.7);
@@ -2861,7 +3050,7 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
     /* Additional sticky sub-header inside legend-bar.
        It sits visually underneath the h4 (h4 has higher z-index)
        and provides a white strip of fixed height. */
-    #legend-bar h1 {
+    #legend-bar .box-mask {
       position: -webkit-sticky;
       position: sticky;
       top: 0; /* user requested top: 0 */
@@ -2874,10 +3063,10 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
       font-size: 14px;
       font-weight: 600;
       text-align: center;
-      z-index: 2; /* keep below the h4 which has z-index:10 */
+      z-index: 2; /* keep below the title bar, which has z-index:10 */
     }
 
-    #legend-bar h4 {
+    #legend-bar h2 {
       position: -webkit-sticky;
       position: sticky;
       top: 10px;
@@ -3316,7 +3505,8 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: "Ave
         z-index: 2001;
       }
       #toolbar::before,
-      #toolbar h1 {
+      #toolbar h1,
+      #toolbar h2 {
         display: none;
       }
       /* Let opacityBtn/drawOrderBtn go back to being direct grid children of

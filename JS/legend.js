@@ -628,6 +628,174 @@ window.legendConfigs = {
     }
   };
 
+// ── Legends written by the admin dashboard (data/legends.json) ───────────────
+// The list above is the built-in fallback. AthensGIS.legendsReady fetches data/legends.json and,
+// when the file is valid, REPLACES window.legendConfigs with the file's legends (so a legend
+// removed in the dashboard is really gone). A missing, invalid or late (3 s) file leaves the
+// built-in list. legendsReady never rejects: it resolves true (file used) or false (built-in kept).
+// JS/layer-control.js waits for it before building the layer panel; every other script reads
+// window.legendConfigs when it needs it, so none holds on to the old object.
+(function () {
+  var TIMEOUT_MS = 3000;
+  var SAFETY_MS = 10000;
+  var has = Object.prototype.hasOwnProperty;
+  var AthensGIS = window.AthensGIS = window.AthensGIS || {};
+
+  function isObject(v) { return v !== null && typeof v === 'object' && !Array.isArray(v); }
+  function isText(v) { return typeof v === 'string' && v !== ''; }
+
+  // One legend of the file -> the in-memory shape: { title, field?, classes: {key: {color, label,
+  // radius?}}, classList: [{key, color, label, radius?}] }. classList keeps the file's class order
+  // (an object cannot, for whole-number keys); classes serves value matching. null when unusable.
+  function convertLegend(legend) {
+    if (!isObject(legend) || !isText(legend.title) || !Array.isArray(legend.classes)) return null;
+    var classes = {};
+    var classList = [];
+    for (var i = 0; i < legend.classes.length; i++) {
+      var c = legend.classes[i];
+      if (!isObject(c) || !isText(c.key) || c.key === '__proto__' || !isText(c.color)) continue;
+      if (has.call(classes, c.key)) continue;
+      var label = isText(c.label) ? c.label : c.key;
+      var item = { key: c.key, color: c.color, label: label };
+      var style = { color: c.color, label: label };
+      if (typeof c.radius === 'number' && isFinite(c.radius) && c.radius > 0) {
+        item.radius = c.radius;
+        style.radius = c.radius;
+      }
+      classes[c.key] = style;
+      classList.push(item);
+    }
+    if (!classList.length) return null;
+    var out = { title: legend.title };
+    if (isText(legend.field)) out.field = legend.field;
+    out.classes = classes;
+    out.classList = classList;
+    return out;
+  }
+
+  // Layer name -> config for a valid file (version 1, legends an object), skipping any legend the
+  // site cannot use; null for anything else. Same result as toSiteConfig in the dashboard's
+  // public/js/lib/legend-format.js. The map has no prototype, so a layer called "constructor" or
+  // "toString" is not found by accident.
+  AthensGIS.legendsFromFile = function (file) {
+    try {
+      if (!isObject(file) || file.version !== 1 || !isObject(file.legends)) return null;
+      var out = Object.create(null);
+      var names = Object.keys(file.legends);
+      var used = 0;
+      for (var i = 0; i < names.length; i++) {
+        if (names[i] === '__proto__') continue;
+        var cfg = convertLegend(file.legends[names[i]]);
+        if (cfg) { out[names[i]] = cfg; used++; }
+      }
+      // Entries but none usable: a wrong file, not an owner who removed every legend. Treat it as
+      // invalid so the built-in list stays instead of leaving the map uncoloured.
+      if (names.length && !used) return null;
+      return out;
+    } catch (err) {
+      return null;
+    }
+  };
+
+  // The classes of a config in display order: its classList when it has one (a legend from the
+  // file, or a built-in written by the dashboard's "Download legend.js"), else its classes object.
+  AthensGIS.legendClassList = function (cfg) {
+    if (!cfg || typeof cfg !== 'object') return [];
+    if (Array.isArray(cfg.classList)) return cfg.classList;
+    var classes = cfg.classes;
+    if (!classes || typeof classes !== 'object') return [];
+    var keys = Object.keys(classes);
+    var list = [];
+    for (var i = 0; i < keys.length; i++) {
+      var style = classes[keys[i]] || {};
+      var item = { key: keys[i], color: style.color, label: style.label || keys[i] };
+      if (style.radius !== undefined) item.radius = style.radius;
+      list.push(item);
+    }
+    return list;
+  };
+
+  function legendsUrl() {
+    var cfg = window.CONFIG || {};
+    if (cfg.LEGENDS_URL) return cfg.LEGENDS_URL;
+    return (cfg.R2_BASE_URL || '') + '/data/legends.json';
+  }
+
+  // Without Promise there is nothing to build a real promise from: a minimal thenable that says false.
+  function resolvedFalse() {
+    if (typeof Promise === 'function') return Promise.resolve(false);
+    return { then: function (done) { if (typeof done === 'function') { try { done(false); } catch (err) { /* ignore */ } } } };
+  }
+
+  function makeReady() {
+    if (typeof Promise !== 'function' || typeof fetch !== 'function') return resolvedFalse();
+    return new Promise(function (resolve) {
+      var settled = false;
+      var started = false;
+      var controller = null;
+      var timer = null;
+      var safety = null;
+
+      function finish(value) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        clearTimeout(safety);
+        resolve(value);
+      }
+
+      function start() {
+        if (started || settled) return;
+        started = true;
+        timer = setTimeout(function () {
+          finish(false);
+          try { if (controller) controller.abort(); } catch (err) { /* ignore */ }
+        }, TIMEOUT_MS);
+        try {
+          var options = { cache: 'no-cache' };
+          if (typeof AbortController === 'function') {
+            controller = new AbortController();
+            options.signal = controller.signal;
+          }
+          fetch(legendsUrl(), options)
+            .then(function (response) {
+              if (!response.ok) throw new Error('HTTP ' + response.status);
+              return response.json();
+            })
+            .then(function (file) {
+              if (settled) return; // arrived after the timeout: the built-in list stays
+              var map = AthensGIS.legendsFromFile(file);
+              if (map) window.legendConfigs = map;
+              finish(!!map);
+            })
+            .catch(function () { finish(false); });
+        } catch (err) {
+          finish(false);
+        }
+      }
+
+      // Fallback for a cached older page that still loads legend.js before config.js (all deferred,
+      // in page order): CONFIG may not exist yet.
+      // Then wait until every deferred script has run (DOMContentLoaded; load as a second chance),
+      // and give up after SAFETY_MS so the layer panel can never wait for ever.
+      var doc = window.document;
+      if (window.CONFIG || !doc || typeof doc.addEventListener !== 'function' || doc.readyState === 'complete') {
+        start();
+      } else {
+        safety = setTimeout(function () { finish(false); }, SAFETY_MS);
+        doc.addEventListener('DOMContentLoaded', start);
+        if (typeof window.addEventListener === 'function') window.addEventListener('load', start);
+      }
+    });
+  }
+
+  try {
+    AthensGIS.legendsReady = makeReady();
+  } catch (err) {
+    AthensGIS.legendsReady = resolvedFalse();
+  }
+})();
+
 // Active legend set
 var activeLegendLayers = window.activeLegendLayers || new Set();
 window.activeLegendLayers = activeLegendLayers;
@@ -660,16 +828,17 @@ window.updateLegendBar = function(layerName, action){
 
   // 1) Group active configs by common title (cfg.title or layer name)
   var titleOrder = []; // preserve insertion order of titles encountered
-  var groups = {};     // title -> { order:[], items: Map-like object of uniqueKey -> {label,color} }
+  var groups = Object.create(null);     // title -> { order:[], items: Map-like object of uniqueKey -> {label,color} }
   activeLegendLayers.forEach(function(name){
     var cfg = window.legendConfigs[name];
     if(!cfg) return;
     var title = cfg.title || name;
-    if(!groups[title]){ groups[title] = { order: [], items: {} }; titleOrder.push(title); }
+    if(!groups[title]){ groups[title] = { order: [], items: Object.create(null) }; titleOrder.push(title); }
     // 2) Merge classes; dedupe by label+color (stable order of first encounter)
-    Object.entries(cfg.classes||{}).forEach(function([clsName, style]){
-      var label = style.label || clsName;
-      var color = style.color || '';
+    window.AthensGIS.legendClassList(cfg).forEach(function(cls){
+      if(!cls) return;
+      var label = cls.label || cls.key;
+      var color = cls.color || '';
       var uniqKey = label + '|' + color; // avoid duplicates across layers
       if(!(uniqKey in groups[title].items)){
         groups[title].items[uniqKey] = { label: label, color: color };

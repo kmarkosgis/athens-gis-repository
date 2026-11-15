@@ -453,7 +453,7 @@
         items.push({ kind: 'row', strong: true, html: only.label, color: only.color, border: only.border, geom: only.geom });
         return;
       }
-      items.push({ kind: 'title', html: group.title });
+      items.push({ kind: 'title', html: escapeLegendHtml(group.title) });
       group.order.forEach(function(key){
         var item = group.items[key];
         items.push({ kind: 'row', html: item.label, color: item.color });
@@ -466,6 +466,8 @@
   // in a single colour gets the symbol it has on the map: a line, or an outlined point/polygon.
   function legendSwatchHtml(item, size){
     var base = 'width:' + size + 'px; height:' + size + 'px; min-width:' + size + 'px; margin-top:4px;';
+    // Colours come from the legends file: only plain colour forms go into the style string.
+    item = { color: safeLegendColor(item.color), border: item.border ? safeLegendColor(item.border) : item.border, geom: item.geom };
     if(!item.border){
       return '<span style="' + base + ' border-radius:3px; background:' + item.color + ';"></span>';
     }
@@ -968,6 +970,11 @@
       '</div>';
   }
 
+  function safeLegendColor(color){
+    var c = String(color == null ? '' : color).trim();
+    return /^(#[0-9a-f]{3,8}|rgba?\(\s*[0-9.,%\s]+\)|[a-z]+)$/i.test(c) ? c : '#d1d5db';
+  }
+
   function escapeLegendHtml(text){
     return String(text).replace(/[&<>"']/g, function(c){
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -1024,14 +1031,16 @@
         groups.push(group);
       }
 
-      Object.entries(cfg.classes).forEach(function(entry){
-        var clsName = entry[0];
-        var style = entry[1] || {};
-        var label = style.label || clsName;
-        var color = style.color || '#d1d5db';
+      var classList = (window.AthensGIS && typeof window.AthensGIS.legendClassList === 'function')
+        ? window.AthensGIS.legendClassList(cfg)
+        : Object.entries(cfg.classes).map(function(e){ var st = e[1] || {}; return { key: e[0], color: st.color, label: st.label, radius: st.radius }; });
+      classList.forEach(function(cls){
+        if(!cls) return;
+        var label = cls.label || cls.key;
+        var color = cls.color || '#d1d5db';
         var key = label + '|' + color;
         if(!Object.prototype.hasOwnProperty.call(group.items, key)){
-          group.items[key] = { label: label, color: color };
+          group.items[key] = { label: escapeLegendHtml(label), color: color };
           group.order.push(key);
         }
       });

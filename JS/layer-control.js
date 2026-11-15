@@ -975,7 +975,8 @@ function buildRasterCellFeature(georaster, row, col, projCode, proj4fn){
 }
 
 function buildRasterPixelHTML(valueLabel, value){
-  return '<table class="feature-properties-table"><tr><th>' + valueLabel + '</th><td>' + value + '</td></tr></table>';
+  // valueLabel is a legend title from the legends file: text, never markup.
+  return '<table class="feature-properties-table"><tr><th>' + escHtml(valueLabel) + '</th><td>' + escHtml(value) + '</td></tr></table>';
 }
 
 // Called from the map's global click handler before it resets the info box/highlight.
@@ -3029,7 +3030,11 @@ function ensureGeoJSONStyleRefreshListener(){
 // object, so dataset search and the rest see the filtered list too. If the state cannot be read
 // (missing file, bad JSON, or nothing within 3 s) siteStateReady gives null and every layer stays.
 // AthensGIS.layersReady resolves once this has run; JS/dataset-search.js waits for it.
-AthensGIS.layersReady = (AthensGIS.siteStateReady || Promise.resolve(null)).then(function(state){
+AthensGIS.layersReady = Promise.all([
+  AthensGIS.siteStateReady || Promise.resolve(null),
+  AthensGIS.legendsReady || Promise.resolve(false)
+]).then(function(results){
+  var state = results[0];
   var inactive = typeof AthensGIS.inactiveLayerSet === 'function' ? AthensGIS.inactiveLayerSet(state) : {};
   AthensGIS._inactiveLayerSet = inactive;
   if(typeof AthensGIS.filterLayerCategories === 'function') AthensGIS.filterLayerCategories(layerCategories, inactive);

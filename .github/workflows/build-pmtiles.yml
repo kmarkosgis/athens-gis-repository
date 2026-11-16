@@ -1,0 +1,76 @@
+# Builds the .pmtiles of one layer file that is already on R2 and stores it beside its source.
+# Started by the admin dashboard after an upload of a geojson/json of 1 MB or more, or by hand:
+# Actions > Build PMTiles > Run workflow, with the file's path under data/.
+#
+# Repository secrets it needs (Settings > Secrets and variables > Actions):
+#   R2_ACCOUNT_ID          the Cloudflare account id
+#   R2_ACCESS_KEY_ID       an R2 API token (Object Read & Write, limited to the bucket athens-gis-data)
+#   R2_SECRET_ACCESS_KEY   the token's secret
+name: Build PMTiles
+
+on:
+  workflow_dispatch:
+    inputs:
+      key:
+        description: 'The layer file, as its path under data/ (for example Environment/attica_trees.geojson)'
+        required: true
+        type: string
+      test:
+        description: 'Test build: store as <name>.test.pmtiles and leave the live tiles alone'
+        required: false
+        type: boolean
+        default: false
+
+# The job reads the repository and nothing else; it never writes to it.
+permissions:
+  contents: read
+
+# One build per file at a time; a newer upload of the same file replaces a build still waiting.
+concurrency:
+  group: build-pmtiles-${{ inputs.key }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      TIPPECANOE_VERSION: '2.49.0' # keep in step with tools/tile-options.mjs; tile-one.mjs refuses any other
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Restore tippecanoe
+        id: tippecanoe-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/tippecanoe-bin
+          key: tippecanoe-${{ env.TIPPECANOE_VERSION }}-ubuntu-24.04
+
+      - name: Build tippecanoe
+        if: steps.tippecanoe-cache.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq build-essential libsqlite3-dev zlib1g-dev
+          git clone --depth 1 --branch "$TIPPECANOE_VERSION" https://github.com/felt/tippecanoe.git "$RUNNER_TEMP/tippecanoe"
+          make -C "$RUNNER_TEMP/tippecanoe" -j"$(nproc)"
+          mkdir -p ~/tippecanoe-bin
+          cp "$RUNNER_TEMP/tippecanoe/tippecanoe" ~/tippecanoe-bin/
+
+      - name: Put tippecanoe on PATH
+        run: echo "$HOME/tippecanoe-bin" >> "$GITHUB_PATH"
+
+      - name: Build and store the tiles
+        env:
+          # Passed as an environment value, never written into the command line.
+          LAYER_KEY: ${{ inputs.key }}
+          TEST_FLAG: ${{ inputs.test && '--test' || '' }}
+          R2_BUCKET: athens-gis-data
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_EC2_METADATA_DISABLED: 'true'
+        run: node --max-old-space-size=4096 tools/tile-one.mjs "$LAYER_KEY" $TEST_FLAG

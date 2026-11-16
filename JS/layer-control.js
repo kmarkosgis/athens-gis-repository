@@ -47,7 +47,8 @@ var layerCategories = {
       { name: "Natura 2000 sites", file: "Environment/Natura.pmtiles", geojson: "Environment/Natura.geojson", geom: "polygon" },
     ],
     "Trees and Vegetation": [ 
-      {"name": "Dominant Leaf Type (2024)", file: "Environment/leaf_type.tif", type: "raster"},
+      {name: "Dominant Leaf Type (2024)", file: "Environment/leaf_type.tif", type: "raster"},
+      {name: "Trees (Points)", file : "Environment/attica_trees.pmtiles", geojson: "Environment/attica_trees.geojson", geom: "point"},
       { name: "Vegetation Index (Center Sector)", file: "Environment/AthensGreenCenter.pmtiles", geojson: "Environment/AthensGreenCenter.geojson", geom: "polygon" },
       { name: "Vegetation Index (North Sector)", file: "Environment/AthensGreenNorth.pmtiles", geojson: "Environment/AthensGreenNorth.geojson", geom: "polygon" },
       { name: "Vegetation Index (South Sector)", file: "Environment/AthensGreenSouth.pmtiles", geojson: "Environment/AthensGreenSouth.geojson", geom: "polygon" },
@@ -673,6 +674,8 @@ function buildPropertyTable(feature){
     else if(k==='leisure') d='Public space type';
     else if(k==='period') d='Return Period (years)';
     else if(k==='twentyfourseven') d='24/7 Access';
+    else if(k==='desc' || k==='species' || k=='genus'|| k==='family' || k=='taxon') d='Species';
+    else if(k==='leaf_type' || k==='leaf_cycle') d='Leaf type';
     // Escaped: values come from the datasets (many OSM-derived, i.e. publicly editable)
     // and this table is injected with innerHTML.
     rows += '<tr><th>'+escHtml(d)+'</th><td>'+escHtml(v)+'</td></tr>';

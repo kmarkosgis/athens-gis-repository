@@ -112,13 +112,13 @@
   }
   </script>
 
-  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js" crossorigin="anonymous" defer></script>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous" defer></script>
 <!-- Use local copy of leaflet-easyprint (keeps behavior consistent across hosts) -->
   <script src="JS/leaflet-easyprint.js?v=88c0ec6df0" defer></script>
 
-  <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js" defer></script>
+  <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js" crossorigin="anonymous" defer></script>
 
   <!-- Raster (GeoTIFF) rendering support: georaster + georaster-layer-for-leaflet
        are no longer loaded here - JS/layer-control.js's loadExternalScript()
@@ -418,8 +418,8 @@
 </div>
 
 <!-- Leaflet JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" crossorigin="anonymous" defer></script>
 
 <!-- Corrected folder name capitalization (JS instead of js) for case-sensitive hosting -->
 <script src="JS/map-init.js?v=a86e149202" defer></script>
@@ -432,8 +432,8 @@
      local copy of the Mapbox Vector Tile decoder (no browser build published for it -
      see JS/vendor/vector-tile.js for why). Loaded before layer-filter.js /
      layer-control.js, the only scripts that use them. -->
-<script src="https://cdn.jsdelivr.net/npm/pmtiles@3.2.0/dist/pmtiles.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/pbf@5.1.2/dist/pbf.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/pmtiles@3.2.0/dist/pmtiles.js" crossorigin="anonymous" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/pbf@5.1.2/dist/pbf.js" crossorigin="anonymous" defer></script>
 <script src="JS/vendor/vector-tile.js?v=30a75ab43f" defer></script>
 <script src="JS/pmtiles-loader.js?v=c68b1fdc99" defer></script>
 
@@ -441,7 +441,7 @@
 <script src="JS/attribute-report.js?v=83a8e5c328" defer></script>
 <script src="JS/metadata-score.js?v=90b6b96d72" defer></script>
 <script src="JS/layer-control.js?v=b0a901baa0" defer></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/7.0.0/fuse.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/7.0.0/fuse.min.js" crossorigin="anonymous" defer></script>
 <script src="JS/dataset-search.js?v=1b14a0d3b0" defer></script>
 <script src="JS/citation.js?v=572c6c83a6" defer></script>
 <script src="JS/measure.js?v=0675687776" defer></script>

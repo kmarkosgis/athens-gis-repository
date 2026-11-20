@@ -90,6 +90,12 @@
 
   // Expose individual base layers & a direct keyed map for custom switcher
   window.AthensGIS = window.AthensGIS || {};
+  // True when the visitor's system asks for less motion. The CSS side is the
+  // "Reduced motion" block at the end of style.css; scripts that scroll smoothly or fly
+  // the map ask this and move at once instead.
+  window.AthensGIS.prefersReducedMotion = function(){
+    return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  };
   window.AthensGIS.baseLayers = {
     positron: positron,
     maptilerStreetsDark: maptilerStreetsDark,
@@ -99,7 +105,15 @@
   window.AthensGIS.currentBaseLayerKey = 'positron';
 
   // OPTIONAL: keep Leaflet default control (can be removed if only custom desired)
-  L.control.layers(baseMaps, null, { position: 'bottomright' }).addTo(map);
+  var defaultLayersControl = L.control.layers(baseMaps, null, { position: 'bottomright' }).addTo(map);
+  // style.css pushes this control below the bottom edge of the map (the custom BASEMAPS
+  // button replaces it), but it was still a keyboard stop and read out by screen readers.
+  // inert takes it out of both without removing the control.
+  var defaultLayersEl = defaultLayersControl.getContainer && defaultLayersControl.getContainer();
+  if(defaultLayersEl){
+    defaultLayersEl.setAttribute('inert', '');
+    defaultLayersEl.setAttribute('aria-hidden', 'true');
+  }
 
   // === Custom Basemap Dropdown Switcher Logic ===
   (function(){
@@ -107,42 +121,78 @@
     var dropdown = document.getElementById('basemap-dropdown');
     if(!btn || !dropdown) return; // safety
 
+    var options = Array.prototype.slice.call(dropdown.querySelectorAll('li[data-basemap]'));
+    function isOpen(){ return dropdown.style.display === 'block'; }
+    // returnFocus: put keyboard focus back on the button (Esc, or a choice made by keyboard).
+    function setOpen(open, returnFocus){
+      var hadFocus = dropdown.contains(document.activeElement);
+      dropdown.style.display = open ? 'block' : 'none';
+      btn.setAttribute('aria-expanded', String(open));
+      if(!open && (returnFocus || hadFocus)) btn.focus();
+    }
+    function markActive(activeItem){
+      options.forEach(function(li){
+        var on = li === activeItem;
+        li.classList.toggle('active-basemap', on);
+        li.setAttribute('aria-pressed', String(on));
+      });
+    }
+
     // Toggle dropdown visibility
     btn.addEventListener('click', function(e){
       e.stopPropagation();
-      var isOpen = dropdown.style.display === 'block';
-      dropdown.style.display = isOpen ? 'none' : 'block';
+      setOpen(!isOpen());
+    });
+    // Down arrow on the button opens the list and moves into it.
+    btn.addEventListener('keydown', function(e){
+      if(e.key === 'ArrowDown' && options.length){
+        e.preventDefault();
+        setOpen(true);
+        options[0].focus();
+      }
     });
 
     // Close when clicking outside
     document.addEventListener('click', function(e){
-      if(!dropdown.contains(e.target) && e.target !== btn){
-        dropdown.style.display='none';
+      if(isOpen() && !dropdown.contains(e.target) && !btn.contains(e.target)){
+        setOpen(false);
       }
     });
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape' && isOpen()) setOpen(false, dropdown.contains(document.activeElement));
+    });
 
-    // Switch layer when clicking list items
-    dropdown.querySelectorAll('li[data-basemap]').forEach(function(item){
+    // Switch layer when an option is clicked, or chosen with Enter / Space
+    options.forEach(function(item, index){
       item.style.cursor='pointer';
       item.addEventListener('click', function(){
         var key = this.getAttribute('data-basemap');
         var bases = window.AthensGIS.baseLayers || {};
         if(!bases[key]) return;
         var currentKey = window.AthensGIS.currentBaseLayerKey;
-        if(currentKey === key){ dropdown.style.display='none'; return; }
+        if(currentKey === key){ setOpen(false); return; }
         if(currentKey && bases[currentKey]){ map.removeLayer(bases[currentKey]); }
         bases[key].addTo(map); window.AthensGIS.currentBaseLayerKey = key;
 
         // Active item highlight
-        dropdown.querySelectorAll('li[data-basemap]').forEach(function(li){ li.classList.remove('active-basemap'); });
-        this.classList.add('active-basemap');
+        markActive(this);
         // Close dropdown
-        dropdown.style.display='none';
+        setOpen(false);
+      });
+      item.addEventListener('keydown', function(e){
+        if(e.key === 'Enter' || e.key === ' '){
+          e.preventDefault();
+          this.click();
+        } else if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){
+          e.preventDefault();
+          var next = options[(index + (e.key === 'ArrowDown' ? 1 : options.length - 1)) % options.length];
+          next.focus();
+        }
       });
     });
     // Mark initial active
     var initial = dropdown.querySelector('li[data-basemap="positron"]');
-    if(initial) initial.classList.add('active-basemap');
+    if(initial) markActive(initial);
   })();
   // === End Custom Basemap Dropdown Switcher Logic ===
 

@@ -32,6 +32,7 @@
   function setActiveTriggerButton(id) {
     document.querySelectorAll('.layer-popup-trigger').forEach(function (btn) {
       btn.classList.toggle('active', btn.dataset.panel === id);
+      btn.setAttribute('aria-expanded', String(btn.dataset.panel === id)); // for screen readers: is this button's panel open
     });
   }
 

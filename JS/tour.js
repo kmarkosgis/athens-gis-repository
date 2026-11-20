@@ -37,9 +37,13 @@
     },
     {
       title: 'Search for a layer',
-      text: 'Type a word in the search box at the bottom of the map, such as "metro" or "parks", and pick a result. The layer is switched on and the map moves to it.',
+      // The box is at the bottom of the map on desktop and at the top at 900px and below (style.css).
+      get text() {
+        var where = window.matchMedia && window.matchMedia('(max-width: 900px)').matches ? 'top' : 'bottom';
+        return 'Type a word in the search box at the ' + where + ' of the map, such as "metro" or "parks", and pick a result. The layer is switched on and the map moves to it.';
+      },
       target: function () { return q('#datasetSearchWidget'); },
-      // The results list opens upward from the box; keep the card clear of it.
+      // The results list opens from the box (upward on desktop, downward at 900px and below); keep the card clear of it.
       also: function () { var r = q('#datasetSearchResults'); return r && r.classList.contains('open') ? r : null; },
       enter: function () {
         // The box also has a second mode; make sure it is searching.

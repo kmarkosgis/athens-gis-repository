@@ -265,7 +265,8 @@
   }
 
   function getDoiUrl(meta) {
-    if (meta.identifiers.doi) return "doi.org/" + meta.identifiers.doi;
+    // Full https form: what APA 7, Chicago and the DOI Foundation ask for, and a working link when pasted
+    if (meta.identifiers.doi) return "https://doi.org/" + meta.identifiers.doi;
     return meta.identifiers.url || "";
   }
 
@@ -483,10 +484,16 @@
 
     function openPopup() {
       popup.hidden = false;
+      openBtn.setAttribute("aria-expanded", "true");
     }
 
     function closePopup() {
+      // Closing with the keyboard inside the window (Esc, the close button) would leave
+      // focus on a hidden control; hand it back to CITE.
+      var hadFocus = popup.contains(document.activeElement);
       popup.hidden = true;
+      openBtn.setAttribute("aria-expanded", "false");
+      if (hadFocus) openBtn.focus();
     }
 
     openBtn.addEventListener("click", function (event) {
@@ -499,9 +506,14 @@
       closePopup();
     });
 
+    function styleName() {
+      var opt = styleSelect.options[styleSelect.selectedIndex];
+      return opt ? opt.text : styleSelect.value.toUpperCase();
+    }
+
     styleSelect.addEventListener("change", function () {
       renderCitation();
-      setStatus("Citation style updated.");
+      setStatus("Showing the " + styleName() + " citation.");
     });
 
     copyBtn.addEventListener("click", function () {
@@ -509,7 +521,7 @@
       var text = textEl.value;
       copyText(text)
         .then(function () {
-          setStatus("Citation copied (" + styleSelect.value.toUpperCase() + ").");
+          setStatus("Copied the " + styleName() + " citation.");
         })
         .catch(function () {
           setStatus("Unable to copy citation. Select the text and copy manually.", true);
@@ -539,17 +551,10 @@
       .then(function (cffText) {
         parsedMeta = parseCff(cffText);
         renderCitation();
-        var loaded = [];
-        if (parsedMeta.year) loaded.push("year " + parsedMeta.year);
-        if (parsedMeta.license) loaded.push("license " + parsedMeta.license);
-        if (loaded.length > 0) {
-          setStatus("Select a style and use Copy. Loaded " + loaded.join(" and ") + ".");
-        } else {
-          setStatus("Select a style and use Copy.");
-        }
+        setStatus("Choose a citation style, then copy it.");
       })
       .catch(function () {
-        setStatus("Could not load CITATION.cff.", true);
+        setStatus("Could not load the citation. Reload the page to try again.", true);
         textEl.value = "";
       });
   });

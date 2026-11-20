@@ -266,12 +266,16 @@ function fetchAssetWithFallback(kind, relativePath, parser, signal){
   if(signal) opts.signal = signal;
   return fetch(url, opts).then(function(resp){
     if(!resp.ok){
-      throw new Error(resp.status + ' ' + resp.statusText + ' @ ' + url);
+      var httpErr = new Error(resp.status + ' ' + resp.statusText + ' @ ' + url);
+      httpErr.status = resp.status; // lets a caller tell "no such file" (404) from a failed request
+      throw httpErr;
     }
     return parser(resp);
   }).catch(function(err){
     if(err && err.name === 'AbortError') throw err;
-    throw new Error('Failed to load "' + relativePath + '" from ' + ((err && err.message) ? err.message : String(err)));
+    var wrapped = new Error('Failed to load "' + relativePath + '" from ' + ((err && err.message) ? err.message : String(err)));
+    if(err && err.status) wrapped.status = err.status;
+    throw wrapped;
   });
 }
 
@@ -281,6 +285,72 @@ function loadLayerData(relativePath, signal){
 
 function loadLayerInfo(relativePath, signal){
   return fetchAssetWithFallback('info', relativePath, function(resp){ return resp.text(); }, signal);
+}
+
+// What the Layer information box says when a layer's .txt did not arrive. A request that
+// got no answer at all (offline, a dropped connection) or a server error (5xx) is a failed
+// load, and saying "no info" there would be wrong. Any other answer (404, 403...) is taken
+// as "this layer has no info file", as before.
+function layerInfoFailureHtml(err){
+  var status = err && err.status;
+  if(!status || status >= 500) return '<em>Could not load this layer’s information. To retry, switch the layer off and on again.</em>';
+  return '<em>No extra info available for this layer.</em>';
+}
+
+// Opens the category / subcategory a row sits in if either is folded, and brings the row
+// into view. Same "is it open" test as locateLayer(): the header's .open class.
+function revealLayerRow(row){
+  // Narrow layout: the list is a sheet behind the menu button (JS/ui.js); open it.
+  if(typeof AthensGIS.showLayersSheet === 'function') AthensGIS.showLayersSheet();
+  var opened = false;
+  ['categoryId', 'subcategoryId'].forEach(function(key){
+    var content = row.dataset[key] ? document.getElementById(row.dataset[key]) : null;
+    var header = content && content.previousElementSibling;
+    if(header && !header.classList.contains('open')){ header.click(); opened = true; }
+  });
+  setTimeout(function(){ row.scrollIntoView({ block: 'nearest' }); }, opened ? 420 : 0);
+}
+
+// A layer whose DATA did not arrive. The row switches itself off through its own change
+// handler (so the legend, info box, draw order and count badges are cleaned up exactly as
+// for a manual switch-off) and then says what happened, with a Retry, in the row itself.
+// The switch never stays on over an empty map, and the message cannot be overwritten by
+// the info file, which is loaded separately.
+function clearLayerLoadError(row){
+  var el = row.querySelector('.layer-load-error');
+  if(el) el.remove();
+  row.classList.remove('load-failed');
+}
+function showLayerLoadError(row, cb){
+  if(cb.checked){
+    cb.checked = false;
+    cb.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  clearLayerLoadError(row);
+  var box = document.createElement('div');
+  box.className = 'layer-load-error';
+  box.setAttribute('role', 'alert');
+  var msg = document.createElement('span');
+  msg.textContent = (navigator.onLine === false)
+    ? 'You appear to be offline. This layer could not be loaded.'
+    : 'This layer could not be loaded.';
+  var retry = document.createElement('button');
+  retry.type = 'button';
+  retry.className = 'layer-load-retry';
+  retry.textContent = 'Retry';
+  retry.setAttribute('aria-label', 'Retry loading ' + (cb.dataset.layername || 'this layer'));
+  retry.addEventListener('click', function(e){
+    e.stopPropagation(); // the row's own click handler would toggle the layer a second time
+    cb.click();          // switching on clears this message (see the change handlers)
+    cb.focus();          // the button is gone; keep keyboard focus on the row's switch
+  });
+  box.appendChild(msg);
+  box.appendChild(retry);
+  row.appendChild(box);
+  row.classList.add('load-failed');
+  // The group may have been folded while the layer was loading; a note inside a folded
+  // group would be as silent as no note.
+  revealLayerRow(row);
 }
 
 // Works out a layer's metadata score (JS/metadata-score.js, the same one the About page shows) and
@@ -604,83 +674,45 @@ function escHtml(s){
   });
 }
 
-function buildPropertyTable(feature){
+// The name and value shown for each field come from AthensGIS.attributeName (JS/attribute-names.js:
+// the dashboard's list, or the built-in one). layerKey is the layer's data file (see layerDataKeyByName),
+// so a layer can have names of its own; without it only the main list applies.
+function buildPropertyTable(feature, layerKey){
   if(!feature || !feature.properties) return '';
   var rows='';
-  var keyAliases = {
-    'Κωδι_1': 'Code',
-    'Επιπέ': 'Education Level',
-    'Τύπος': 'Type',
-    'Ονομα': 'Name (GR)',
-    'Νομός': 'Regional Unit (GR)',
-    'Δήμος': 'Municipality (GR)'
-  };
   for(var key in feature.properties){
     if(!Object.prototype.hasOwnProperty.call(feature.properties,key)) continue;
     // Internal tag added to point features so the shared cluster pass can find its way
     // back to the owning layer (see createLayerFromGeoJSON) - not a real attribute.
     if(key === '__sourceLayer') continue;
-    var v = feature.properties[key];
-    var k = String(key || '').toLowerCase();
-    var d = key;
-    if(Object.prototype.hasOwnProperty.call(keyAliases, key)) d = keyAliases[key];
-    else if(Object.prototype.hasOwnProperty.call(keyAliases, k)) d = keyAliases[k];
-
-    if(k==='shapeleng_'){ v=Number(v).toFixed(2); d='Shape Length (km)'; }
-    else if(k==='shapearea'){ v=Number(v).toFixed(4); d='Shape Area (km²)'; }
-    else if(['shapeleng_m','shapelengm','length','shape_leng','distance_meters'].includes(k)){ v=Number(v).toFixed(2); d='Shape Length (m)'; }
-    else if(['shapearea_m','shapeaream'].includes(k)){ v=Number(v).toFixed(2); d='Shape Area (m²)'; }
-    else if(['name','name_el','name_place','gname','uses_gr','descr'].includes(k)){ d='Name (GR)'; }
-    else if(['ename','name_pl_en','name_en','uses_en','name:en','class_2021','descr_eng'].includes(k)){ d='Name (ENG)'; }
-    else if(k==='address') d='Address';
-    else if(k==='bridge') d='Bridge';
-    else if(k==='tunnel') d='Tunnel';
-    else if(k==='ref'|| k==='line_id') d='Route';
-    else if(k==='operator') d='Operator';
-    else if(k==='owner') d='Owner';
-    else if(k==='charge') d='Toll Charge';
-    else if(k==='int_ref') d='International Route';
-    else if(k==='geitonia' || k==='city') d='Neighborhood (GR)';
-    else if(k==='geiton_en') d='Neighborhood (ENG)';
-    else if(k==='dk'|| k==='attica_municipal_unit') d='Municipal Community (GR)';
-    else if(k==='dk_en') d='Municipal Community (ENG)';
-    else if(k==='sectionnam'|| k==='attica_section') d='Section Name';
-    else if(k==='postal_code') d='Postal Code';
-    else if(k==='country') d='Country';
-    else if(k==='metroline') d='Metro Line';
-    else if(k==='highway' || k=='historic') d='Type';
-    else if(k==='oneway') d='One-Way Road';
-    else if(k==='surface') d='Surface Type';
-    else if(k==='fid' || k==='objectid'|| k==='full_id') d='Feature ID';
-    else if(k==='code_2021' || k==='code_18') d='Reference Code';
-    else if(k==='popul2011') d='Population';
-    else if(k==='wt') d='Wind Turbine';
-    else if(k==='power_anem') d='Power (MW)';
-    else if(k==='max_power') d='Max Power (MW)';
-    else if(k==='diametros_') d='Diameter (m)';
-    else if(k==='ypsos_pylo') d='Height (m)';
-    else if(k==='evse_count') d='EVSE Count';
-    else if(k==='connector_count') d='Connector Count';
-    else if(k==='max_power_kw') d='Max Power (KW)';
-    else if(k==='initialdat') d='Initial Date';
-    else if(k==='finaldate') d='Final Date';
-    else if(k==='stop_id') d='Stop ID';
-    else if(k==='route_ref') d='Bus Route';
-    else if(k==='rwb_id') d='River/Stream ID';
-    else if(k==='basinid_fd') d='Basin ID';
-    else if(k==='mag') {v=Number(v).toFixed(1); d='Magnitude';}
-    else if(k==='place') d='Place';
-    else if(k==='amenity' || k==='shop') d='Type';
-    else if(k==='leisure') d='Public space type';
-    else if(k==='period') d='Return Period (years)';
-    else if(k==='twentyfourseven') d='24/7 Access';
-    else if(k==='desc' || k==='species' || k=='genus'|| k==='family' || k=='taxon') d='Species';
-    else if(k==='leaf_type' || k==='leaf_cycle') d='Leaf type';
-    // Escaped: values come from the datasets (many OSM-derived, i.e. publicly editable)
-    // and this table is injected with innerHTML.
-    rows += '<tr><th>'+escHtml(d)+'</th><td>'+escHtml(v)+'</td></tr>';
+    // A cached older page may not have JS/attribute-names.js: show the key and value as they are.
+    var shown = (typeof AthensGIS.attributeName === 'function')
+      ? AthensGIS.attributeName(layerKey || null, key, feature.properties[key])
+      : { label: key, value: feature.properties[key] };
+    // Escaped: values come from the datasets (many OSM-derived, i.e. publicly editable), labels
+    // from the dashboard's file, and this table is injected with innerHTML.
+    rows += '<tr><th>'+escHtml(shown.label)+'</th><td>'+escHtml(shown.value)+'</td></tr>';
   }
   return '<table class="feature-properties-table">'+rows+'</table>';
+}
+
+// The key a layer's own attribute names are filed under: its data file (the original .geojson of a
+// tiled layer, else its file), found by the name shown in the layer panel. null when no layer has
+// that name. A category holds _items and one list per subcategory (or is itself a list).
+function layerDataKeyByName(layerName){
+  var found = null;
+  function scan(list){
+    if(!Array.isArray(list)) return;
+    list.forEach(function(item){
+      if(found === null && item && item.name === layerName) found = item.geojson || item.file || null;
+    });
+  }
+  Object.keys(layerCategories).forEach(function(category){
+    var data = layerCategories[category];
+    if(Array.isArray(data)) scan(data);
+    else if(data && typeof data === 'object') Object.keys(data).forEach(function(group){ scan(data[group]); });
+  });
+  return found;
 }
 var _layerInfoBox = null;
 var _layerInfoBoxListenerAttached = false;
@@ -766,7 +798,7 @@ function ensureInfoBoxUpdate(opts){
   // flex-wrap + row-gap:0: the "Metadata score" line below is a full-width row of its own under the title row.
   var tabsHtml = '<div id="tabsContainer" style="position:sticky; top:55px; display:flex; flex-wrap:wrap; gap:8px; row-gap:0; align-items:center; padding:8px 10px; border-bottom:1px solid #ccc; background-color:white;">';
   if(canPrev){
-    tabsHtml += '<button id="prevTabBtn" style="background:rgba(55, 65, 81, 0.85); color:white; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:14px; flex:0 0 auto;">❮</button>';
+    tabsHtml += '<button id="prevTabBtn" type="button" aria-label="Previous layer" title="Previous layer" style="background:rgba(55, 65, 81, 0.85); color:white; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:14px; flex:0 0 auto;">❮</button>';
   }
   if(layerNames.length > 1){
     tabsHtml += '<div class="layer-titles-viewport">';
@@ -779,7 +811,7 @@ function ensureInfoBoxUpdate(opts){
     tabsHtml += '<div style="flex:1; text-align:center; font-weight:500; font-size:14px; color:#222;">' + (layerNames[0] || '') + '</div>';
   }
   if(canNext){
-    tabsHtml += '<button id="nextTabBtn" style="background:rgba(55, 65, 81, 0.85); color:white; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:14px; flex:0 0 auto;">❯</button>';
+    tabsHtml += '<button id="nextTabBtn" type="button" aria-label="Next layer" title="Next layer" style="background:rgba(55, 65, 81, 0.85); color:white; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:14px; flex:0 0 auto;">❯</button>';
   }
   // The selected layer's metadata score, coloured by class (see .layer-info-score in style.css). It links to
   // the About page's "Metadata score" section, in a new tab like the header's "about" button so the map stays put.
@@ -1352,7 +1384,7 @@ function geojsonOptions(layerName, legendConfig){
         // Built here, on click, rather than once per feature in onEachFeature: that ran
         // for every feature on every load and every pan/zoom re-render, and left one
         // HTML string per feature alive in this closure for as long as it was on the map.
-        var html = (layerName !== 'Terrain') ? buildPropertyTable(feature) : null;
+        var html = (layerName !== 'Terrain') ? buildPropertyTable(feature, layerDataKeyByName(layerName)) : null;
         if(html && infoContent){
           infoContent.innerHTML = html;
           if(infoParent) infoParent.style.display = 'block';
@@ -1709,6 +1741,8 @@ function renderLayerControl(){
         cb.checked = false;
         cb.dispatchEvent(new Event('change', { bubbles: true }));
       });
+      // "Could not be loaded" notes belong to layers that are already off; clear them too.
+      controlDiv.querySelectorAll('.layer-item.load-failed').forEach(clearLayerLoadError);
       updateCloseAllLayersButtonState();
     });
     // Any layer checkbox toggling (manual or programmatic, e.g. dataset-search.js
@@ -1802,7 +1836,8 @@ function renderLayerControl(){
         var topEdge = panelBox.top + (pinned ? pinned.offsetHeight : 0);
         var rowBox = row.getBoundingClientRect();
         var target = topEdge + Math.max(0, (panelBox.bottom - topEdge - rowBox.height) / 2);
-        controlDiv.scrollBy({ top: rowBox.top - target, behavior: 'smooth' });
+        var calm = typeof AthensGIS.prefersReducedMotion === 'function' && AthensGIS.prefersReducedMotion();
+        controlDiv.scrollBy({ top: rowBox.top - target, behavior: calm ? 'auto' : 'smooth' });
       }
       var wait = (openedCat || openedSub) ? 420 : 0;
       setTimeout(centreRow, wait);
@@ -2021,6 +2056,7 @@ function renderLayerControl(){
       row.title = this.checked ? 'Deactivate layer' : 'Activate layer';
       if(this.checked){
         row.classList.add('selected');
+        clearLayerLoadError(row);
         var stopTerrainSpinner = startLoadingSpinner(label);
         row._stopSpinner = stopTerrainSpinner;
         var _terrainAbortCtrl = new AbortController();
@@ -2069,12 +2105,11 @@ function renderLayerControl(){
             if(err && err.name==='AbortError') return;
             if(!cb.checked || row._abortController !== _terrainAbortCtrl) return;
             console.error('Failed to load Terrain layer data:', err);
-            AthensGIS.activeLayerInfos[layerName]='<em>Could not load this layer’s data. To retry, switch it off and on again.</em>';
-            ensureInfoBoxUpdate();
+            showLayerLoadError(row, cb);
           });
         // Terrain is drawn outside layerCategories, so the attribute report has no entry for it (its "Empty attribute fields" factor is left out).
         loadLayerInfo('Environment/Relief.txt', _terrainSignal).then(function(t){ return recordMetadataScore({ name: layerName, file: TERRAIN_PMTILES, type: 'vector' }, t); }).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); })
-          .catch(function(err){ if(err && err.name==='AbortError') return; AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
+          .catch(function(err){ if(err && err.name==='AbortError') return; if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=layerInfoFailureHtml(err); ensureInfoBoxUpdate(); });
         if(AthensGIS.activeLayerOrder.indexOf(layerName)===-1) AthensGIS.activeLayerOrder.push(layerName);
         AthensGIS.layerKeyByName[layerName]=TERRAIN_PMTILES;
         if(typeof AthensGIS.refreshOpacityPopup==='function') AthensGIS.refreshOpacityPopup();
@@ -2153,6 +2188,7 @@ function renderLayerControl(){
       row.title = this.checked ? 'Deactivate layer' : 'Activate layer';
       if(this.checked){
         row.classList.add('selected');
+        clearLayerLoadError(row);
         var stopHsSpinner = startLoadingSpinner(label);
         row._stopSpinner = stopHsSpinner;
         var _hsAbortCtrl = new AbortController();
@@ -2182,11 +2218,10 @@ function renderLayerControl(){
             if(err && err.name==='AbortError') return;
             if(!cb.checked || row._abortController !== _hsAbortCtrl) return;
             console.error('Failed to load Shaded Relief layer data:', err);
-            AthensGIS.activeLayerInfos[layerName]='<em>Could not load this layer’s data. To retry, switch it off and on again.</em>';
-            ensureInfoBoxUpdate();
+            showLayerLoadError(row, cb);
           });
         loadLayerInfo('Environment/Hillshade.txt', _hsSignal).then(function(t){ return recordMetadataScore({ name: layerName, file: SHADED_RELIEF_PMTILES, type: 'raster' }, t); }).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); })
-          .catch(function(err){ if(err && err.name==='AbortError') return; AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
+          .catch(function(err){ if(err && err.name==='AbortError') return; if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=layerInfoFailureHtml(err); ensureInfoBoxUpdate(); });
         if(AthensGIS.activeLayerOrder.indexOf(layerName)===-1) AthensGIS.activeLayerOrder.push(layerName);
         AthensGIS.layerKeyByName[layerName]=SHADED_RELIEF_PMTILES;
         if(typeof AthensGIS.refreshOpacityPopup==='function') AthensGIS.refreshOpacityPopup();
@@ -2545,6 +2580,7 @@ function renderLayerControl(){
       if(this.checked){
         // Visually mark row as selected so .layer-item.selected CSS applies
         row.classList.add('selected');
+        clearLayerLoadError(row);
         if(dEl) dEl.style.display='inline-block';
         if(colorBtn) updateColorButtonPreview(colorBtn, layerName);
         var stopRowSpinner = startLoadingSpinner(label);
@@ -2573,8 +2609,8 @@ function renderLayerControl(){
             AthensGIS.geojsonLayers[file]=rasterLyr;
             AthensGIS.rasterLayers=AthensGIS.rasterLayers || {};
             AthensGIS.rasterLayers[file]={ layer: rasterLyr, georaster: georaster, legendConfig: lcRaster, layerName: layerName, valueLabel: (lcRaster && lcRaster.title) || layerName };
-          }).catch(function(err){ stopRowSpinner(); if(err && err.name==='AbortError') return; console.error('Failed to load raster layer data for "' + layerName + '":', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load this layer’s data. To retry, switch it off and on again.</em>'; ensureInfoBoxUpdate(); });
-          var txtRaster=file.replace(/\.[^/.]+$/, '')+'.txt'; loadLayerInfo(txtRaster, _signal).then(function(t){ return recordMetadataScore(info, t); }).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(err){ if(err && err.name==='AbortError') return; AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
+          }).catch(function(err){ stopRowSpinner(); if(err && err.name==='AbortError') return; if(!cb.checked || row._abortController !== _abortCtrl) return; console.error('Failed to load raster layer data for "' + layerName + '":', err); showLayerLoadError(row, cb); });
+          var txtRaster=file.replace(/\.[^/.]+$/, '')+'.txt'; loadLayerInfo(txtRaster, _signal).then(function(t){ return recordMetadataScore(info, t); }).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(err){ if(err && err.name==='AbortError') return; if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=layerInfoFailureHtml(err); ensureInfoBoxUpdate(); });
         } else if(file && isPmtilesFile(file)){
           // Tiled rendering: fetch only the tiles covering the current viewport at
           // the current zoom (JS/pmtiles-loader.js), decode them to a GeoJSON
@@ -2626,8 +2662,8 @@ function renderLayerControl(){
             // nothing would refresh it until the next pan - leaving features missing.
             if(getMap().getZoom() !== _reqZoom3 || !_reqBounds3.equals(getMap().getBounds())) lyr3.updateViewportData();
             if(window.LayerFilter) window.LayerFilter.onLayerLoaded(layerName, file, null, geojsonPath3);
-          }).catch(function(err){ stopRowSpinner(); if(!cb.checked || row._abortController !== _abortCtrl) return; console.error('Failed to load tiled layer data for "' + layerName + '":', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load this layer’s data. To retry, switch it off and on again.</em>'; ensureInfoBoxUpdate(); });
-          var txt3=file.replace(/\.[^/.]+$/, '')+'.txt'; loadLayerInfo(txt3, _signal).then(function(t){ return recordMetadataScore(info, t); }).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(err){ if(err && err.name==='AbortError') return; AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
+          }).catch(function(err){ stopRowSpinner(); if(!cb.checked || row._abortController !== _abortCtrl) return; console.error('Failed to load tiled layer data for "' + layerName + '":', err); showLayerLoadError(row, cb); });
+          var txt3=file.replace(/\.[^/.]+$/, '')+'.txt'; loadLayerInfo(txt3, _signal).then(function(t){ return recordMetadataScore(info, t); }).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(err){ if(err && err.name==='AbortError') return; if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=layerInfoFailureHtml(err); ensureInfoBoxUpdate(); });
         } else if(file){
           loadLayerData(file, _signal).then(function(data){
             stopRowSpinner();
@@ -2642,8 +2678,8 @@ function renderLayerControl(){
             AthensGIS._viewportLayers[file] = lyr2;
             setupViewportUpdateHandler();
             if(window.LayerFilter) window.LayerFilter.onLayerLoaded(layerName, file, data);
-          }).catch(function(err){ stopRowSpinner(); if(err && err.name==='AbortError') return; console.error('Failed to load layer data for "' + layerName + '":', err); AthensGIS.activeLayerInfos[layerName]='<em>Could not load this layer’s data. To retry, switch it off and on again.</em>'; ensureInfoBoxUpdate(); });
-          var txt=file.replace(/\.[^/.]+$/, '')+'.txt'; loadLayerInfo(txt, _signal).then(function(t){ return recordMetadataScore(info, t); }).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(err){ if(err && err.name==='AbortError') return; AthensGIS.activeLayerInfos[layerName]='<em>No extra info available for this layer.</em>'; ensureInfoBoxUpdate(); });
+          }).catch(function(err){ stopRowSpinner(); if(err && err.name==='AbortError') return; if(!cb.checked || row._abortController !== _abortCtrl) return; console.error('Failed to load layer data for "' + layerName + '":', err); showLayerLoadError(row, cb); });
+          var txt=file.replace(/\.[^/.]+$/, '')+'.txt'; loadLayerInfo(txt, _signal).then(function(t){ return recordMetadataScore(info, t); }).then(function(t){ if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=t; ensureInfoBoxUpdate(); }).catch(function(err){ if(err && err.name==='AbortError') return; if(!cb.checked) return; AthensGIS.activeLayerInfos[layerName]=layerInfoFailureHtml(err); ensureInfoBoxUpdate(); });
         }
         if(AthensGIS.activeLayerOrder.indexOf(layerName)===-1) AthensGIS.activeLayerOrder.push(layerName);
         AthensGIS.layerKeyByName[layerName]=file||layerName;
@@ -2728,6 +2764,8 @@ function renderLayerControl(){
     
 
   var title = document.createElement('h4');
+    // Read as level 3, under the panel's "LAYERS" title (level 2); the tag stays h4 for its styles.
+    title.setAttribute('aria-level', '3');
     title.textContent = cat;
     // Balanced margins so vertical centering of the arrow looks correct
     title.style.fontWeight = '500';
@@ -2837,6 +2875,7 @@ function renderLayerControl(){
 
 
       var subTitle = document.createElement('h5');
+      subTitle.setAttribute('aria-level', '4'); // one level under its category (see the category title)
       subTitle.textContent = subcat;
       subTitle.style.fontSize = '13px';
       subTitle.style.fontWeight = '400';

@@ -209,7 +209,19 @@
         }
       });
       return features;
-    }).catch(function () { return []; });
+    }).catch(function () {
+      // Still failed after the retries. One missing tile is drawn as empty, as before, but
+      // it is marked so getFeaturesForBounds() can tell "every request failed" (offline,
+      // server down) from "no features here".
+      var failed = [];
+      failed._fetchFailed = true;
+      return failed;
+    });
+  }
+
+  function allTilesFailed(tileFeatureLists) {
+    return tileFeatureLists.length > 0 &&
+      tileFeatureLists.every(function (list) { return list && list._fetchFailed; });
   }
 
   // Only Point/MultiPoint features get deduped by id: a point sitting exactly on a
@@ -310,6 +322,9 @@
       return Promise.all(tiles.map(function (t) { return decodeTile(url, t.z, t.x, t.y); }));
     }).then(function (tileFeatureLists) {
       if (_requestSeq[url] !== seq) return null; // a newer request has since started
+      // Every tile request failed: reject instead of returning an empty collection, so a
+      // first load reports the failure and a pan/zoom refresh keeps what is already drawn.
+      if (allTilesFailed(tileFeatureLists)) throw new Error('All tile requests failed for ' + url);
       return { type: 'FeatureCollection', features: mergeTileLists(tileFeatureLists) };
     });
   }

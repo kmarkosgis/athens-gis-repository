@@ -12,7 +12,19 @@
 
   function strip() { return document.querySelector('#footer .footer-credits'); }
 
+  // On the main map the phone footer is taller than the old 20px bar (11px text, 24px
+  // links, and it may wrap on a small phone). --ftr-grow is that extra height; the
+  // controls anchored above the footer add it to their `bottom` (style.css). 0 on desktop,
+  // and on the 3D Viewer, whose footer keeps the compact bar.
+  var BASE_FOOTER_HEIGHT = 20;
+  function setFooterGrow() {
+    var footer = document.getElementById('footer');
+    var grow = (footer && mq.matches) ? Math.max(0, footer.offsetHeight - BASE_FOOTER_HEIGHT) : 0;
+    document.documentElement.style.setProperty('--ftr-grow', grow + 'px');
+  }
+
   function fit() {
+    setFooterGrow();
     var el = strip();
     if (!el) return;
     if (!mq.matches) {
@@ -45,6 +57,10 @@
   window.addEventListener('orientationchange', function () { setTimeout(schedule, 150); });
   if (mq.addEventListener) mq.addEventListener('change', schedule);
   else if (mq.addListener) mq.addListener(schedule); // Safari < 14
+
+  // The footer's height also changes when its text rewraps (a late font, a zoom change).
+  var footerEl = document.getElementById('footer');
+  if (footerEl && window.ResizeObserver) new ResizeObserver(schedule).observe(footerEl);
 
   var attr = document.getElementById('map-attribution');
   if (attr && window.MutationObserver) {

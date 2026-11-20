@@ -20,7 +20,29 @@
 		return document.getElementById('measureMsgModal');
 	}
 
+	// The two measure windows are modal (index.html: role="dialog" aria-modal="true") with
+	// one control each, OK. Opening one moves keyboard focus to OK and keeps Tab there;
+	// closing it puts focus back where it was (the Measure button, for the first one).
+	var focusBeforeModal = null;
+	function enterModal(okId){
+		focusBeforeModal = document.activeElement;
+		var ok = document.getElementById(okId);
+		if(ok) ok.focus();
+	}
+	function leaveModal(){
+		var back = focusBeforeModal;
+		focusBeforeModal = null;
+		if(back && back !== document.body && document.contains(back) && typeof back.focus === 'function') back.focus();
+	}
+	function keepTabOn(ev, okId){
+		if(ev.key !== 'Tab') return;
+		ev.preventDefault();
+		var ok = document.getElementById(okId);
+		if(ok) ok.focus();
+	}
+
 	function handlePromptEsc(ev){
+		keepTabOn(ev, 'measureMsgOk');
 		if(ev.key === 'Escape' || ev.key === 'Esc'){
 			if(ev.preventDefault) ev.preventDefault();
 			hideMeasurePrompt();
@@ -35,13 +57,16 @@
 		measurePending = true;
 		el.style.display = 'flex';
 		window.addEventListener('keydown', handlePromptEsc);
+		enterModal('measureMsgOk');
 	}
 
 	function hideMeasurePrompt(){
 		var el = getMeasureModalEl();
+		var wasOpen = !!el && el.style.display === 'flex';
 		if(el) el.style.display = 'none';
 		measurePending = false;
 		window.removeEventListener('keydown', handlePromptEsc);
+		if(wasOpen) leaveModal();
 	}
 
 	function getMeasureResultModalEl(){
@@ -49,6 +74,7 @@
 	}
 
 	function handleResultEsc(ev){
+		keepTabOn(ev, 'measureResultOk');
 		if(ev.key === 'Escape' || ev.key === 'Esc'){
 			if(ev.preventDefault) ev.preventDefault();
 			hideMeasureResult();
@@ -65,6 +91,7 @@
 		if(textEl) textEl.textContent = 'Distance: ' + distanceKm.toFixed(2) + ' km';
 		el.style.display = 'flex';
 		window.addEventListener('keydown', handleResultEsc);
+		enterModal('measureResultOk');
 	}
 
 	// Dismissing the result (OK, overlay click, or ESC) is what clears the
@@ -72,8 +99,10 @@
 	// the modal instead of the map.
 	function hideMeasureResult(){
 		var el = getMeasureResultModalEl();
+		var wasOpen = !!el && el.style.display === 'flex';
 		if(el) el.style.display = 'none';
 		window.removeEventListener('keydown', handleResultEsc);
+		if(wasOpen) leaveModal();
 		clearMeasurementArtifacts();
 	}
 

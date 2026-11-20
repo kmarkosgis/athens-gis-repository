@@ -1268,10 +1268,29 @@
       if(itemDef.title) li.title = itemDef.title;
       if(!li.textContent && itemDef.title) li.setAttribute('aria-label', itemDef.title);
     }
+    // A keyboard-focusable button: Enter / Space choose it, the arrow keys move between sizes.
+    li.setAttribute('role', 'button');
+    li.tabIndex = 0;
+    li.addEventListener('keydown', function(ev){
+      if(ev.key === 'Enter' || ev.key === ' '){
+        ev.preventDefault();
+        li.click();
+      } else if(ev.key === 'ArrowDown' || ev.key === 'ArrowUp'){
+        ev.preventDefault();
+        var items = Array.prototype.slice.call(sizeMenu.children);
+        var i = items.indexOf(li);
+        items[(i + (ev.key === 'ArrowDown' ? 1 : items.length - 1)) % items.length].focus();
+      }
+    });
 
     sizeMenu.appendChild(li);
     return li;
   }
+  sizeMenu.setAttribute('role', 'group');
+  sizeMenu.setAttribute('aria-label', 'Export size');
+  btn.setAttribute('aria-haspopup', 'true');
+  btn.setAttribute('aria-expanded', 'false');
+  btn.setAttribute('aria-controls', 'exportSizeMenu');
 
   // Populate menu from expected sizeModes. Use icons drawn at the export proportions (5:4 / 4:5).
   var modes = [
@@ -1351,12 +1370,17 @@
     sizeMenu.offsetHeight;
     sizeMenu.style.opacity = '1';
     sizeMenu.style.transform = 'translateY(0)';
+    btn.setAttribute('aria-expanded', 'true');
   }
 
   // Hide menu with transition; set display:none after transition completes
   function hideMenu(){
+    // The menu lives at the end of <body>, far from the button in the Tab order: if the
+    // keyboard is inside it, hand focus back to the button before it disappears.
+    if(sizeMenu.contains(document.activeElement)) btn.focus();
     sizeMenu.style.opacity = '0';
     sizeMenu.style.transform = 'translateY(6px)';
+    btn.setAttribute('aria-expanded', 'false');
   }
 
   // After hide transition, remove from layout
@@ -1373,6 +1397,8 @@
       hideMenu();
     } else {
       showMenu();
+      // Opened from the keyboard (a click event with no pointer has detail 0): move into the menu.
+      if(e.detail === 0 && sizeMenu.firstElementChild) sizeMenu.firstElementChild.focus();
     }
   });
 

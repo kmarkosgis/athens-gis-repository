@@ -27,6 +27,10 @@
   var modeToggleBtn = null;
   var MODE_STORAGE_KEY = 'datasetSearchMode';
 
+  // Starts (once) the loading of every layer's description and resolves when it is done.
+  // Set in init(); see startMetadataLoad() there.
+  var ensureMetadata = function () { return Promise.resolve(); };
+
   function init() {
     input = document.getElementById('datasetSearchInput');
     resultsEl = document.getElementById('datasetSearchResults');
@@ -39,12 +43,35 @@
     manifest.forEach(enrichWithSearchableValues);
     rebuildFuseIndex();
 
-    // .txt metadata is small and fetched in parallel, but never blocks search -
-    // name/category/tag matching already works from the manifest built above.
-    loadMetadataForEntries(manifest).then(function () {
-      manifest.forEach(enrichWithSearchableValues);
-      rebuildFuseIndex();
-    });
+    // .txt metadata never blocks search - name/category/tag matching already works from
+    // the manifest built above. It is one request per layer (about 90), so it is kept out
+    // of the page's first moments, when the basemap, the scripts and any layer's tiles are
+    // competing for the same connections: it starts once the page has loaded and the
+    // browser is idle, or at once if someone reaches for the search box first.
+    var metadataPromise = null;
+    function startMetadataLoad() {
+      if (metadataPromise) return metadataPromise;
+      metadataPromise = loadMetadataForEntries(manifest).then(function () {
+        manifest.forEach(enrichWithSearchableValues);
+        rebuildFuseIndex();
+        // Someone already typing gets the fuller results without typing again.
+        if (mode !== 'athena' && document.activeElement === input && input.value.trim()) runSearch(input.value.trim());
+      });
+      return metadataPromise;
+    }
+    // askAI() sends Athena each layer's description; it waits for them through this.
+    ensureMetadata = startMetadataLoad;
+    function startMetadataLoadWhenIdle() {
+      if (window.requestIdleCallback) window.requestIdleCallback(startMetadataLoad, { timeout: 4000 });
+      else setTimeout(startMetadataLoad, 1500);
+    }
+    if (document.readyState === 'complete') startMetadataLoadWhenIdle();
+    else window.addEventListener('load', startMetadataLoadWhenIdle);
+    var searchWidget = document.getElementById('datasetSearchWidget');
+    if (searchWidget) {
+      searchWidget.addEventListener('pointerdown', startMetadataLoad);
+      searchWidget.addEventListener('focusin', startMetadataLoad);
+    }
 
     // Fields/attributeValues/featureCount/bbox, precomputed offline over each
     // dataset's complete data by tools/build-pmtiles.mjs (data/dataset-manifest.json)
@@ -92,7 +119,8 @@
     input.addEventListener('focus', function () {
       if (input.value.trim() && lastMatches.length) resultsEl.classList.add('open');
     });
-    window.addEventListener('resize', positionResults);
+    // Re-measure, not just re-place: the box changes size between the desktop and narrow layouts.
+    window.addEventListener('resize', autoGrowInput);
     autoGrowInput();
     // Clicking outside the widget no longer auto-closes the results/history box
     // (search suggestions or Athena's reply) - it stays open until explicitly
@@ -148,7 +176,13 @@
     modeToggleBtn.setAttribute('aria-label', modeToggleBtn.title);
     modeToggleBtn.setAttribute('aria-pressed', athena ? 'true' : 'false');
     modeToggleBtn.classList.toggle('athena-mode', athena);
-    if (input) input.placeholder = athena ? 'Ask Athena...' : 'Search database...';
+    if (input) {
+      input.placeholder = athena ? 'Ask Athena...' : 'Search database...';
+      // The accessible name follows the mode; the arrow-key hint only applies to search.
+      input.setAttribute('aria-label', athena ? 'Ask Athena' : 'Search database');
+      if (athena) input.removeAttribute('aria-describedby');
+      else input.setAttribute('aria-describedby', 'datasetSearchHint');
+    }
   }
 
   // ── Growable input box ──────────────────────────────────────────────────────
@@ -156,11 +190,19 @@
   // <textarea> instead. Rather than following scrollHeight continuously (which
   // reflows on every keystroke), height is quantized to whole lines - it grows
   // one line at a time, up to LINE_LIMIT, then scrolls internally past that.
-  var LINE_HEIGHT = 20;   // must match line-height in style.css
-  var V_PADDING = 14;     // must match padding-top + padding-bottom in style.css
+  // The line height and vertical padding are read from style.css each time, because the
+  // box is a different size on desktop (22px lines, 18px padding) and at 900px and below
+  // (20px lines, 14px padding). These two are only the fallback if that cannot be read.
+  var LINE_HEIGHT = 20;
+  var V_PADDING = 14;
   var LINE_LIMIT = 6;
 
   function autoGrowInput() {
+    var cs = window.getComputedStyle ? window.getComputedStyle(input) : null;
+    var lh = cs ? parseFloat(cs.lineHeight) : NaN;
+    var pad = cs ? parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) : NaN;
+    if (lh > 0) LINE_HEIGHT = lh;
+    if (pad >= 0) V_PADDING = pad;
     input.style.height = (V_PADDING + LINE_HEIGHT) + 'px'; // collapse to 1 line to re-measure scrollHeight
     var neededLines = Math.max(1, Math.ceil((input.scrollHeight - V_PADDING) / LINE_HEIGHT));
     var lines = Math.min(neededLines, LINE_LIMIT);
@@ -809,9 +851,23 @@
     scrollResultsToBottom(history);
   }
 
+  // Says what the box is showing to screen readers, through the polite status line in
+  // index.html (#datasetSearchStatus). The results themselves are plain elements chosen
+  // from the text field with the arrow keys, so without this nothing would be read out.
+  var statusEl = document.getElementById('datasetSearchStatus');
+  function announce(text) {
+    if (!statusEl) return;
+    // Clear first, so the same text twice in a row ("No datasets found.") is read again.
+    statusEl.textContent = '';
+    setTimeout(function () { statusEl.textContent = text || ''; }, 50);
+  }
+
   function renderResults(matches, emptyMsg) {
     lastMatches = matches;
     activeIndex = -1;
+    announce(matches.length
+      ? matches.length + (matches.length === 1 ? ' result.' : ' results.')
+      : (emptyMsg || 'No datasets found.'));
     var history = resetResultsBox();
     renderHistoryPreview(history, false);
     if (history.children.length) history.classList.add('has-history');
@@ -894,7 +950,14 @@
 
   function updateActive(items) {
     items.forEach(function (it, i) { it.classList.toggle('active', i === activeIndex); });
-    if (activeIndex >= 0 && items[activeIndex]) items[activeIndex].scrollIntoView({ block: 'nearest' });
+    if (activeIndex >= 0 && items[activeIndex]) {
+      items[activeIndex].scrollIntoView({ block: 'nearest' });
+      var entry = lastMatches[activeIndex] && lastMatches[activeIndex].item;
+      if (entry) {
+        announce(entry.name + ', ' + entry.category + (entry.subcategory ? ', ' + entry.subcategory : '') +
+          ', ' + (activeIndex + 1) + ' of ' + items.length);
+      }
+    }
   }
 
   // ── Selecting a result: load the layer, reveal its row, fly to its extent ─────
@@ -1019,7 +1082,7 @@
 
     var delay = (openedCat || openedSub) ? 380 : 0;
     setTimeout(function () {
-      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      row.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' });
       row.classList.add('dataset-search-highlight');
       setTimeout(function () { row.classList.remove('dataset-search-highlight'); }, 1400);
     }, delay);
@@ -1062,6 +1125,15 @@
     return L.latLngBounds([[minLat, minLng], [maxLat, maxLng]]);
   }
 
+  function reducedMotion() {
+    return !!(window.AthensGIS && typeof AthensGIS.prefersReducedMotion === 'function' && AthensGIS.prefersReducedMotion());
+  }
+  // The flight to a found layer, or a plain jump to it when the visitor asks for less motion.
+  function moveMapTo(map, bounds) {
+    if (reducedMotion()) map.fitBounds(bounds, { maxZoom: 17, animate: false });
+    else map.flyToBounds(bounds, { maxZoom: 17 });
+  }
+
   function flyToDataset(entry) {
     var map = typeof getMap === 'function' ? getMap() : (window.AthensGIS && AthensGIS.map);
     if (!map) return;
@@ -1073,7 +1145,7 @@
     if (entry.type !== 'raster') {
       var fastBounds = boundsFromBBox(entry.bbox);
       if (fastBounds && fastBounds.isValid()) {
-        map.flyToBounds(fastBounds.pad(0.1), { maxZoom: 17 });
+        moveMapTo(map, fastBounds.pad(0.1));
         return;
       }
     }
@@ -1093,14 +1165,14 @@
       }
 
       if (bounds && bounds.isValid()) {
-        map.flyToBounds(bounds.pad(0.1), { maxZoom: 17 });
+        moveMapTo(map, bounds.pad(0.1));
         return;
       }
 
       attempts++;
       if (attempts >= maxAttempts) {
         var fallback = boundsFromBBox(entry.bbox);
-        if (fallback && fallback.isValid()) map.flyToBounds(fallback.pad(0.1), { maxZoom: 17 });
+        if (fallback && fallback.isValid()) moveMapTo(map, fallback.pad(0.1));
         return;
       }
       setTimeout(poll, 150);
@@ -1174,18 +1246,28 @@
     aiInFlight = true;
     renderThinking();
 
-    var context = fuse ? buildAIContext(query) : [];
-    var activeLayers = getActiveLayerEntries().map(function (e) { return e.id; });
+    // The descriptions Athena is sent load a little after the page does (see init()). A
+    // question asked before they are in waits for them, but never more than 3 seconds:
+    // after that it goes with the layer names and categories it has.
+    var metadataOrTimeout = Promise.race([
+      ensureMetadata().catch(function () {}),
+      new Promise(function (resolve) { setTimeout(resolve, 3000); })
+    ]);
 
-    fetch(workerUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: query,
-        manifestContext: context,
-        history: chatHistory.slice(-6),
-        activeLayers: activeLayers
-      })
+    metadataOrTimeout.then(function () {
+      var context = fuse ? buildAIContext(query) : [];
+      var activeLayers = getActiveLayerEntries().map(function (e) { return e.id; });
+
+      return fetch(workerUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: query,
+          manifestContext: context,
+          history: chatHistory.slice(-6),
+          activeLayers: activeLayers
+        })
+      });
     })
       .then(function (r) {
         if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -1303,6 +1385,7 @@
     var label = document.createElement('span');
     label.textContent = 'Thinking...';
     el.appendChild(label);
+    announce('Athena is thinking.');
 
     live.appendChild(el);
     resultsEl.classList.add('open');
@@ -1323,6 +1406,7 @@
     el.textContent = text;
     live.appendChild(el);
     resultsEl.classList.add('open');
+    announce(text);
   }
 
   // Shows the AI's reply plus a Yes/No prompt describing what's about to happen
@@ -1377,6 +1461,7 @@
     q.className = 'dataset-ai-confirm-text';
     q.textContent = parts.join(' ');
     confirmEl.appendChild(q);
+    announce(text + ' ' + q.textContent + ' Answer with the Yes or No button after the text field.');
 
     var btnRow = document.createElement('div');
     btnRow.className = 'dataset-ai-confirm-actions';

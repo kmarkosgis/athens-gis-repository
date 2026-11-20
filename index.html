@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="style.css?v=9f94323c24">
+  <link rel="stylesheet" href="style.css?v=4f5564a059">
   <meta charset="utf-8" />
   <title>Athens GIS Repository</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +13,7 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://athensgis.gr/">
   <link rel="canonical" href="https://athensgis.gr/">
-  <link rel="icon" href="images/6.png" type="image/png">
+  <link rel="icon" href="images/favicon-96.png" type="image/png" sizes="96x96">
   <meta name="google-site-verification" content="fxtrJ6Zsjm3yh8GZ1ltWQILOA6U0zxt1FD2YVYdz1MU" />
 
   <meta property="og:image" content="https://athensgis.gr/images/64.png">
@@ -175,15 +175,16 @@
 
 <!-- Custom Basemap Switcher Button -->
 <div id="custom-basemap-switcher">
-  <button id="basemap-btn" title="Change Basemap">
+  <button id="basemap-btn" title="Change Basemap" aria-haspopup="true" aria-expanded="false" aria-controls="basemap-dropdown">
     <span id="basemap-label">BASEMAPS</span>
   </button>
   <div id="basemap-dropdown">
-    <ul>
-      <li data-basemap="positron">Light Basemap</li>
-      <li data-basemap="maptilerStreetsDark">Dark Basemap</li>
-      <li data-basemap="osm">OpenStreetMap</li>
-      <li data-basemap="esriSat">Satellite</li>
+    <!-- Each option is a keyboard-focusable button (JS/map-init.js adds Enter/Space and the arrow keys). -->
+    <ul role="group" aria-label="Basemap">
+      <li data-basemap="positron" role="button" tabindex="0" aria-pressed="false">Light Basemap</li>
+      <li data-basemap="maptilerStreetsDark" role="button" tabindex="0" aria-pressed="false">Dark Basemap</li>
+      <li data-basemap="osm" role="button" tabindex="0" aria-pressed="false">OpenStreetMap</li>
+      <li data-basemap="esriSat" role="button" tabindex="0" aria-pressed="false">Satellite</li>
     </ul>
   </div>
 </div>
@@ -196,11 +197,23 @@
 
 <div id="map"></div>
 
+<!-- Legend and layer information. On desktop this wrapper does nothing (display: contents)
+     and each panel is positioned on its own, as before. At 900px and below it becomes one
+     sheet, opened by #keyPanelsBtn (style.css, JS/ui.js). -->
+<button type="button" id="keyPanelsBtn" aria-controls="keyPanels" aria-expanded="false">LEGEND &amp; INFO</button>
+<div id="keyPanels">
+<div id="legend-bar" style="display:none;">
+  <div class="box-mask" aria-hidden="true"></div>
+  <h2 id="legend-title">LEGEND</h2>
+  <ul id="legend-list"></ul>
+</div>
+
 <div id="layerInfoBox">
   <div class="box-mask" aria-hidden="true"></div>
   <h2>LAYER INFORMATION</h2>
 
   <div id="layerInfoContent"></div>
+</div>
 </div>
 
 <div id="layerControl" role="region" aria-label="Layers" tabindex="-1">
@@ -216,10 +229,10 @@
 <div id="toolbar">
   <h2>TOOLBAR</h2>
   <div class="toolbar-row2">
-    <button id="opacityBtn" title="Adjust layer opacity">
+    <button id="opacityBtn" title="Adjust layer opacity" aria-label="Adjust layer opacity" aria-haspopup="dialog" aria-controls="layer-popup">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.66 8L12 2.35 6.34 8C4.78 9.56 4 11.64 4 13.64s.78 4.19 2.34 5.75 3.61 2.34 5.66 2.34 4.1-.78 5.66-2.34S20 15.64 20 13.64 19.22 9.56 17.66 8zM6 14c.01-2 .62-3.27 1.76-4.4L12 5.27l4.24 4.38C17.38 10.77 17.99 12 18 14H6z"/></svg>OPACITY
     </button>
-    <button id="drawOrderBtn" title="Adjust layer draw order">
+    <button id="drawOrderBtn" title="Adjust layer draw order" aria-label="Adjust layer draw order" aria-haspopup="dialog" aria-controls="layer-popup">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="4" rx="1"/><rect x="3" y="16" width="18" height="4" rx="1"/></svg>DRAW ORDER
     </button>
   </div>
@@ -239,7 +252,7 @@
 <!-- Combined Opacity / Draw Order popup - one box, one panel visible at a time,
      arrows in the header cycle between them (JS/draw-order.js owns the shell,
      JS/utils.js registers the opacity panel's content). -->
-<div id="layer-popup" hidden>
+<div id="layer-popup" role="dialog" aria-labelledby="layerPopupTitle" hidden>
   <div class="layer-popup-header">
     <button type="button" id="layerPopupPrev" class="layer-popup-arrow" aria-label="Previous panel">&#10094;</button>
     <span id="layerPopupTitle">OPACITY</span>
@@ -251,7 +264,7 @@
 <!-- Measure Instructions Modal - shown once when the tool is opened, before
      drawing starts (see JS/measure.js: showMeasurePrompt/beginMeasureDrawing) -->
 <div id="measureMsgModal" class="measure-modal">
-  <div id="measureMsgContent" class="measure-modal-content">
+  <div id="measureMsgContent" class="measure-modal-content" role="dialog" aria-modal="true" aria-labelledby="measureMsgText">
     <p id="measureMsgText">Click on the map to draw your measurement. Double click to finish. Press ESC to cancel.</p>
     <button type="button" id="measureMsgOk">OK</button>
   </div>
@@ -260,17 +273,17 @@
 <!-- Measure Result Modal - shown once drawing finishes, with the measured
      distance (see JS/measure.js: showMeasureResult/hideMeasureResult) -->
 <div id="measureResultModal" class="measure-modal">
-  <div id="measureResultContent" class="measure-modal-content">
+  <div id="measureResultContent" class="measure-modal-content" role="dialog" aria-modal="true" aria-labelledby="measureResultText">
     <p id="measureResultText"></p>
     <button type="button" id="measureResultOk">OK</button>
   </div>
 </div>
 
 <div id="citation-box">
-  <button id="citation-btn" title="Show citation options">CITE</button>
+  <button id="citation-btn" title="Show citation options" aria-haspopup="dialog" aria-expanded="false" aria-controls="citation-popup">CITE</button>
 </div>
 
-<div id="citation-popup" hidden>
+<div id="citation-popup" role="dialog" aria-labelledby="citation-title" hidden>
   <div class="citation-popup-header">
     <h3 id="citation-title">CITATION</h3>
     <button id="citation-close" title="Close citation window" aria-label="Close citation window">&times;</button>
@@ -291,12 +304,6 @@
   <textarea id="citation-text" readonly aria-label="Citation text"></textarea>
 </div>
 
-<div id="legend-bar" style="display:none;">
-  <div class="box-mask" aria-hidden="true"></div>
-  <h2 id="legend-title">LEGEND</h2>
-  <ul id="legend-list"></ul>
-</div>
-
 </main>
 
 <div id="cookie-consent-box" role="dialog" aria-live="polite" aria-label="Cookie preferences" hidden>
@@ -315,7 +322,7 @@
 <!-- The badges and the Leaflet attribution live inside the footer so they sit in front of it
      (the map's own controls are in #map's stacking context, below the footer). -->
 <footer id="footer">
-  © 2026 Athens GIS Repository | Licensed under CC-BY 4.0 |
+  © 2026 Athens GIS Repository | <span class="at-wide">Licensed under </span>CC-BY 4.0 |
   <a href="privacy.html" target="_blank" rel="noopener" style="color: inherit;">Cookies &amp; Privacy</a> |
   <a href="https://athensgis.gr/about" id="about-btn" title="About Athens GIS" target="_blank" rel="noopener" style="color: inherit;">About</a>
   <!-- Desktop: positioned individually (style.css, #footer .doi-badge etc.), unchanged.
@@ -373,7 +380,7 @@
         </li>
         <li>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
-          <span>Search the database, or ask Athena, from the box at the bottom of the map.</span>
+          <span>Search the database, or ask Athena, from the box at the <span class="at-wide">bottom</span><span class="at-narrow">top</span> of the map.</span>
         </li>
       </ul>
       <nav class="welcome-go" aria-label="More from the Athens GIS Repository">
@@ -412,9 +419,12 @@
 <div id="datasetSearchWidget">
   <span id="datasetSearchBetaBadge">BETA</span>
   <button type="button" id="datasetSearchModeToggle" title="Switch to Athena assistant" aria-label="Switch to Athena assistant" aria-pressed="false"><span class="mode-switch-knob"></span><span class="mode-switch-icon search-icon"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="10.3" cy="10.3" r="6.3"/><line x1="15" y1="15" x2="20.3" y2="20.3"/></svg></span><span class="mode-switch-icon athena-icon" aria-hidden="true"></span></button>
-  <textarea id="datasetSearchInput" placeholder="Search database..." autocomplete="off" rows="1"></textarea>
+  <textarea id="datasetSearchInput" placeholder="Search database..." aria-label="Search database" aria-describedby="datasetSearchHint" autocomplete="off" rows="1"></textarea>
   <button type="button" id="datasetSearchClear" title="Clear" aria-label="Clear search"></button>
   <div id="datasetSearchResults"></div>
+  <!-- For screen readers only: how the box works, and what it is showing (JS/dataset-search.js). -->
+  <span id="datasetSearchHint" class="sr-only">Results appear as you type. Use the up and down arrow keys to choose one and Enter to open it.</span>
+  <div id="datasetSearchStatus" class="sr-only" role="status" aria-live="polite"></div>
 </div>
 
 <!-- Leaflet JS -->
@@ -422,10 +432,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" crossorigin="anonymous" defer></script>
 
 <!-- Corrected folder name capitalization (JS instead of js) for case-sensitive hosting -->
-<script src="JS/map-init.js?v=a86e149202" defer></script>
+<script src="JS/map-init.js?v=681b85ec71" defer></script>
 <script src="JS/config.js?v=20260615-1" defer></script>
+<script src="JS/attribute-names.js?v=6f866b86f7" defer></script>
 <script src="JS/legend.js?v=9997670246" defer></script>
-<script src="JS/info-box.js?v=829f0d2632" defer></script>
+<script src="JS/info-box.js?v=45bfc6f85a" defer></script>
 <script src="JS/site-state.js?v=7518e7219e" defer></script>
 
 <!-- PMTiles vector-tile rendering: archive reader, protobuf reader, and a vendored
@@ -435,26 +446,26 @@
 <script src="https://cdn.jsdelivr.net/npm/pmtiles@3.2.0/dist/pmtiles.js" crossorigin="anonymous" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/pbf@5.1.2/dist/pbf.js" crossorigin="anonymous" defer></script>
 <script src="JS/vendor/vector-tile.js?v=30a75ab43f" defer></script>
-<script src="JS/pmtiles-loader.js?v=c68b1fdc99" defer></script>
+<script src="JS/pmtiles-loader.js?v=175c793907" defer></script>
 
 <script src="JS/layer-filter.js?v=05a748368c" defer></script>
 <script src="JS/attribute-report.js?v=83a8e5c328" defer></script>
 <script src="JS/metadata-score.js?v=90b6b96d72" defer></script>
-<script src="JS/layer-control.js?v=c118c878ee" defer></script>
+<script src="JS/layer-control.js?v=86a1ae56b3" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/7.0.0/fuse.min.js" crossorigin="anonymous" defer></script>
-<script src="JS/dataset-search.js?v=1b14a0d3b0" defer></script>
-<script src="JS/citation.js?v=572c6c83a6" defer></script>
-<script src="JS/measure.js?v=0675687776" defer></script>
+<script src="JS/dataset-search.js?v=1b6a7bfc5d" defer></script>
+<script src="JS/citation.js?v=1ec45db2b0" defer></script>
+<script src="JS/measure.js?v=029a359af4" defer></script>
 <script src="JS/attica-outline.js?v=a4f2003c8d" defer></script>
-<script src="JS/export.js?v=52d78be8dd" defer></script>
-<script src="JS/ui.js?v=f391aa95c0" defer></script>
+<script src="JS/export.js?v=eada253e59" defer></script>
+<script src="JS/ui.js?v=0b6e793e21" defer></script>
 <script src="JS/welcome.js?v=62a2bb1608" defer></script>
-<script src="JS/tour.js?v=6a97ca0a8b" defer></script>
+<script src="JS/tour.js?v=a3cf449fc2" defer></script>
 <script src="JS/announcement.js?v=c6083ba0a4" defer></script>
-<script src="JS/draw-order.js?v=8cf8712f1c" defer></script>
+<script src="JS/draw-order.js?v=eae00b43e9" defer></script>
 <script src="JS/utils.js?v=8a5cd85dcd" defer></script>
 <script src="JS/cookies.js?v=eeaacfe22f" defer></script>
-<script src="JS/footer-credits.js?v=7e87ec8d7d" defer></script>
+<script src="JS/footer-credits.js?v=fba5f1d934" defer></script>
 
 <script>
   // Google Analytics download tracking (event name: "download")

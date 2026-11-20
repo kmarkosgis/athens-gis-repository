@@ -1984,9 +1984,11 @@
 
 <script>
   // "Layers per category" pie chart, plus the layer/category counts quoted elsewhere on the page.
-  // The numbers are not typed in here: the page reads the `layerCategories` object straight out of
-  // JS/layer-control.js (the same file the map uses, and the same technique tools/build-pmtiles.mjs
-  // uses), so adding, moving or removing a layer there is reflected here on the next page load.
+  // The numbers are not typed in here. The page reads the layer list file the admin dashboard writes
+  // (data/layers.json, through JS/layer-list.js, the same list the map uses), so adding, moving or removing
+  // a layer in the dashboard is reflected here on the next page load. When there is no usable file it reads
+  // the `layerCategories` object straight out of JS/layer-control.js instead (the backup list the map carries,
+  // and the same technique tools/build-pmtiles.mjs uses).
   (function () {
     var fig = document.getElementById('layer-chart');
     if (!fig) return;
@@ -2035,10 +2037,7 @@
     // object of hidden layer keys, empty when the state is missing, late (3 s) or site-state.js is absent.
     // The "Metadata score" script below reads window.aboutInactiveLayers, set here before the layer list resolves.
     function loadInactiveLayers() {
-      var parsed = document.readyState === 'loading'
-        ? new Promise(function (resolve) { document.addEventListener('DOMContentLoaded', resolve); })
-        : Promise.resolve();
-      return parsed.then(function () {
+      return pageParsed().then(function () {
         var ag = window.AthensGIS;
         return ag && ag.siteStateReady ? ag.siteStateReady.then(function (state) {
           return typeof ag.inactiveLayerSet === 'function' ? ag.inactiveLayerSet(state) : {};
@@ -2046,7 +2045,29 @@
       }).catch(function () { return {}; });
     }
 
-    function loadLayerCategories() {
+    // Resolves once the page has been parsed. This script sits above the config.js, layer-list.js and
+    // site-state.js tags, so while it first runs window.AthensGIS does not exist yet: both lookups wait for this.
+    function pageParsed() {
+      return document.readyState === 'loading'
+        ? new Promise(function (resolve) { document.addEventListener('DOMContentLoaded', resolve); })
+        : Promise.resolve();
+    }
+
+    // The layer list file (data/layers.json), read by JS/layer-list.js: the list in the shape of layerCategories,
+    // or null when there is no usable file (it is not there, fails the checks, or is later than 3 s).
+    // It is a deep copy, so the filter below never changes the list the promise gave.
+    function loadLayerListFile() {
+      return pageParsed().then(function () {
+        var ag = window.AthensGIS;
+        return (ag && ag.layerListReady) || Promise.resolve(null);
+      }).then(function (list) {
+        var usable = list && typeof list === 'object' && !Array.isArray(list) && Object.keys(list).length;
+        return usable ? JSON.parse(JSON.stringify(list)) : null;
+      }).catch(function () { return null; });
+    }
+
+    // The backup: the list layer-control.js carries in its own code, read out of the script's text.
+    function loadLayerControlList() {
       // no-cache: always revalidate, so a freshly edited layer-control.js shows up straight away.
       return fetch('JS/layer-control.js', { cache: 'no-cache' }).then(function (res) {
         if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -2054,6 +2075,12 @@
       }).then(function (source) {
         var literal = extractObjectLiteral(source, 'var layerCategories =');
         return new Function('return (' + literal + ');')();   // data literal from this site's own script
+      });
+    }
+
+    function loadLayerCategories() {
+      return loadLayerListFile().then(function (list) {
+        return list || loadLayerControlList();
       }).then(function (raw) {
         // The same filter the map applies (JS/site-state.js), so the counts here match the layer panel.
         return loadInactiveLayers().then(function (inactive) {
@@ -2211,7 +2238,7 @@
       applyState();
     }
 
-    // Shared with the "Metadata score" script below, so layer-control.js is read once for both.
+    // Shared with the "Metadata score" script below, so the layer list is read once for both.
     window.aboutLayerCategories = loadLayerCategories();
     window.aboutLayerCategories.then(function (raw) {
       var model = buildModel(raw);
@@ -2225,8 +2252,9 @@
   })();
 </script>
 
-<!-- config.js: only R2_BASE_URL is used here, to find the layer description files. -->
+<!-- config.js: only R2_BASE_URL is used here, to find the layer description files and the layer list file. -->
 <script src="JS/config.js?v=20260615-1"></script>
+<script src="JS/layer-list.js?v=a8f2e5b404"></script>
 <script src="JS/site-state.js?v=7518e7219e"></script>
 <script src="JS/attribute-report.js?v=83a8e5c328"></script>
 <script src="JS/metadata-score.js?v=90b6b96d72"></script>
@@ -2234,9 +2262,10 @@
   // "Metadata score" (Data structure and metadata): scores every layer's description file with
   // JS/metadata-score.js - the same code that puts the "Metadata score" line in the map's Layer
   // information box - and shows the repository score, the score of each layer and the method.
-  // Nothing is typed in here: the layer list comes from JS/layer-control.js (read once for the
-  // chart above), the descriptions from info/ and the empty attribute values from JS/attribute-report.js
-  // (generated by tools/build-attribute-report.mjs), all when the page loads.
+  // Nothing is typed in here: the layer list comes from the layer list file, or from JS/layer-control.js
+  // when there is none (read once for the chart above), the descriptions from info/ and the empty
+  // attribute values from JS/attribute-report.js (generated by tools/build-attribute-report.mjs), all
+  // when the page loads.
   (function () {
     var card = document.getElementById('ms-overview');
     if (!card) return;

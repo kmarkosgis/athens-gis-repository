@@ -12,6 +12,8 @@
 // `geom` ("point" | "line" | "polygon") picks the symbol drawn before the layer's name in
 // the panel (see buildLayerGeomIcon below); rasters are marked by `type: "raster"` instead.
 // Give every new layer one of these, or its row gets a blank slot where the symbol goes.
+// This list is the backup. When data/layers.json loads and passes the checks in JS/layer-list.js, the map uses
+// that list instead: AthensGIS.layersReady (end of this file) replaces everything in this object with it.
 var layerCategories = {
   "Administrative Boundaries": {
     "_items": [
@@ -803,12 +805,13 @@ function ensureInfoBoxUpdate(opts){
   if(layerNames.length > 1){
     tabsHtml += '<div class="layer-titles-viewport">';
     tabsHtml += '<div id="layerTitlesTrack" style="transform:' + trackTransform(fromIdx) + ';">';
+    // A layer name comes from the layer list file: escaped, it stays text (in the title attribute too).
     layerNames.forEach(function(name, idx){
-      tabsHtml += '<div class="layer-title-item' + (idx===toIdx ? ' active' : '') + '" title="' + name.replace(/"/g,'&quot;') + '">' + name + '</div>';
+      tabsHtml += '<div class="layer-title-item' + (idx===toIdx ? ' active' : '') + '" title="' + escHtml(name) + '">' + escHtml(name) + '</div>';
     });
     tabsHtml += '</div></div>';
   } else {
-    tabsHtml += '<div style="flex:1; text-align:center; font-weight:500; font-size:14px; color:#222;">' + (layerNames[0] || '') + '</div>';
+    tabsHtml += '<div style="flex:1; text-align:center; font-weight:500; font-size:14px; color:#222;">' + escHtml(layerNames[0] || '') + '</div>';
   }
   if(canNext){
     tabsHtml += '<button id="nextTabBtn" type="button" aria-label="Next layer" title="Next layer" style="background:rgba(55, 65, 81, 0.85); color:white; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:14px; flex:0 0 auto;">❯</button>';
@@ -3074,9 +3077,16 @@ function ensureGeoJSONStyleRefreshListener(){
 // AthensGIS.layersReady resolves once this has run; JS/dataset-search.js waits for it.
 AthensGIS.layersReady = Promise.all([
   AthensGIS.siteStateReady || Promise.resolve(null),
-  AthensGIS.legendsReady || Promise.resolve(false)
+  AthensGIS.legendsReady || Promise.resolve(false),
+  // JS/layer-list.js never rejects; if it ever did, the list counts as missing (the code's list stays) and the
+  // switched-off layers below are still removed, instead of the catch below showing every layer, held ones included.
+  Promise.resolve(AthensGIS.layerListReady || null).catch(function(){ return null; })
 ]).then(function(results){
   var state = results[0];
+  var list = results[2];
+  // The layer list file replaces the list in the code, in the same object, before the layers that are
+  // switched off are removed from it. No file, or one that failed the checks, gives null: the code's list stays.
+  if(list && typeof AthensGIS.replaceLayerCategories === 'function') AthensGIS.replaceLayerCategories(layerCategories, list);
   var inactive = typeof AthensGIS.inactiveLayerSet === 'function' ? AthensGIS.inactiveLayerSet(state) : {};
   AthensGIS._inactiveLayerSet = inactive;
   if(typeof AthensGIS.filterLayerCategories === 'function') AthensGIS.filterLayerCategories(layerCategories, inactive);

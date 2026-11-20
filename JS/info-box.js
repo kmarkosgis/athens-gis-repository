@@ -11,10 +11,14 @@ window.updateInfoBox = function() {
 	var infoBox = document.getElementById('layerInfoBox');
 	var AthensGIS = window.AthensGIS || {};
 	var activeLayerInfos = AthensGIS.activeLayerInfos || {};
+	// A layer name is text, not markup: escape it here, with nothing from another script.
+	function escapeName(text) {
+		return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+	}
 	var content = '';
 	for (var key in activeLayerInfos) {
 		if (!Object.prototype.hasOwnProperty.call(activeLayerInfos, key)) continue;
-		content += '<strong>' + key + '</strong><br>' + activeLayerInfos[key] + '<hr>';
+		content += '<strong>' + escapeName(key) + '</strong><br>' + activeLayerInfos[key] + '<hr>';
 	}
 	if (content) {
 		// Ensure the expected content container exists

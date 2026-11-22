@@ -220,6 +220,14 @@
 				className: 'leaflet-div-icon leaflet-editing-icon leaflet-touch-icon measure-vertex-icon'
 			})
 		});
+		// leaflet-draw redraws its guide line after every zoom from the last
+		// mouse position (_currentLatLng), which only a mousemove sets. A vertex
+		// placed by touch leaves it undefined, and the next zoom then throws
+		// inside Leaflet's zoomend. Skip the redraw until a position exists.
+		// Must be set before enable(), which is when the handler is registered.
+		measureControl._onZoomEnd = function(){
+			if(this._currentLatLng) L.Draw.Polyline.prototype._onZoomEnd.call(this);
+		};
 		measureControl.enable();
 		measureEnabled = true;
 		drawingGuideLine = null;

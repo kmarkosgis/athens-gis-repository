@@ -513,6 +513,19 @@ function resolveExtentBounds(cacheKey){
   return Promise.resolve(null);
 }
 
+// Full extents of the layers currently on the map (one LatLngBounds per layer whose extent is
+// known), for "zoom to extent" and the map export's locator inset.
+function activeLayerExtents(){
+  var activeKeys = Object.keys(AthensGIS.geojsonLayers).filter(function(k){
+    var lyr = AthensGIS.geojsonLayers[k];
+    return !!(lyr && getMap().hasLayer(lyr));
+  });
+  return Promise.all(activeKeys.map(resolveExtentBounds)).then(function(boundsList){
+    return boundsList.filter(function(b){ return !!(b && b.isValid()); });
+  });
+}
+AthensGIS.activeLayerExtents = activeLayerExtents;
+
 function setupViewportUpdateHandler(){
   if(AthensGIS._viewportHandlerBound) return;
   AthensGIS._viewportHandlerBound = true;
@@ -1905,11 +1918,11 @@ function renderLayerControl(){
       var extBtn = document.getElementById('zoomSelectedBtn');
       if(!extBtn) return;
       extBtn.addEventListener('click', function(){
-        var activeKeys = Object.keys(AthensGIS.geojsonLayers).filter(function(k){
+        var anyActive = Object.keys(AthensGIS.geojsonLayers).some(function(k){
           var lyr = AthensGIS.geojsonLayers[k];
           return !!(lyr && getMap().hasLayer(lyr));
         });
-        if(!activeKeys.length) return;
+        if(!anyActive) return;
         // Vector layers only ever render the current viewport's slice of features
         // (pmtiles-backed layers included - one that's toggled on but currently
         // outside the view can have ZERO features rendered right now), so this needs
@@ -1919,10 +1932,9 @@ function renderLayerControl(){
         // instead of a plain synchronous loop.
         extBtn.style.pointerEvents = 'none';
         extBtn.style.opacity = '0.7';
-        Promise.all(activeKeys.map(resolveExtentBounds)).then(function(boundsList){
+        activeLayerExtents().then(function(boundsList){
           var combined = null;
           boundsList.forEach(function(b){
-            if(!b || !b.isValid()) return;
             combined = combined ? combined.extend(b) : L.latLngBounds(b.getSouthWest(), b.getNorthEast());
           });
           if(combined && combined.isValid()) getMap().fitBounds(combined.pad(0.05));

@@ -34,6 +34,7 @@
   var exportRunId = 0;
   var exportGeo = null;
   var exportTheme = null;
+  var exportLocator = null;   // { outline, label } for the locator inset, chosen per export by chooseExportLocator()
   var exportLegendItems = null;
   var legendMetricsCache = {};
   var exportLegendCount = 0;
@@ -335,13 +336,50 @@
     return 0.5 * Math.log((1 + s) / (1 - s));
   }
 
+  function isUsableOutline(outline){
+    return !!(outline && outline.bbox && outline.polygons && outline.polygons.length);
+  }
+
+  // The outline the locator inset draws: Attica, or Greece when an active layer covers Greece.
+  function getLocator(){
+    if(exportLocator && isUsableOutline(exportLocator.outline)) return exportLocator;
+    return { outline: window.ATTICA_OUTLINE, label: 'Attica' };
+  }
+
+  // A layer "covers Greece" when its extent, inside Greece's box, spans at least this share of
+  // Greece's width or height (a layer for Attica or one region stays well under it).
+  var EXPORT_GREECE_COVER_SHARE = 0.5;
+  var EXPORT_LOCATOR_EXTENT_WAIT = 2000;   // ms: past this, export with the Attica locator
+
+  function coversGreece(bounds, gb){
+    var w = Math.min(bounds.getEast(), gb[2]) - Math.max(bounds.getWest(), gb[0]);
+    var h = Math.min(bounds.getNorth(), gb[3]) - Math.max(bounds.getSouth(), gb[1]);
+    if(w <= 0 || h <= 0) return false;
+    return w >= EXPORT_GREECE_COVER_SHARE * (gb[2] - gb[0]) || h >= EXPORT_GREECE_COVER_SHARE * (gb[3] - gb[1]);
+  }
+
+  // Picks the locator for the next export from the active layers' full extents (an async read
+  // for a tiled layer, hence the promise). Never rejects: anything unknown falls back to Attica.
+  function chooseExportLocator(){
+    var attica = { outline: window.ATTICA_OUTLINE, label: 'Attica' };
+    var greece = window.GREECE_OUTLINE;
+    var ag = window.AthensGIS || {};
+    if(!isUsableOutline(greece) || typeof ag.activeLayerExtents !== 'function') return Promise.resolve(attica);
+    var lookup = Promise.resolve().then(function(){ return ag.activeLayerExtents(); }).then(function(list){
+      var wide = (list || []).some(function(b){ return coversGreece(b, greece.bbox); });
+      return wide ? { outline: greece, label: 'Greece' } : attica;
+    }).catch(function(){ return attica; });
+    var timeout = new Promise(function(resolve){ setTimeout(function(){ resolve(attica); }, EXPORT_LOCATOR_EXTENT_WAIT); });
+    return Promise.race([lookup, timeout]);
+  }
+
   // The locator header, for a given total width: the locator box is the full width, as tall as the
-  // logo + locator pair used to be (the logo moved to the header band), with Attica drawn at its
-  // natural proportions inside it.
+  // logo + locator pair used to be (the logo moved to the header band), with the locator's area
+  // (Attica or Greece) drawn at its natural proportions inside it.
   // Without the outline data (JS/attica-outline.js) there is no locator, so no header at all.
   function getHeaderMetrics(headerWidth){
-    var outline = window.ATTICA_OUTLINE;
-    if(!outline || !outline.bbox || !outline.polygons || !outline.polygons.length){
+    var outline = getLocator().outline;
+    if(!isUsableOutline(outline)){
       return { logo: 0, locatorW: 0, width: 0, height: 0 };
     }
     var b = outline.bbox;
@@ -844,14 +882,16 @@
     map.setView(target, zoom, { animate: false });
   }
 
-  // Locator inset: Attica's outline with the area covered by the map window drawn on it.
+  // Locator inset: the outline of Attica (or Greece, see chooseExportLocator) with the area
+  // covered by the map window drawn on it.
   // Needs the final (recentred) view, so it runs after recenterMapOnFrame().
   function updatePrintLocatorOverlay(map){
     var geo = getExportGeometry(), f = geo.frame;
     var header = geo.header;
     if(!printLocatorOverlay || !header.locatorW) return;
     var size = { w: header.locatorW, h: header.height };
-    var outline = window.ATTICA_OUTLINE;
+    var locator = getLocator();
+    var outline = locator.outline;
     var b = outline.bbox;
 
     // Map extent of the window, in Web Mercator units like the outline.
@@ -899,7 +939,7 @@
         '<path d="' + d + '" fill="' + c.land + '" stroke="' + c.land + '" stroke-width="0.6" stroke-linejoin="round"/>' +
         '<rect x="' + rx0.toFixed(1) + '" y="' + ry0.toFixed(1) + '" width="' + (rx1 - rx0).toFixed(1) + '" height="' + (ry1 - ry0).toFixed(1) + '" fill="' + c.rectFill + '" stroke="' + c.rect + '" stroke-width="2"/>' +
       '</svg>' +
-      '<div style=\'position:absolute; right:6px; bottom:4px; font-family:' + EXPORT_FONT_FAMILY + '; font-size:' + EXPORT_FONT_LABEL + 'px; font-weight:600; line-height:1; color:' + c.label + ';\'>Attica</div>';
+      '<div style=\'position:absolute; right:6px; bottom:4px; font-family:' + EXPORT_FONT_FAMILY + '; font-size:' + EXPORT_FONT_LABEL + 'px; font-weight:600; line-height:1; color:' + c.label + ';\'>' + locator.label + '</div>';
   }
 
   // EasyPrint's own restore only works when the centre never moved: its animated pan back is
@@ -1424,6 +1464,15 @@
     // show overlay immediately for feedback (also handled by easyPrint-start event)
     setExportMapLayoutOverrides(map);
     showOverlay();
+    // The locator (Attica or Greece) sets the panel layout, so it is settled before EasyPrint starts.
+    chooseExportLocator().then(function(locator){
+      if(runId !== exportRunId) return;   // a newer export has started meanwhile
+      exportLocator = locator;
+      startPrint(map, printer, targetClass, runId);
+    });
+  }
+
+  function startPrint(map, printer, targetClass, runId){
     try { printer.printMap(targetClass, 'Map_Print'); }
     catch(e){ console.error('printMap error', e); hideOverlay(); hidePrintOverlays(); clearExportMapLayoutOverrides(map); resumePointClustering(); return; }
     // wait for image and download; always hide overlay afterwards. Clustering is normally back

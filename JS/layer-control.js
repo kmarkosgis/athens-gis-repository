@@ -604,6 +604,25 @@ function setLayerLabel(label, name, geom){
   label.appendChild(document.createTextNode(name));
 }
 
+// The "Greece" tag after the name of a layer that covers all of Greece (set from the admin dashboard: greece: true
+// in data/layers.json). It sits inside the label, between the name and the switch, but is hidden from screen readers
+// there so the switch is still named by the layer name alone. The switch is described by a hidden sentence instead
+// (a description is read from the text of what it points at, never from a title).
+function addLayerGreeceTag(label, cb){
+  var tag = document.createElement('span');
+  tag.className = 'layer-greece-tag';
+  tag.textContent = 'Greece';
+  tag.title = 'Covers all of Greece';
+  tag.setAttribute('aria-hidden', 'true');
+  var said = document.createElement('span');
+  said.id = cb.id + '__greece';
+  said.hidden = true;
+  said.textContent = 'Covers all of Greece';
+  label.appendChild(tag);
+  label.appendChild(said);
+  cb.setAttribute('aria-describedby', said.id);
+}
+
 var LAYER_COLOR_SWATCHES = [
   { name: 'Red', hex: '#E53935' },
   { name: 'Orange', hex: '#FB8C00' },
@@ -2504,6 +2523,7 @@ function renderLayerControl(){
     cb.setAttribute('role','switch');
     cb.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); cb.click(); } });
     var label=document.createElement('label'); label.htmlFor=id; setLayerLabel(label, info.name, layerGeomOf(info));
+    if(info.greece === true) addLayerGreeceTag(label, cb);
     var actions = null;
     var dl=document.createElement('a'); dl.href='#'; dl.innerHTML='DOWNLOAD'; dl.className='download-button'; dl.style.display='none'; dl.title='Download the selected layer as ZIP';
     dl.addEventListener('click', function(e){
@@ -2579,7 +2599,8 @@ function renderLayerControl(){
     // checkbox/label themselves so a direct click on either isn't double-toggled (the
     // native <label for> click already fires one toggle on its own).
     row.addEventListener('click', function(e){
-      if(e.target===cb || e.target===label) return;
+      // A click anywhere in the label (the name, its symbol or its Greece tag) already toggles the switch through the label.
+      if(e.target===cb || label.contains(e.target)) return;
       cb.click();
     });
     // Tag category/subcategory for active-layer counting

@@ -115,7 +115,7 @@
     return total;
   }
 
-  // One layer -> the layer as the panel wants it (name, file, geojson, geom, type "raster"; anything else the
+  // One layer -> the layer as the panel wants it (name, file, geojson, geom, type "raster", greece true; anything else the
   // file carries is dropped), or null. Records its name and key in the sets shared by the whole file.
   function cleanLayer(raw, names, ids, keys) {
     if (!isObject(raw)) return null;
@@ -154,6 +154,8 @@
     if (geojson !== undefined) out.geojson = geojson;
     if (isRaster) out.type = 'raster';
     else out.geom = geom;
+    // "Covers all of Greece" (the Greece tag after the name): only true counts; anything else is off, never a fault.
+    if (own(raw, 'greece') === true) out.greece = true;
     return out;
   }
 

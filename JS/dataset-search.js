@@ -304,6 +304,8 @@
       // is the .pmtiles render source there, not a fetchable JSON document.
       geojson: info.geojson || null,
       type: info.type === 'raster' ? 'raster' : 'vector',
+      // Covers all of Greece (greece: true in data/layers.json): the result shows a Greece tag after the name.
+      greece: info.greece === true,
       source: null,
       contributors: null,
       uploaded: null,
@@ -892,6 +894,14 @@
       var nameEl = document.createElement('div');
       nameEl.className = 'dataset-result-name';
       nameEl.textContent = entry.name;
+      if (entry.greece) {
+        var greeceTag = document.createElement('span');
+        greeceTag.className = 'layer-greece-tag';
+        greeceTag.textContent = 'Greece';
+        greeceTag.title = 'Covers all of Greece';
+        nameEl.appendChild(document.createTextNode(' '));
+        nameEl.appendChild(greeceTag);
+      }
 
       var metaEl = document.createElement('div');
       metaEl.className = 'dataset-result-meta';
